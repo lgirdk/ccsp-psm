@@ -90,10 +90,12 @@ static char ppRecordContentType[][16] =
 {
     "int", "uint", "bool", "datetime", "base64", "long", "ulong", "float",
     "double", "byte", "none", "unknown1", "unknown2", "unknown3", "unknown4", "unknown5"
-/*
+};
+
+static char ppRecordContentType_old[][16] =
+{
     "mapped","ip4Addr","macAddr","ip4AddrList","port","seconds","minutes",
     "hours","calendar","password","masked","button","switch","sintList","uintList"
- */
 };
 
 static ULONG uTotalFolderType  = 4;
@@ -802,6 +804,15 @@ ULONG getRecordContentTypeFromString
     {
         if( AnscEqualString(pString, ppRecordContentType[i], FALSE))
         {
+            return i + 1;
+        }
+    }
+
+    for( i = 0; i < uTotalRecordContentType; i ++)
+    {
+        if( AnscEqualString(pString, ppRecordContentType_old[i], FALSE))
+        {
+            CcspTraceWarning(("Legacy Record ContentType '%s' !!!\n", pString));
             return i + 1;
         }
     }
