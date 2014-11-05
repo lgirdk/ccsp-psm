@@ -76,6 +76,616 @@
 #include "psm_hal_apis.h"
 #include "ssp_global.h"
 
+#include "pthread.h"
+
+
+#ifdef _COSA_SIM_
+#define cfm_log_dbg(x)          printf x
+#define cfm_log_err(x)          printf x
+#else
+#define cfm_log_dbg(x)          
+#define cfm_log_err(x)          printf x
+#endif
+
+#include <sys/time.h>
+static void print_time(const char *msg)
+{
+    struct timeval tv;
+
+    gettimeofday(&tv, NULL);
+    fprintf(stderr, "[PSM-CFM] %-20s: %6d.%06d\n", msg ? msg : "", tv.tv_sec, tv.tv_usec);
+}
+
+#define PSM_REC_HASH_SIZE       1024
+
+#define PSM_REC_TEMP            "  <Record name=\"%s\" type=\"%s\" contentType=\"%s\">%s</Record>\n"
+#define PSM_REC_TEMP_NOCTYPE    "  <Record name=\"%s\" type=\"%s\">%s</Record>\n"
+
+struct psm_record {
+    struct psm_record   *next;
+    char                *name;
+    char                *type;
+    char                *ctype;
+    char                *value;
+};
+
+static struct psm_record *rec_hash[PSM_REC_HASH_SIZE] = {0};
+static pthread_mutex_t  rec_hash_lock = PTHREAD_MUTEX_INITIALIZER;
+
+static inline char *remove_quote(char *buf)
+{
+    if (buf[0] == '"' && strlen(buf) >= 2 && buf[strlen(buf) - 1] == '"') {
+        buf[strlen(buf) - 1] = '\0';
+        return ++buf;
+    }
+
+    return buf;
+}
+
+static inline unsigned int hash(const char *str)
+{
+    unsigned int hash = 5381;
+    int c;
+
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c; 
+    }
+
+    return hash;
+}
+
+static inline unsigned int record_hash(const char *str)
+{
+    return hash(str) % PSM_REC_HASH_SIZE;
+}
+
+static void record_free(struct psm_record *rec)
+{
+    if (!rec)
+        return;
+
+    if (rec->name)
+        free(rec->name);
+    if (rec->type)
+        free(rec->type);
+    if (rec->ctype)
+        free(rec->ctype);
+    if (rec->value)
+        free(rec->value);
+    free(rec);
+}
+
+static struct psm_record *record_create(const char *name, 
+        const char *type, const char *ctype, const char *value)
+{
+    struct psm_record *rec;
+    
+    if (!name || !strlen(name) || !type || !strlen(type))
+        return NULL;
+
+    if ((rec = malloc(sizeof(struct psm_record))) == NULL)
+        return NULL;
+    rec->name = strdup(name);
+    rec->type = strdup(type);
+    rec->ctype = ctype ? strdup(ctype) : NULL;
+    rec->value = value ? strdup(value) : NULL;
+    rec->next = NULL;
+
+    if (!rec->name || !rec->type || (ctype && !rec->ctype) 
+            || (value && !rec->value)) {
+        record_free(rec);
+        return NULL; /* no memory */
+    }
+
+    return rec;
+}
+
+/* parse record line to psm_record{} */
+static struct psm_record *record_parse(char *buf)
+{
+    char *t_start, *t_end;
+    char *v_start, *v_end;
+    char *name, *type, *ctype;
+    char *tok, *delim, *sp;
+
+    if ((t_start = strstr(buf, "<Record")) == NULL)
+        return NULL;
+    t_start += strlen("<Record");
+
+    /*
+     * __NOTE__ 
+     * 1. this is not strict XML parse.
+     * 2. it's no need to decode XML(like &amp;...), 
+     *    it will be done in uplayer, what we need is pass 
+     *    original XML buffer to uplayer.
+     *
+     * There're 5 XML meta (' " & < >) and only '<' and '&' 
+     * are strictly forbidden. Let's assume all 5 meta will 
+     * not be used in PSM xml.
+     */
+    if ((t_end = strchr(t_start, '>')) == NULL)
+        return NULL;
+
+    *t_end = '\0';
+    if (t_end[-1] == '/') { /* <.../> */
+        t_end[-1] = '\0';
+        v_start = v_end = NULL;
+    } else {
+        v_start = t_end + 1;
+        if ((v_end = strstr(v_start, "</Record>")) == NULL)
+            return NULL;
+        *v_end = '\0';
+    }
+
+    name = type = ctype = NULL, delim = " \t\r\n";
+    for (; (tok = strtok_r(t_start, delim, &sp)) != NULL; t_start = NULL) {
+        if (strncmp(tok, "name=", strlen("name=")) == 0) {
+            name = tok + strlen("name=");
+            name = remove_quote(name);
+        } else if (strncmp(tok, "type=", strlen("type=")) == 0) {
+            type = tok + strlen("type=");
+            type = remove_quote(type);
+        } else if (strncmp(tok, "contentType=", strlen("contentType=")) == 0) {
+            ctype = tok + strlen("contentType=");
+            ctype = remove_quote(ctype);
+        }
+    }
+
+    /* everything is Ok we can allocate a record now */
+    return record_create(name, type, ctype, v_start);
+}
+
+/* return number of bytes saved or -1 on error */
+static int record_save(const struct psm_record *rec, char *buf, size_t size)
+{
+    int n;
+
+    if (!rec || !rec->name || !strlen(rec->name) 
+            || !rec->type || !strlen(rec->type) || !buf)
+        return -1;
+
+    if (!rec->ctype)
+        n = snprintf(buf, size, PSM_REC_TEMP_NOCTYPE, 
+                rec->name, rec->type, (rec->value ? rec->value : ""));
+    else
+        n = snprintf(buf, size, PSM_REC_TEMP,
+                rec->name, rec->type, rec->ctype, (rec->value ? rec->value : ""));
+
+    return n;
+}
+
+/* load records from file to internal hash table */
+static int load_records(const char *file)
+{
+    FILE *fp;
+    char line[4096];
+    struct psm_record *rec, *last;
+    unsigned int idx;
+
+    if ((fp = fopen(file, "rb")) == NULL)
+        return -1;
+
+    while (fgets(line, sizeof(line), fp) != NULL) {
+        if (strstr(line, "<Record") == NULL)
+            continue;
+
+        if ((rec = record_parse(line)) == NULL) {
+            cfm_log_err(("%s: fail to parse: %s\n", __FUNCTION__, line));
+            continue;
+        }
+
+        idx = record_hash(rec->name);
+        pthread_mutex_lock(&rec_hash_lock);
+        if (rec_hash[idx] == NULL) {
+            rec_hash[idx] = rec;
+        } else {
+            for (last = rec_hash[idx]; last && last->next; last = last->next)
+                ;
+            last->next = rec;
+        }
+        pthread_mutex_unlock(&rec_hash_lock);
+    }
+
+    fclose(fp);
+    return 0;
+}
+
+/* free all records in hash table */
+static void free_records(void)
+{
+    int i;
+    struct psm_record *cur, *next;
+
+    pthread_mutex_lock(&rec_hash_lock);
+    for (i = 0; i < PSM_REC_HASH_SIZE; i++) {
+        if (!rec_hash[i])
+            continue;
+
+        for (cur = rec_hash[i], next = cur->next; cur != NULL; 
+                cur = next, next = (cur ? cur->next : NULL))
+            record_free(cur);
+
+        rec_hash[i] = NULL;
+    }
+    pthread_mutex_unlock(&rec_hash_lock);
+    return;
+}
+
+#define PSM_BUF_BASE_SIZE       (128 * 1024)
+#define PSM_BUF_OFFSET_SIZE     (PSM_BUF_BASE_SIZE / 4)
+
+/* 
+ * flush all rec in Hash table to buffer.
+ * @buf and @size are output.
+ *
+ * I combined flush and free operation to save time, 
+ * (just traverse whole hash table once).
+ * the bad side is that if no memory, the table may 
+ * half-flushed and no change to recover the table.
+ */
+static int flush_records(char **buf, size_t *size)
+{
+    int i, off, left, n, err = -1;
+    struct psm_record *cur, *next;
+    void *ptr;
+
+    /* 
+     * save records from Hash to buffer and perform check 
+     * we use dyn-array to save 'reallocate'.
+     *
+     * XXX: another option is to calculate "total buffer size" when 
+     * load/insert/free records, so that we can allocate the buffer once.
+     * But that idea make code not clear.
+     */
+    *size = PSM_BUF_BASE_SIZE;
+    if ((*buf = AnscAllocateMemory(PSM_BUF_BASE_SIZE)) == NULL) {
+        cfm_log_err(("%s: no memory\n", __FUNCTION__));
+        return -1;
+    }
+
+    off = 0, left = PSM_BUF_BASE_SIZE;
+
+    n = snprintf(*buf + off, left, "<?xml version=\"1.0\"  encoding=\"UTF-8\" ?>\n"
+            "<Provision>\n");
+    off += n;
+    left -= n;
+
+    pthread_mutex_lock(&rec_hash_lock);
+    for (i = 0; i < PSM_REC_HASH_SIZE; i++) {
+        if (!rec_hash[i])
+            continue;
+
+        //cfm_log_dbg(("Hash[%d] \n", i));
+
+        for (cur = rec_hash[i], next = cur->next; cur != NULL; 
+                cur = next, next = (cur ? cur->next : NULL)) {
+
+            //cfm_log_dbg(("  name %s \n", cur->name));
+
+            /* need to expend the buffer ? 
+             * the space calculated below is little bigger than needed */
+            if (left < strlen(PSM_REC_TEMP) + \
+                    strlen(cur->name) + strlen(cur->type) \
+                    + (cur->ctype ? strlen(cur->ctype) : 0) \
+                    + (cur->value ? strlen(cur->value) : 0) \
+                    + strlen("</Provision>\n") + 1) {
+
+                *size += PSM_BUF_OFFSET_SIZE;
+                if ((ptr = AnscReAllocateMemory(*buf, *size)) == NULL) {
+                    cfm_log_err(("%s: no memory\n", __FUNCTION__));
+                    goto out;
+                }
+                *buf = ptr;
+
+                left += PSM_BUF_OFFSET_SIZE;
+            }
+
+            if ((n = record_save(cur, *buf + off, left)) < 0) {
+                cfm_log_err(("%s: fail to save record\n", __FUNCTION__));
+                goto out;
+            }
+
+            off += n;
+            left -= n;
+            record_free(cur);
+        }
+
+        rec_hash[i] = NULL;
+    }
+
+    err = 0;
+
+out:
+    pthread_mutex_unlock(&rec_hash_lock);
+    if (err != 0) {
+        AnscFreeMemory(*buf);
+        return err;
+    }
+
+    n = snprintf(*buf + off, left, "</Provision>\n");
+    off += n;
+    left -= n;
+    *size = off;
+    return err;
+}
+
+static int insert_record(struct psm_record *new, int overwrite)
+{
+    int h_idx;
+    struct psm_record *rec, *prev;
+
+    h_idx = record_hash(new->name);
+
+    pthread_mutex_lock(&rec_hash_lock);
+    if (rec_hash[h_idx] == NULL) {
+        rec_hash[h_idx] = new;
+        cfm_log_dbg(("[INSERT-F] %s %s\n", new->name, new->value));
+        pthread_mutex_unlock(&rec_hash_lock);
+        return 0;
+    }
+
+    for (prev = NULL, rec = rec_hash[h_idx]; rec; prev = rec, rec = rec->next) {
+        if (strcmp(rec->name, new->name) != 0)
+            continue;
+
+        if (!overwrite) {
+            //cfm_log_dbg(("[IMPORTED-E] %s %s\n", new->name, new->value ? new->value : ""));
+            record_free(new);
+        } else {
+            /* do not support change type/contentType */
+
+            new->next = rec->next;
+            /* May be I can use hlist in list.h someday.
+             * things will be easier. */
+            if (rec == rec_hash[h_idx]) {
+                rec_hash[h_idx] = new;
+            } else {
+                if (prev) {
+                    prev->next = new;
+                } else {
+                    cfm_log_err(("%s: Why got here ? it not possible.\n", __FUNCTION__));
+                    pthread_mutex_unlock(&rec_hash_lock);
+                    return -1;
+                }
+            }
+
+            record_free(rec);
+            cfm_log_dbg(("[IMPORTED-O] %s %s\n", new->name, new->value ? new->value : ""));
+        }
+        break;
+    }
+    if (!rec) {
+        new->next = rec_hash[h_idx];
+        rec_hash[h_idx] = new;
+        cfm_log_dbg(("[IMPORTED-N] %s %s\n", new->name, new->value ? new->value : ""));
+    }
+
+    pthread_mutex_unlock(&rec_hash_lock);
+    return 0;
+}
+
+static int import_custom_params(int overwrite)
+{
+    struct psm_record   *rec;
+    PsmHalParam_t       *cus_params;
+    int                 cus_cnt;
+    int                 i, err = -1;
+
+    if (PsmHal_GetCustomParams(&cus_params, &cus_cnt) != 0)
+        return -1;
+
+    for (i = 0; i < cus_cnt; i++) {
+        if (!cus_params[i].name || !strlen(cus_params[i].name)) {
+            cfm_log_err(("%s: invalid custom param\n", __FUNCTION__));
+            continue;
+        }
+
+        rec = record_create(cus_params[i].name, "astr", NULL, cus_params[i].value);
+        if (rec == NULL) {
+            cfm_log_err(("%s: record_create fail\n", __FUNCTION__));
+            goto out;
+        }
+
+        if (insert_record(rec, overwrite) != 0) {
+            cfm_log_err(("%s: insert_record() fail\n", __FUNCTION__));
+            record_free(rec);
+            goto out;
+        }
+    }
+
+    err = 0;
+
+out:
+    if (cus_params)
+        free(cus_params);
+    return err;
+}
+
+static int merge_missing_param(const char *from, int overwrite)
+{
+    FILE *fp;
+    char line[4096];
+    struct psm_record *rec;
+
+    if ((fp = fopen(from, "rb")) == NULL) {
+        cfm_log_err(("%s: Fail to open config: %s\n", __FUNCTION__, from));
+        return -1;
+    }
+
+    while (fgets(line, sizeof(line), fp) != NULL) {
+        if ((rec = record_parse(line)) == NULL)
+            continue;
+
+        if (insert_record(rec, overwrite) != 0) {
+            cfm_log_err(("%s: insert_record() fail\n", __FUNCTION__));
+            record_free(rec);
+            fclose(fp);
+            return -1;
+        }
+    }
+
+    fclose(fp);
+    return 0;
+}
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ANSC_STATUS
+        ssp_CfmReadCurConfig
+            (
+                ANSC_HANDLE                 hThisObject,
+                void**                      ppCfgBuffer,
+                PULONG                      pulCfgSize
+            );
+
+    description:
+
+        This function is called to read the current Psm configuration
+        into the memory.
+
+    argument:   ANSC_HANDLE                 hThisObject
+                This handle is actually the pointer of this object
+                itself.
+
+                void**                      ppCfgBuffer
+                Specifies the configuration file content to be returned.
+
+                PULONG                      pulCfgSize
+                Specifies the size of the file content to be returned.
+
+    return:     status of operation.
+
+**********************************************************************/
+
+ANSC_STATUS
+ssp_CfmReadCurConfig
+    (
+        ANSC_HANDLE                 hThisObject,
+        void**                      ppCfgBuffer,
+        PULONG                      pulCfgSize
+    )
+{
+    PPSM_SYS_REGISTRY_OBJECT        pPsm = (PPSM_SYS_REGISTRY_OBJECT)hThisObject;
+    PPSM_SYS_REGISTRY_PROPERTY      pProp = (PPSM_SYS_REGISTRY_PROPERTY)&pPsm->Property;
+
+    char                            path[256];
+    int                             usg_bak = 0;
+
+    /*
+     * 1. try read cur config and a) import custom b) merge def config
+     * 2. try read bak config and a) import custom b) merge def config
+     * 3. read def config(leverage merging codes) and import custom.
+     *
+     * it's always not overwrite.
+     */
+
+    snprintf(path, sizeof(path), "%s%s", pProp->SysFilePath, pProp->CurFileName);
+again:
+    /* load config file to Hash for fast merging and import */
+    if (load_records(path) != 0) {
+        cfm_log_err(("%s: Fail to load config file: %s\n", __FUNCTION__, path));
+        if (!usg_bak) {
+            snprintf(path, sizeof(path), "%s%s", pProp->SysFilePath, pProp->BakFileName);
+            usg_bak = 1;
+            goto again;
+        }
+    }
+
+    /* import customer params without overwrite */
+    if (import_custom_params(0) != 0)
+        cfm_log_err(("%s: Fail to import custom params\n", __FUNCTION__));
+
+    /* merge missing param from default config */
+    snprintf(path, sizeof(path), "%s%s", pProp->SysFilePath, pProp->DefFileName);
+    if (merge_missing_param(path, 0) != 0) {
+        cfm_log_err(("%s: Fail to merge def config\n", __FUNCTION__));
+    }
+
+    /* flush merged records to buffer */
+    if (flush_records((char **)ppCfgBuffer, pulCfgSize) != 0) {
+        free_records();
+        return ANSC_STATUS_FAILURE;
+    }
+    
+    return ssp_CfmSaveCurConfig(hThisObject, *ppCfgBuffer, *pulCfgSize);
+}
+
+
+
+/**********************************************************************
+
+    caller:     owner of this object
+
+    prototype:
+
+        ANSC_STATUS
+        ssp_CfmReadDefConfig
+            (
+                ANSC_HANDLE                 hThisObject,
+                void**                      ppCfgBuffer,
+                PULONG                      pulCfgSize
+            );
+
+    description:
+
+        This function is called to read the default Psm configuration
+        into the memory.
+
+    argument:   ANSC_HANDLE                 hThisObject
+                This handle is actually the pointer of this object
+                itself.
+
+                void**                      ppCfgBuffer
+                Specifies the configuration file content to be returned.
+
+                PULONG                      pulCfgSize
+                Specifies the size of the file content to be returned.
+
+    return:     status of operation.
+
+**********************************************************************/
+
+ANSC_STATUS
+ssp_CfmReadDefConfig
+    (
+        ANSC_HANDLE                 hThisObject,
+        void**                      ppCfgBuffer,
+        PULONG                      pulCfgSize
+    )
+{
+    PPSM_SYS_REGISTRY_OBJECT        pPsm = (PPSM_SYS_REGISTRY_OBJECT)hThisObject;
+    PPSM_SYS_REGISTRY_PROPERTY      pProp = (PPSM_SYS_REGISTRY_PROPERTY)&pPsm->Property;
+
+    char                            path[256];
+
+    snprintf(path, sizeof(path), "%s%s", pProp->SysFilePath, pProp->DefFileName);
+    if (load_records(path) != 0) {
+        cfm_log_err(("%s: Fail to load config file: %s\n", __FUNCTION__, path));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    /* import customer params and overwrite if exist */
+    if (import_custom_params(1) != 0) {
+        cfm_log_err(("%s: Fail to import custom params\n", __FUNCTION__));
+        free_records();
+        return ANSC_STATUS_FAILURE;
+    }
+
+    /* flush merged records to buffer */
+    if (flush_records((char **)ppCfgBuffer, pulCfgSize) != 0) {
+        free_records();
+        return ANSC_STATUS_FAILURE;
+    }
+    
+    return ANSC_STATUS_SUCCESS;
+}
+
+/*-----------------------------------------------------------------------------*/
+
 #include "ansc_xml_dom_parser_interface.h"
 #include "ansc_xml_dom_parser_external_api.h"
 #include "ansc_xml_dom_parser_status.h"
@@ -543,508 +1153,6 @@ done:
     return root;
 }
 
-static ANSC_STATUS
-CfmMergeMissingConfigs(void **ppToBuffer, ULONG *pulToSize, const void *pFromBuffer, ULONG ulFromSize)
-{
-    PANSC_XML_DOM_NODE_OBJECT   toRoot = NULL;
-    PANSC_XML_DOM_NODE_OBJECT   toRec = NULL;
-    char                        toName[MAX_NAME_SZ];
-    ULONG                       toNsize;
-    char                        *newBuf = NULL;
-    ULONG                       newSize;
-    PANSC_XML_DOM_NODE_OBJECT   newRec = NULL;
-
-    PANSC_XML_DOM_NODE_OBJECT   fromRoot = NULL;
-    PANSC_XML_DOM_NODE_OBJECT   fromRec = NULL;
-    char                        fromName[MAX_NAME_SZ];
-    char                        fromValue[MAX_NAME_SZ];
-    ULONG                       fromNsize, fromVsize;
-    ANSC_STATUS                 ret = ANSC_STATUS_FAILURE;
-    int                         missing, changed = 0;
-
-    PsmHalDbg(("%s: Try to merge configs\n", __FUNCTION__));
-
-    if ((fromRoot = CfgBufferToXml(pFromBuffer, ulFromSize)) == NULL)
-        goto done;
-    if ((toRoot = CfgBufferToXml(*ppToBuffer, *pulToSize)) == NULL)
-        goto done;
-
-    /* for each <Record/> in from config */
-    for (fromRec = fromRoot->GetHeadChild(fromRoot);
-            fromRec != NULL; fromRec = fromRoot->GetNextChild(fromRoot, fromRec))
-    {
-        if (!AnscEqualString(fromRec->GetName(fromRec), ELEM_RECORD, TRUE))
-            continue;
-
-        AnscZeroMemory(fromName, sizeof(fromName));
-        fromNsize = sizeof(fromName) - 1;
-        AnscZeroMemory(fromValue, sizeof(fromValue));
-        fromVsize = sizeof(fromValue) - 1;
-        if (fromRec->GetAttrString(fromRec, ATTR_NAME, fromName, &fromNsize) != ANSC_STATUS_SUCCESS
-                || fromRec->GetDataString(fromRec, NULL, fromValue, &fromVsize) != ANSC_STATUS_SUCCESS)
-        {
-            PsmHalDbg(("%s: fail to get record's name/value", __FUNCTION__));
-            continue;
-        }
-
-        if (fromName[0] == '\0')
-            continue;
-
-        /* find the name in to config, if missing add it then */
-        missing = 1;
-        for (toRec = toRoot->GetHeadChild(toRoot);
-                toRec != NULL; toRec = toRoot->GetNextChild(toRoot, toRec))
-        {
-            if (!AnscEqualString(toRec->GetName(toRec), ELEM_RECORD, TRUE))
-                continue;
-
-            AnscZeroMemory(toName, sizeof(toName));
-            toNsize = sizeof(toName) - 1;
-            if (toRec->GetAttrString(toRec, ATTR_NAME, toName, &toNsize) != ANSC_STATUS_SUCCESS)
-            {
-                PsmHalDbg(("%s: fail to get record's name/value", __FUNCTION__));
-                continue;
-            }
-
-            if (AnscEqualString(fromName, toName, TRUE))
-            {
-                missing = 0;
-                break;
-            }
-        }
-
-        /* add it to "to" config */
-        if (missing)
-        {
-            PsmHalDbg(("%s: MISSING %s:%s\n", __FUNCTION__, fromName, fromValue));
-
-            if ((newRec = toRoot->AddChildByName(toRoot, ELEM_RECORD)) != NULL)
-            {
-                newRec->SetAttrString(newRec, ATTR_NAME, 
-                        fromName, AnscSizeOfString(fromName));
-                newRec->SetAttrString(newRec, ATTR_TYPE, 
-                        ATTRV_ASTR, AnscSizeOfString(ATTRV_ASTR));
-                newRec->SetDataString(newRec, NULL, 
-                        fromValue, AnscSizeOfString(fromValue));
-
-                PsmHalDbg(("%s: new record %s:%s\n", __FUNCTION__, fromName, fromValue));
-
-                changed = 1;
-            }
-        }
-        else
-        {
-            ;//PsmHalDbg(("%s: EXIST   %s:%s\n", __FUNCTION__, fromName, fromValue));
-        }
-    }
-
-    if (changed)
-    {
-        /* regenarate the config buffer according to new XML tree */
-        if ((*pulToSize = newSize = toRoot->GetEncodedSize(toRoot)) == 0
-                || (newBuf = AnscAllocateMemory(newSize + 16)) == NULL
-                || toRoot->Encode(toRoot, (PVOID)newBuf, &newSize) != ANSC_STATUS_SUCCESS)
-            goto done;
-
-        /* if regenarate sccuess free old buffer */
-        AnscFreeMemory(*ppToBuffer);
-        *ppToBuffer = newBuf;
-        //*pulToSize = newSize;
-
-        /*
-        PsmHalDbg(("%s: The config after merge: %lu bytes %d (strlen)\n%s\n", 
-                    __FUNCTION__, *pulToSize, strlen((char *)*ppToBuffer), (char *)*ppToBuffer));
-        */
-    }
-
-    /* everything is OK */
-    ret = ANSC_STATUS_SUCCESS;
-
-done:
-    if (ret != ANSC_STATUS_SUCCESS && newBuf)
-        AnscFreeMemory(newBuf);
-    if (toRoot)
-        toRoot->Remove(toRoot);
-    if (fromRoot)
-        fromRoot->Remove(fromRoot);
-
-    return ret;
-}
-
-/**
- * @ppCfgBuffer and @ulCfgSize are [in-out] arguments
- */
-static ANSC_STATUS
-CfmImportCustomConfig(void **ppCfgBuffer, ULONG *pulCfgSize, BOOL overwrite)
-{
-    PANSC_XML_DOM_NODE_OBJECT   rootNode = NULL;
-    PANSC_XML_DOM_NODE_OBJECT   recNode = NULL;
-    PsmHalParam_t               *cusParams;
-    int                         cusCnt, i, changed = 0;
-    ANSC_STATUS                 ret = ANSC_STATUS_FAILURE;
-    char                        name[MAX_NAME_SZ];
-    char                        value[MAX_NAME_SZ];
-    ULONG                       nsize, vsize;
-    char                        *newBuf = NULL;
-    ULONG                       newSize;
-
-    if (PsmHal_GetCustomParams(&cusParams, &cusCnt) != 0 || cusCnt == 0)
-    {
-        PsmHalDbg(("%s: no custom config need import\n", __FUNCTION__));
-        return ANSC_STATUS_SUCCESS; /* nothing to do */
-    }
-
-    PsmHalDbg(("%s: Try to import custom config\n", __FUNCTION__));
-
-    /* I prefer not to use XML tree, but manipulater XML string is more complicated */
-    if ((rootNode = CfgBufferToXml(*ppCfgBuffer, *pulCfgSize)) == NULL)
-        goto done;
-
-    if (!AnscEqualString(rootNode->GetName(rootNode), ELEM_PROVISION, TRUE))
-        goto done;
-
-    /* for each <Record/> */
-    for (recNode = rootNode->GetHeadChild(rootNode);
-            recNode != NULL; recNode = rootNode->GetNextChild(rootNode, recNode))
-    {
-        if (!AnscEqualString(rootNode->GetName(recNode), ELEM_RECORD, TRUE))
-            continue;
-
-        AnscZeroMemory(name, sizeof(name));
-        AnscZeroMemory(value, sizeof(value));
-        nsize = sizeof(name) - 1;
-        vsize = sizeof(value) - 1;
-        if (recNode->GetAttrString(recNode, ATTR_NAME, name, &nsize) != ANSC_STATUS_SUCCESS
-                || recNode->GetDataString(recNode, NULL, value, &vsize) != ANSC_STATUS_SUCCESS)
-        {
-            PsmHalDbg(("%s: fail to get record's name/value", __FUNCTION__));
-            continue;
-        }
-
-        for (i = 0; i < cusCnt; i++)
-        {
-            if (cusParams[i].name[0] == '\0'
-                    || !AnscEqualString(name, cusParams[i].name, TRUE))
-                continue;
-
-            cusParams[i].name[0] = '\0'; /* clear it for later reference */
-            if (vsize == 0 || !AnscEqualString(value, cusParams[i].value, TRUE))
-            {
-                PsmHalDbg(("%s: new  value for %s %s, overwrite %d\n", __FUNCTION__, name, value, overwrite));
-                if (overwrite)
-                {
-                    recNode->SetDataString(recNode, NULL, 
-                            cusParams[i].value, AnscSizeOfString(cusParams[i].value));
-                    changed = 1;
-                }
-            }
-            else
-            {
-                PsmHalDbg(("%s: same value for %s\n", __FUNCTION__, name));
-            }
-        }
-    }
-
-    /* for these missing params in current config (but exist in custom param) */
-    for (i = 0; i < cusCnt; i++)
-    {
-        if (cusParams[i].name[0] == '\0')
-            continue;
-
-        recNode = rootNode->AddChildByName(rootNode, ELEM_RECORD);
-        if (!recNode)
-        {
-            PsmHalDbg(("%s: fail to add new record", __FUNCTION__));
-            continue;
-        }
-
-        recNode->SetAttrString(recNode, ATTR_NAME, 
-                cusParams[i].name, AnscSizeOfString(cusParams[i].name));
-        recNode->SetAttrString(recNode, ATTR_TYPE, 
-                ATTRV_ASTR, AnscSizeOfString(ATTRV_ASTR));
-        recNode->SetDataString(recNode, NULL, 
-                cusParams[i].value, AnscSizeOfString(cusParams[i].value));
-        
-        PsmHalDbg(("%s: new record %s:%s\n", __FUNCTION__, cusParams[i].name, cusParams[i].value));
-
-        changed = 1;
-    }
-
-    if (changed)
-    {
-        /* regenarate the config buffer according to new XML tree */
-        if ((*pulCfgSize = newSize = rootNode->GetEncodedSize(rootNode)) == 0
-                || (newBuf = AnscAllocateMemory(newSize + 16)) == NULL
-                || rootNode->Encode(rootNode, (PVOID)newBuf, &newSize) != ANSC_STATUS_SUCCESS)
-            goto done;
-
-        /* if regenarate sccuess free old buffer */
-        AnscFreeMemory(*ppCfgBuffer);
-        *ppCfgBuffer = newBuf;
-        //*pulCfgSize = newSize;
-
-        /*
-        PsmHalDbg(("%s: The config after import: %lu bytes %d (strlen)\n%s\n", 
-                    __FUNCTION__, *pulCfgSize, strlen((char *)*ppCfgBuffer), (char *)*ppCfgBuffer));
-        */
-    }
-
-    /* everything is OK */
-    ret = ANSC_STATUS_SUCCESS;
-
-done:
-    if (ret != ANSC_STATUS_SUCCESS && newBuf)
-        AnscFreeMemory(newBuf);
-    if (rootNode)
-        rootNode->Remove(rootNode);
-    if (cusParams)
-        free(cusParams); /* use free() instead of AnscFreeMemory() */
-
-    return ret;
-}
-
-/* read config file from path then import custum parameters into it */
-static ANSC_STATUS
-CfmReadConfigFile(const char *path, void **ppCfgBuffer, PULONG pulCfgSize, 
-        BOOL overwrite, PFN_PSMFLO_TEST pfVerify)
-{
-    ANSC_HANDLE pFile = NULL;
-    PPSM_FILE_LOADER_OBJECT pFlo = NULL;
-
-    *ppCfgBuffer = NULL;
-    *pulCfgSize = 0;
-
-    PsmHalDbg(("%s: start read file %s\n", __FUNCTION__, path));
-
-    if ((pFile = AnscOpenFile((char *)path, ANSC_FILE_MODE_READ, ANSC_FILE_TYPE_RDWR)) == NULL)
-        return ANSC_STATUS_FAILURE;
-
-    if ((*pulCfgSize = AnscGetFileSize(pFile)) < 0)
-        goto errout;
-
-    if ((*ppCfgBuffer = AnscAllocateMemory(*pulCfgSize)) == NULL)
-        goto errout;
-
-    if (AnscReadFile(pFile, *ppCfgBuffer, pulCfgSize) != ANSC_STATUS_SUCCESS)
-        goto errout;
-
-    if (CfmImportCustomConfig(ppCfgBuffer, pulCfgSize, overwrite) != ANSC_STATUS_SUCCESS)
-    {
-        PsmHalDbg(("%s: fail to import custum config\n", __FUNCTION__));
-        goto errout;
-    }
-
-    PsmHalDbg(("%s: start verification\n", __FUNCTION__));
-
-    if (pfVerify && (pFlo = ACCESS_CONTAINER(pfVerify, PSM_FILE_LOADER_OBJECT, TestRegFile))
-            && pfVerify(pFlo, *ppCfgBuffer, *pulCfgSize) != PSM_FLO_ERROR_CODE_noError)
-        goto errout;
-
-    AnscCloseFile(pFile);
-
-    PsmHalDbg(("%s: read %s succeed\n", __FUNCTION__, path));
-    return ANSC_STATUS_SUCCESS;
-
-errout:
-    if (pFile)
-        AnscCloseFile(pFile);
-    if (*ppCfgBuffer)
-        AnscFreeMemory(*ppCfgBuffer);
-
-    return ANSC_STATUS_FAILURE;
-}
-
-/**********************************************************************
-
-    caller:     owner of this object
-
-    prototype:
-
-        ANSC_STATUS
-        ssp_CfmReadCurConfig
-            (
-                ANSC_HANDLE                 hThisObject,
-                void**                      ppCfgBuffer,
-                PULONG                      pulCfgSize
-            );
-
-    description:
-
-        This function is called to read the current Psm configuration
-        into the memory.
-
-    argument:   ANSC_HANDLE                 hThisObject
-                This handle is actually the pointer of this object
-                itself.
-
-                void**                      ppCfgBuffer
-                Specifies the configuration file content to be returned.
-
-                PULONG                      pulCfgSize
-                Specifies the size of the file content to be returned.
-
-    return:     status of operation.
-
-**********************************************************************/
-
-ANSC_STATUS
-ssp_CfmReadCurConfig
-    (
-        ANSC_HANDLE                 hThisObject,
-        void**                      ppCfgBuffer,
-        PULONG                      pulCfgSize
-    )
-{
-    PPSM_SYS_REGISTRY_OBJECT        pPsm = (PPSM_SYS_REGISTRY_OBJECT)hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY      pProp = (PPSM_SYS_REGISTRY_PROPERTY)&pPsm->Property;
-    PPSM_FILE_LOADER_OBJECT         pFlo = (PPSM_FILE_LOADER_OBJECT)pPsm->hPsmFileLoader;
-    PFN_PSMFLO_TEST                 pfTest = (PFN_PSMFLO_TEST)pFlo->TestRegFile;
-    char                            curPath[256];
-    char                            bakPath[256];
-    char                            defPath[256];
-    ANSC_HANDLE                     pBakFile = NULL;
-    void                            *pDefBuf;
-    ULONG                           ulDefSize;
-
-    *ppCfgBuffer = NULL;
-    *pulCfgSize = 0;
-
-    snprintf(curPath, sizeof(curPath), "%s%s", pProp->SysFilePath, pProp->CurFileName);
-    snprintf(bakPath, sizeof(bakPath), "%s%s", pProp->SysFilePath, pProp->BakFileName);
-    snprintf(defPath, sizeof(defPath), "%s%s", pProp->SysFilePath, pProp->DefFileName);
-
-    /**
-     * process Current Config File first
-     */
-    PsmHalDbg(("%s: Try to read current config\n", __FUNCTION__));
-
-    if (CfmReadConfigFile(curPath, ppCfgBuffer, pulCfgSize, FALSE, pfTest) == ANSC_STATUS_SUCCESS)
-    {
-        /* merge missing config from default config to current config */ 
-        if (CfmReadConfigFile(defPath, &pDefBuf, &ulDefSize, FALSE, pfTest) == ANSC_STATUS_SUCCESS)
-        {
-            if (CfmMergeMissingConfigs(ppCfgBuffer, pulCfgSize, pDefBuf, ulDefSize) == ANSC_STATUS_SUCCESS)
-            {
-                AnscFreeMemory(pDefBuf);
-                PsmHalDbg(("%s: success\n", __FUNCTION__));
-                return ANSC_STATUS_SUCCESS;
-            }
-
-            AnscFreeMemory(pDefBuf);
-        }
-
-        AnscFreeMemory(*ppCfgBuffer);
-        *ppCfgBuffer = NULL;
-    }
-
-    /**
-     * some problem happened for corruent config
-     * use backup file if exist
-     */
-    PsmHalDbg(("%s: Try to read backup config\n", __FUNCTION__));
-
-    if ((pBakFile = AnscOpenFile(bakPath, ANSC_FILE_TYPE_RDWR, ANSC_FILE_TYPE_RDWR)) != NULL)
-    {
-        AnscCloseFile(pBakFile);
-        if (AnscCopyFile(bakPath, curPath, TRUE) == ANSC_STATUS_SUCCESS)
-        {
-            if (CfmReadConfigFile(curPath, ppCfgBuffer, pulCfgSize, FALSE, pfTest) == ANSC_STATUS_SUCCESS)
-            {
-                /* merge missing config from default config to current config */ 
-                if (CfmReadConfigFile(defPath, &pDefBuf, &ulDefSize, FALSE, pfTest) == ANSC_STATUS_SUCCESS)
-                {
-                    if (CfmMergeMissingConfigs(ppCfgBuffer, pulCfgSize, pDefBuf, ulDefSize) == ANSC_STATUS_SUCCESS)
-                    {
-                        AnscFreeMemory(pDefBuf);
-                        PsmHalDbg(("%s: success\n", __FUNCTION__));
-                        return ANSC_STATUS_SUCCESS;
-                    }
-
-                    AnscFreeMemory(pDefBuf);
-                }
-
-                AnscFreeMemory(*ppCfgBuffer);
-                *ppCfgBuffer = NULL;
-            }
-        }
-    }
-
-    /**
-     * now we could only use default config file 
-     */
-    PsmHalDbg(("%s: Try to read default config\n", __FUNCTION__));
-
-    /* we use "overwrite" mode here, to use devcie specific config anyway */
-    if (CfmReadConfigFile(defPath, ppCfgBuffer, pulCfgSize, TRUE, pfTest) == ANSC_STATUS_SUCCESS)
-    {
-        AnscCopyFile(defPath, curPath, TRUE);
-        PsmHalDbg(("%s: success\n", __FUNCTION__));
-        return ANSC_STATUS_SUCCESS;
-    }
-
-    PsmHalDbg(("%s: Fail to read config file (all attempt failed)\n", __FUNCTION__));
-
-    /* all attempt failed */
-    return ANSC_STATUS_FAILURE;
-}
-
-/**********************************************************************
-
-    caller:     owner of this object
-
-    prototype:
-
-        ANSC_STATUS
-        ssp_CfmReadDefConfig
-            (
-                ANSC_HANDLE                 hThisObject,
-                void**                      ppCfgBuffer,
-                PULONG                      pulCfgSize
-            );
-
-    description:
-
-        This function is called to read the default Psm configuration
-        into the memory.
-
-    argument:   ANSC_HANDLE                 hThisObject
-                This handle is actually the pointer of this object
-                itself.
-
-                void**                      ppCfgBuffer
-                Specifies the configuration file content to be returned.
-
-                PULONG                      pulCfgSize
-                Specifies the size of the file content to be returned.
-
-    return:     status of operation.
-
-**********************************************************************/
-
-ANSC_STATUS
-ssp_CfmReadDefConfig
-    (
-        ANSC_HANDLE                 hThisObject,
-        void**                      ppCfgBuffer,
-        PULONG                      pulCfgSize
-    )
-{
-    PPSM_SYS_REGISTRY_OBJECT        pPsm = (PPSM_SYS_REGISTRY_OBJECT)hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY      pProp = (PPSM_SYS_REGISTRY_PROPERTY)&pPsm->Property;
-    PPSM_FILE_LOADER_OBJECT         pFlo = (PPSM_FILE_LOADER_OBJECT)pPsm->hPsmFileLoader;
-    PFN_PSMFLO_TEST                 pfTest = (PFN_PSMFLO_TEST)pFlo->TestRegFile;
-    char                            defPath[256];
-
-    PsmHalDbg(("%s: called\n", __FUNCTION__));
-
-    snprintf(defPath, sizeof(defPath), "%s%s", pProp->SysFilePath, pProp->DefFileName);
-    if (CfmReadConfigFile(defPath, ppCfgBuffer, pulCfgSize, TRUE, pfTest) != ANSC_STATUS_SUCCESS)
-        return ANSC_STATUS_FAILURE;
-
-    return ANSC_STATUS_SUCCESS;
-}
-
-
 /**********************************************************************
 
     caller:     owner of this object
@@ -1100,7 +1208,7 @@ ssp_CfmSaveCurConfig
     if (AnscCopyFile(curPath, bakPath, TRUE) != ANSC_STATUS_SUCCESS)
         PsmHalDbg(("%s: fail to backup current config\n", __FUNCTION__));
 
-    if ((pFile = AnscOpenFile(curPath, ANSC_FILE_MODE_WRITE | ANSC_FILE_MODE_TRUNC,
+    if ((pFile = AnscOpenFile(curPath, ANSC_FILE_MODE_CREATE | ANSC_FILE_MODE_WRITE | ANSC_FILE_MODE_TRUNC,
             ANSC_FILE_TYPE_RDWR)) == NULL)
     {
         PsmHalDbg(("%s: fail open current config\n", __FUNCTION__));

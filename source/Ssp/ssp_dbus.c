@@ -817,7 +817,7 @@ int  setParameterValues(
                  || (strcmp(val[i].parameterValue, "true") == 0)
                  || (strcmp(val[i].parameterValue, "TRUE") == 0) ) 
             {
-                pSysIraIf->ClearFolder(pSysIraIf->hOwnerContext, hSysRoot);
+                // pSysIraIf->ClearFolder(pSysIraIf->hOwnerContext, hSysRoot);
                 pPsmSysRegistry->SaveConfigToFlash(pPsmSysRegistry);
                 pPsmSysRegistry->bNoSave = FALSE;
                 pRegTimerObj->Start((ANSC_HANDLE)pRegTimerObj);
@@ -1241,7 +1241,6 @@ int PsmDbusInit()
     }
 
     CCSP_Message_Bus_Init(CName, CCSP_MSG_BUS_CFG, &bus_handle, Ansc_AllocateMemory_Callback, Ansc_FreeMemory_Callback);
-    CCSP_Msg_SleepInMilliSeconds(1000);
     g_psmHealth = CCSP_COMMON_COMPONENT_HEALTH_Yellow;
     /* Wait for CR ready */
     waitConditionReady(bus_handle, CrName, CCSP_DBUS_PATH_CR, CName);

@@ -54,8 +54,18 @@ static void _print_stack_backtrace(void)
 	char** funcNames = NULL;
 	int i, count = 0;
 
+        int fd;
+        const char* path = "/nvram/psmssp_backtrace";
+        fd = open(path, O_RDWR | O_CREAT, 0777);
+        if (fd < 0)
+        {
+            fprintf(stderr, "failed to open backtrace file: %s", path);
+            return;
+        }
+ 
 	count = backtrace( tracePtrs, 100 );
-	backtrace_symbols_fd( tracePtrs, count, 2 );
+	backtrace_symbols_fd( tracePtrs, count, fd );
+        close(fd);
 
 	funcNames = backtrace_symbols( tracePtrs, count );
 
@@ -266,20 +276,20 @@ int main(int argc, char* argv[])
     else
     {
         CcspTraceWarning(("Core dump is NOT opened, backtrace if possible\n"));
-    signal(SIGTERM, sig_handler);
-    signal(SIGINT, sig_handler);
-    /*signal(SIGCHLD, sig_handler);*/
-    signal(SIGUSR1, sig_handler);
-    signal(SIGUSR2, sig_handler);
+        signal(SIGTERM, sig_handler);
+        signal(SIGINT, sig_handler);
+        /*signal(SIGCHLD, sig_handler);*/
+        signal(SIGUSR1, sig_handler);
+        signal(SIGUSR2, sig_handler);
 
-    signal(SIGSEGV, sig_handler);
-    signal(SIGBUS, sig_handler);
-    signal(SIGKILL, sig_handler);
-    signal(SIGFPE, sig_handler);
-    signal(SIGILL, sig_handler);
-    signal(SIGQUIT, sig_handler);
-    signal(SIGHUP, sig_handler);
-    signal(SIGPIPE, sig_handler);
+        signal(SIGSEGV, sig_handler);
+        signal(SIGBUS, sig_handler);
+        signal(SIGKILL, sig_handler);
+        signal(SIGFPE, sig_handler);
+        signal(SIGILL, sig_handler);
+        signal(SIGQUIT, sig_handler);
+        signal(SIGHUP, sig_handler);
+        signal(SIGPIPE, sig_handler);
     }
 
     gather_info();
@@ -345,7 +355,7 @@ int  cmd_dispatch(int  command)
                             
                         pPsmSysRegistry->SetProperty((ANSC_HANDLE)pPsmSysRegistry, (ANSC_HANDLE)&psmSysroProperty);
 
-                    #ifdef USE_PLATFORM_SPECIFIC_HAL
+#ifdef USE_PLATFORM_SPECIFIC_HAL
                         cfm_ifo.InterfaceId   = PSM_CFM_INTERFACE_ID;
                         cfm_ifo.hOwnerContext = (ANSC_HANDLE)pPsmSysRegistry;
                         cfm_ifo.Size          = sizeof(PSM_CFM_INTERFACE);
@@ -361,7 +371,7 @@ int  cmd_dispatch(int  command)
                         }
 
                         pPsmSysRegistry->hPsmCfmIf = (ANSC_HANDLE)&cfm_ifo;
-                    #endif
+#endif
 
                         pPsmSysRegistry->Engage     ((ANSC_HANDLE)pPsmSysRegistry);
 
@@ -392,12 +402,12 @@ int  cmd_dispatch(int  command)
 
                     if ( pPsmSysRegistry )
                     {
-                    #ifdef USE_PLATFORM_SPECIFIC_HAL
+#ifdef USE_PLATFORM_SPECIFIC_HAL
                         if ( pPsmSysRegistry->hPsmCfmIf )
                         {
                             pPsmSysRegistry->hPsmCfmIf = (ANSC_HANDLE)NULL;
                         }
-                    #endif
+#endif
                         pPsmSysRegistry->Cancel((ANSC_HANDLE)pPsmSysRegistry);
                         pPsmSysRegistry->Remove((ANSC_HANDLE)pPsmSysRegistry);
                     }
