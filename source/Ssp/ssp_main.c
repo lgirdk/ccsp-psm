@@ -252,7 +252,6 @@ int main(int argc, char* argv[])
     if ( bRunAsDaemon )
     	daemonize();
 
-#ifndef _COSA_INTEL_USG_ATOM_
     /*This is used for ccsp recovery manager */
     fprintf(stderr, "%s -- %d", __FUNCTION__, __LINE__);
 
@@ -262,11 +261,12 @@ int main(int argc, char* argv[])
         AnscTrace("Create /var/tmp/PsmSsp.pid error. \n");
         return 1;
     }
-    sprintf(cmd, "%d", getpid());
-    fputs(cmd, fd);
-    fclose(fd);
-    fprintf(stderr, "%s -- create file finished.\n", __FUNCTION__);
-#endif
+    else
+    {
+        sprintf(cmd, "%d", getpid());
+        fputs(cmd, fd);
+        fclose(fd);
+    }
 
     if (is_core_dump_opened())
     {
