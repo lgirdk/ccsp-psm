@@ -718,12 +718,44 @@
   <Record name="dmsb.hotspot.gre.1.KeepAlive.Interval" type="astr">60</Record>
   <Record name="dmsb.hotspot.gre.1.KeepAlive.Threshold" type="astr">3</Record>
   <Record name="dmsb.hotspot.gre.1.KeepAlive.Count" type="astr">3</Record>
-  <Record name="dmsb.hotspot.gre.1.KeepAlive.FailInterval" type="astr">2000</Record>
+  <Record name="dmsb.hotspot.gre.1.KeepAlive.FailInterval" type="astr">300</Record>
   <Record name="dmsb.hotspot.gre.1.DHCP.CircuitIDSSID" type="astr">1</Record>
   <Record name="dmsb.hotspot.gre.1.DHCP.RemoteID" type="astr">1</Record>
   <Record name="dmsb.hotspot.gre.1.AssociatedBridges" type="astr">Device.Bridging.Bridge.3.,Device.Bridging.Bridge.4.</Record>
   <Record name="dmsb.hotspot.gre.1.AssociatedBridgesWiFiPort" type="astr">Device.Bridging.Bridge.3.Port.2.,Device.Bridging.Bridge.4.Port.2.</Record>
   <Record name="dmsb.hotspot.gre.1.GRENetworkInterface" type="astr">Device.X_CISCO_COM_GRE.Interface.1.</Record>
+  
+  <Record name="dmsb.comcast.version" type="astr">2.0</Record>
+  <Record name="dmsb.hotspot.tunnel.1.Enable" type="astr">0</Record>
+  <Record name="dmsb.hotspot.tunnel.1.PrimaryRemoteEndpoint" type="astr">0.0.0.0</Record>
+  <Record name="dmsb.hotspot.tunnel.1.SecondaryRemoteEndpoint" type="astr">0.0.0.0</Record>
+  <Record name="dmsb.hotspot.tunnel.1.KeyIDGenPolicy" type="astr">1</Record>
+  <Record name="dmsb.hotspot.tunnel.1.KeyID" type="astr">12</Record>
+  <Record name="dmsb.hotspot.tunnel.1.UseSeqNum" type="astr"></Record>
+  <Record name="dmsb.hotspot.tunnel.1.UseCheckSum" type="astr"></Record>
+  <Record name="dmsb.hotspot.tunnel.1.DSCPMarkPolicy" type="astr">44</Record>
+  <Record name="dmsb.hotspot.tunnel.1.ReconnectToPrimaryRemoteEndpoint" type="astr">43200</Record>
+  <Record name="dmsb.hotspot.tunnel.1.KeepAlivePolicy" type="astr">1</Record>
+  <Record name="dmsb.hotspot.tunnel.1.RemoteEndpointHealthCheckPingInterval" type="astr">60</Record>
+  <Record name="dmsb.hotspot.tunnel.1.RemoteEndpointHealthCheckPingFailThreshold" type="astr">3</Record>
+  <Record name="dmsb.hotspot.tunnel.1.RemoteEndpointHealthCheckPingCount" type="astr">3</Record>
+  <Record name="dmsb.hotspot.tunnel.1.RemoteEndpointHealthCheckPingIntervalInFailure" type="astr">300</Record>
+  <Record name="dmsb.hotspot.tunnel.1.EnableCircuitID" type="astr">1</Record>
+  <Record name="dmsb.hotspot.tunnel.1.EnableRemoteID" type="astr">1</Record>
+  <Record name="dmsb.hotspot.tunnel.1.GRENetworkTunnel" type="astr">Device.X_CISCO_COM_GRE.Interface.1.</Record>
+  
+  <Record name="dmsb.hotspot.tunnel.1.interface.1.Enable" type="astr">0</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.1.LocalInterfaces" type="astr">Device.WiFi.SSID.5.</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.1.VLANID" type="astr">102</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.1.AssociatedBridges" type="astr">Device.Bridging.Bridge.3.</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.1.AssociatedBridgesWiFiPort" type="astr">Device.Bridging.Bridge.3.Port.2.</Record>
+
+  <Record name="dmsb.hotspot.tunnel.1.interface.2.Enable" type="astr">0</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.2.LocalInterfaces" type="astr">Device.WiFi.SSID.6.</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.2.VLANID" type="astr">103</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.2.AssociatedBridges" type="astr">Device.Bridging.Bridge.4.</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.2.AssociatedBridgesWiFiPort" type="astr">Device.Bridging.Bridge.4.Port.2.</Record>
+
 
   <Record name="dmsb.cisco.gre.1.enable" type="astr">0</Record>
   <Record name="dmsb.cisco.gre.1.alias" type="astr">cpe-cgreif-1</Record>
@@ -744,6 +776,19 @@
   <Record name="dmsb.device.deviceinfo.ManufacturerOUI" type="astr">088039</Record>
 
   <Record name="dmsb.ManagementServer.ACSChangedURL" type="astr">0</Record>
+  <Record name="dmsb.ManagementServer.PeriodicInformEnable" type="astr">1</Record>
+  <Record name="dmsb.ManagementServer.PeriodicInformInterval" type="astr">150</Record>
+  <Record name="dmsb.ManagementServer.DefaultActiveNotificationThrottle" type="astr">30</Record>
+  <Record name="dmsb.ManagementServer.CWMPRetryMinimumWaitInterval" type="astr">5</Record>
+  <Record name="dmsb.ManagementServer.CWMPRetryIntervalMultiplier" type="astr">2000</Record>
+  
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.1.Stats.X_COMCAST-COM_RadioStatisticsMeasuringRate" type="astr" contentType="uint">30</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.2.Stats.X_COMCAST-COM_RadioStatisticsMeasuringRate" type="astr" contentType="uint">30</Record>
+  
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.1.Stats.X_COMCAST-COM_RadioStatisticsMeasuringInterval" type="astr" contentType="uint">30</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.2.Stats.X_COMCAST-COM_RadioStatisticsMeasuringInterval" type="astr" contentType="uint">30</Record>
+
+  <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.NotifyWiFiChanges" type="astr">true</Record>
 
 </Provision>
 

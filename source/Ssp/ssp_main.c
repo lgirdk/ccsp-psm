@@ -245,7 +245,10 @@ int main(int argc, char* argv[])
     char                            cmd[64]            = {0};
 
     pComponentName = CCSP_DBUS_PSM;
-    
+    #ifdef FEATURE_SUPPORT_RDKLOG
+	rdk_logger_init("/fss/gw/lib/debug.ini");
+	#endif
+
 #if defined(_DEBUG) || defined(_COSA_SIM_)
     AnscSetTraceLevel(CCSP_TRACE_LEVEL_INFO);
 #endif
@@ -414,11 +417,11 @@ int  cmd_dispatch(int  command)
 
                         bEngaged = TRUE;
 
-                        CcspTraceInfo(("PSM started ...\n"));
+                        CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PSM started ...\n"));
                     }
                     else
                     {
-                        CcspTraceError(("Create PSM Failed ...\n"));
+                        CcspTraceError(("RDKB_SYSTEM_BOOT_UP_LOG : Create PSM Failed ...\n"));
                     }
                 }
 
@@ -428,7 +431,7 @@ int  cmd_dispatch(int  command)
 
                 if ( bEngaged )
                 {
-                    CcspTraceInfo(("PSM is being unloaded ...\n"));
+                    CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PSM is being unloaded ...\n"));
 
                     if ( bus_handle != NULL )
                     {

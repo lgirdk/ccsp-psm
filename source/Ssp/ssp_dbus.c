@@ -1009,7 +1009,7 @@ int getParameterNames(
 
     if ( !parameterName )
     {
-        CcspTraceError(("Input parameter invalid for getParameterNames!\n"));
+        CcspTraceError(("RDKB_SYSTEM_BOOT_UP_LOG : PSM Input parameter invalid for getParameterNames!\n"));
         return CCSP_FAILURE;
     }
 
@@ -1247,7 +1247,7 @@ int PsmDbusInit()
     int         ret ;
     char        CName[256];
     char        CrName[256];
-
+    CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PsmDBusInit Entry\n"));
     if ( g_Subsystem[0] != 0 )
     {
         _ansc_sprintf(CName, "%s%s", g_Subsystem, CCSP_DBUS_PSM);
@@ -1310,12 +1310,12 @@ int PsmDbusInit()
 
         if ( CCSP_SUCCESS != ret )
         {
-            CcspTraceWarning(("PsmSsp register capabilities failed with code %d! Waiting for retry...\n", ret));
+            CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PsmSsp register capabilities failed with code %d! Waiting for retry...\n", ret));
             AnscSleep(uWait * 1000);
         }
         else
         {
-            CcspTraceWarning(("PsmSsp register capabilities successful with ret=%d.\n", ret));
+            CcspTraceWarning((" RDKB_SYSTEM_BOOT_UP_LOG : PsmSsp register capabilities successful with ret=%d.\n", ret));
             break;
         }
     } while ( TRUE );
@@ -1328,7 +1328,7 @@ int PsmDbusInit()
 
     pDslhCpeController->SetDbusHandle((ANSC_HANDLE)pDslhCpeController, (ANSC_HANDLE)bus_handle);
     pDslhCpeController->Engage((ANSC_HANDLE)pDslhCpeController);
-
+    CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PSM Health set to Green\n"));
     g_psmHealth = CCSP_COMMON_COMPONENT_HEALTH_Green;
 
     return 0;
