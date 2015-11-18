@@ -53,6 +53,8 @@
 #include "ssp_global.h"
 
 
+#define DEBUG_INI_NAME "/etc/debug.ini"
+
 BOOL                                bEngaged          = FALSE;
 PPSM_SYS_REGISTRY_OBJECT            pPsmSysRegistry   = (PPSM_SYS_REGISTRY_OBJECT)NULL;
 void                               *bus_handle        = NULL;
@@ -246,7 +248,7 @@ int main(int argc, char* argv[])
 
     pComponentName = CCSP_DBUS_PSM;
     #ifdef FEATURE_SUPPORT_RDKLOG
-	rdk_logger_init("/fss/gw/lib/debug.ini");
+	rdk_logger_init(DEBUG_INI_NAME);
 	#endif
 
 #if defined(_DEBUG) || defined(_COSA_SIM_)
