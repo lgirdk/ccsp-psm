@@ -406,7 +406,7 @@
   <Record name="dmsb.l2net.3.Members.Moca" type="astr"> </Record>
   <Record name="dmsb.l2net.3.Members.WiFi" type="astr">ath4</Record>
   <Record name="dmsb.l2net.3.Members.Link" type="astr">l2sd0-t</Record>
-  <Record name="dmsb.l2net.3.Members.Gre" type="astr">gretap1-t</Record>
+  <Record name="dmsb.l2net.3.Members.Gre" type="astr">gretap_0-t</Record>
   
   <Record name="dmsb.l2net.3.Vlan.1.Alias" type="astr">CPE-VLAN1</Record>
   <Record name="dmsb.l2net.3.Vlan.1.InstanceNum" type="astr">1</Record>
@@ -442,8 +442,8 @@
   <Record name="dmsb.l2net.3.Port.3.PriorityTag" type="astr">FALSE</Record>
   <Record name="dmsb.l2net.3.Port.3.Enable" type="astr">TRUE</Record>
   <Record name="dmsb.l2net.3.Port.3.Alias" type="astr">Port3</Record>
-  <Record name="dmsb.l2net.3.Port.3.Name" type="astr">gretap1</Record>
-  <Record name="dmsb.l2net.3.Port.3.LinkName" type="astr">gretap1</Record>
+  <Record name="dmsb.l2net.3.Port.3.Name" type="astr">gretap_0</Record>
+  <Record name="dmsb.l2net.3.Port.3.LinkName" type="astr">gretap_0</Record>
   <Record name="dmsb.l2net.3.Port.3.LinkType" type="astr">Gre</Record>
   <Record name="dmsb.l2net.3.Port.3.Management" type="astr">FALSE</Record>
   <Record name="dmsb.l2net.3.Port.3.Mode" type="astr">PassThrough</Record>
@@ -464,7 +464,7 @@
   <Record name="dmsb.l2net.4.Members.Moca" type="astr"> </Record>
   <Record name="dmsb.l2net.4.Members.WiFi" type="astr">ath5</Record>
   <Record name="dmsb.l2net.4.Members.Link" type="astr">l2sd0-t</Record>
-  <Record name="dmsb.l2net.4.Members.Gre" type="astr">gretap1-t</Record>
+  <Record name="dmsb.l2net.4.Members.Gre" type="astr">gretap_0-t</Record>
   
   <Record name="dmsb.l2net.4.Vlan.1.Alias" type="astr">CPE-VLAN1</Record>
   <Record name="dmsb.l2net.4.Vlan.1.InstanceNum" type="astr">1</Record>
@@ -500,8 +500,8 @@
   <Record name="dmsb.l2net.4.Port.3.PriorityTag" type="astr">FALSE</Record>
   <Record name="dmsb.l2net.4.Port.3.Enable" type="astr">TRUE</Record>
   <Record name="dmsb.l2net.4.Port.3.Alias" type="astr">Port3</Record>
-  <Record name="dmsb.l2net.4.Port.3.Name" type="astr">gretap1</Record>
-  <Record name="dmsb.l2net.4.Port.3.LinkName" type="astr">gretap1</Record>
+  <Record name="dmsb.l2net.4.Port.3.Name" type="astr">gretap_0</Record>
+  <Record name="dmsb.l2net.4.Port.3.LinkName" type="astr">gretap_0</Record>
   <Record name="dmsb.l2net.4.Port.3.LinkType" type="astr">Gre</Record>
   <Record name="dmsb.l2net.4.Port.3.Management" type="astr">FALSE</Record>
   <Record name="dmsb.l2net.4.Port.3.Mode" type="astr">PassThrough</Record>
@@ -759,7 +759,7 @@
 
   <Record name="dmsb.cisco.gre.1.enable" type="astr">0</Record>
   <Record name="dmsb.cisco.gre.1.alias" type="astr">cpe-cgreif-1</Record>
-  <Record name="dmsb.cisco.gre.1.name" type="astr">gretap1</Record>
+  <Record name="dmsb.cisco.gre.1.name" type="astr">gretap_0</Record>
   <Record name="dmsb.cisco.gre.1.lowerlayers" type="astr">erouter0</Record>
   <Record name="dmsb.cisco.gre.1.mode" type="astr">2</Record>
   <Record name="dmsb.cisco.gre.1.endpoint" type="astr">0.0.0.0</Record>
