@@ -789,6 +789,6 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.2.Stats.X_COMCAST-COM_RadioStatisticsMeasuringInterval" type="astr" contentType="uint">30</Record>
 
   <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.NotifyWiFiChanges" type="astr">true</Record>
-
+  <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.NeighbouringDiagnosticEnable" type="astr">0</Record>
 </Provision>
 
