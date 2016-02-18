@@ -132,20 +132,23 @@ PsmFloTestRegFile
         ULONG                       ulCfgSize
     )
 {
+    CcspTraceInfo(("PsmFloTestRegFile begins '\n"));
     PANSC_XML_DOM_NODE_OBJECT       pRootNode = NULL;
     PUCHAR                          pBack     = (PUCHAR)pCfgBuffer;
     ULONG                           uLength   = ulCfgSize;
 
     pRootNode = (PANSC_XML_DOM_NODE_OBJECT)
         AnscXmlDomParseString((ANSC_HANDLE)NULL, (PCHAR*)&pBack, uLength);
+        CcspTraceInfo(("pRootNode Initialized\n"));
 
     if( pRootNode == NULL)
     {
+    	CcspTraceInfo(("PsmFloTestRegFile, Invalid format of pRootNode\n"));
         return PSM_FLO_ERROR_CODE_invalidFormat;
     }
 
     AnscXmlDomNodeRemove(pRootNode);
-
+    CcspTraceInfo(("PsmFloTestRegFile, ends '\n"));
     return PSM_FLO_ERROR_CODE_noError;
 }
 
@@ -180,6 +183,7 @@ PsmFloLoadRegFile
         ANSC_HANDLE                 hThisObject
     )
 {
+    CcspTraceInfo(("PsmFloLoadRegFile begins\n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
     PPSM_CFM_INTERFACE              pPsmCfmIf    = (PPSM_CFM_INTERFACE     )pMyObject->hPsmCfmIf;
@@ -193,6 +197,7 @@ PsmFloLoadRegFile
 
     if ( !pMyObject->bActive )
     {
+    	CcspTraceInfo(("PsmFloLoadRegFile, pMyObject is not Active\n"));
         return ANSC_STATUS_NOT_READY;
     }
 
@@ -207,6 +212,7 @@ PsmFloLoadRegFile
 
     if ( !hSysRoot)
     {
+    	CcspTraceInfo(("PsmFloLoadRegFile, Access Denied for hSysRoot\n"));
         returnStatus =  ANSC_STATUS_ACCESS_DENIED;
 
         goto EXIT;
@@ -222,6 +228,7 @@ PsmFloLoadRegFile
 
     if ( returnStatus != ANSC_STATUS_SUCCESS )
     {
+    	CcspTraceInfo(("PsmFloLoadRegFile, Return Status is not Success \n"));
         goto EXIT;
     }
 
@@ -237,6 +244,7 @@ PsmFloLoadRegFile
 
     if ( pRootNode == NULL )
     {
+    	CcspTraceInfo(("PsmFloLoadRegFile, pRootNode is NULL set Return status and EXIT\n"));
         returnStatus = ANSC_STATUS_RESOURCES;
 
         goto EXIT;
@@ -255,19 +263,23 @@ EXIT:
 
     if ( pFileData != NULL )
     {
-        AnscFreeMemory(pFileData);
+    	AnscFreeMemory(pFileData);
+    	CcspTraceInfo(("PsmFloLoadRegFile, pFileData is free\n"));
     }
 
     if ( pRootNode != NULL )
     {
     	pRootNode->Remove(pRootNode);
+    	CcspTraceInfo(("PsmFloLoadRegFile, pRootNode is free\n"));
     }
 
     if ( hSysRoot != NULL )
     {
         pSysIraIf->CloseFolder(pSysIraIf->hOwnerContext, hSysRoot);
+    	CcspTraceInfo(("PsmFloLoadRegFile, hSysRoot folder closed\n"));
     }
 
+    CcspTraceInfo(("PsmFloLoadRegFile, ends '\n"));
     return  returnStatus;
 }
 
@@ -311,7 +323,7 @@ PsmFloSaveRegFile
     ULONG                           dataLength   = 0;
     ULONG                           totalLength  = 0;
     ANSC_HANDLE                     hSysRoot     = NULL;
-
+    CcspTraceInfo(("PsmFloSaveRegFile begins \n"));
     if ( !pMyObject->bActive )
     {
         return ANSC_STATUS_NOT_READY;
@@ -441,6 +453,6 @@ EXIT:
     pSysIraIf->RelWriteAccess(pSysIraIf->hOwnerContext);
 
     CcspTraceInfo(("RelWriteAccess in 'PsmFloSaveRegFile'\n"));
-
+    CcspTraceInfo(("PsmFloSaveRegFile ends \n"));
     return  returnStatus;
 }

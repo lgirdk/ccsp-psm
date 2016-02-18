@@ -136,12 +136,14 @@ PsmSysroCreate
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PANSC_COMPONENT_OBJECT          pBaseObject  = NULL;
     PPSM_SYS_REGISTRY_OBJECT        pMyObject    = NULL;
+    CcspTraceInfo(("\n##PsmSysRoCreate() begins##\n"));
 
     /*
      * We create object by first allocating memory for holding the variables and member functions.
      */
     pMyObject = (PPSM_SYS_REGISTRY_OBJECT)AnscAllocateMemory(sizeof(PSM_SYS_REGISTRY_OBJECT));
-
+    CcspTraceInfo(("\nPsmSysReg Object mem alloc\n"));
+	
     if ( !pMyObject )
     {
         return  (ANSC_HANDLE)NULL;
@@ -166,7 +168,7 @@ PsmSysroCreate
 
     pBaseObject->EnrollObjects((ANSC_HANDLE)pBaseObject);
     pBaseObject->Initialize   ((ANSC_HANDLE)pBaseObject);
-
+	CcspTraceInfo(("\n##PsmSysRoCreate() ends##\n"));
     return  (ANSC_HANDLE)pMyObject;
 }
 
@@ -212,7 +214,7 @@ PsmSysroRemove
 
     pMyObject->Cancel((ANSC_HANDLE)pMyObject);
     pMyObject->Reset ((ANSC_HANDLE)pMyObject);
-
+	CcspTraceInfo(("\n##PsmSysRoRemove() begins##\n"));
     if ( pPsmCfmIf )
     {
         AnscFreeMemory(pPsmCfmIf);
@@ -252,7 +254,8 @@ PsmSysroRemove
 
     AnscFreeLock(&pMyObject->AccessLock);
     AnscCoRemove((ANSC_HANDLE)pMyObject);
-
+    CcspTraceInfo(("\nmemory dealloc\n"));
+	CcspTraceInfo(("\n##PsmSysRoRemove() ends##\n"));
     return  ANSC_STATUS_SUCCESS;
 }
 
@@ -295,7 +298,7 @@ PsmSysroEnrollObjects
     PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT  )pMyObject->hSysInfoRepository;
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj       = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
     PANSC_TDO_CLIENT_OBJECT         pRegTimerIf        = (PANSC_TDO_CLIENT_OBJECT      )pMyObject->hRegTimerIf;
-
+CcspTraceInfo(("\n##PsmSysroEnrollObjects() beginss##\n"));
     if ( !pPsmCfmIf )
     {
         pPsmCfmIf = (PPSM_CFM_INTERFACE)AnscAllocateMemory(sizeof(PSM_CFM_INTERFACE));
@@ -427,7 +430,7 @@ PsmSysroEnrollObjects
     }
 
     AnscCoEnrollObjects((ANSC_HANDLE)pMyObject);
-
+CcspTraceInfo(("\n##PsmSysroEnrollObjects() ends##\n"));
     return  ANSC_STATUS_SUCCESS;
 }
 
@@ -476,7 +479,7 @@ PsmSysroInitialize
      * the compiler will do it for you, such is not the case with C.
      */
     AnscCoInitialize((ANSC_HANDLE)pMyObject);
-
+CcspTraceInfo(("\n##PsmSysroInitialize() beginss##\n"));
     /*
      * Although we have initialized some of the member fields in the "create" member function, we
      * repeat the work here for completeness. While this simulation approach is pretty stupid from
@@ -536,6 +539,6 @@ PsmSysroInitialize
      * property, the following code also needs to be changed.
      */
     pMyObject->ResetProperty((ANSC_HANDLE)pMyObject);
-
+    CcspTraceInfo(("\n##PsmSysroInitialize() ends##\n"));
     return  ANSC_STATUS_SUCCESS;
 }

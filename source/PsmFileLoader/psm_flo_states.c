@@ -125,9 +125,11 @@ PsmFloGetPsmCfmIf
         ANSC_HANDLE                 hThisObject
     )
 {
+    CcspTraceInfo(("PsmFloGetPsmCfmIf begins \n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
-
+	CcspTraceInfo(("retrieved Psm Cfm Interface\n"));
+	CcspTraceInfo(("PsmFloGetPsmCfmIf ends \n"));
     return  pMyObject->hPsmCfmIf;
 }
 
@@ -167,11 +169,13 @@ PsmFloSetPsmCfmIf
         ANSC_HANDLE                 hInterface
     )
 {
+    CcspTraceInfo(("PsmFloSetPsmCfmIf begins \n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
 
     pMyObject->hPsmCfmIf = hInterface;
-
+		CcspTraceInfo(("Psm Cfm Interface is set\n"));
+		CcspTraceInfo(("PsmFloSetPsmCfmIf ends \n"));
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -206,9 +210,11 @@ PsmFloGetSysIraIf
         ANSC_HANDLE                 hThisObject
     )
 {
+    CcspTraceInfo(("PsmFloGetSysIraIf begins\n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
-
+		CcspTraceInfo(("retrieved System Ira Interface\n"));
+		 CcspTraceInfo(("PsmFloGetSysIraIf ends \n"));
     return  pMyObject->hSysIraIf;
 }
 
@@ -248,11 +254,13 @@ PsmFloSetSysIraIf
         ANSC_HANDLE                 hInterface
     )
 {
+    CcspTraceInfo(("PsmFloSetSysIraIf begins \n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
 
     pMyObject->hSysIraIf = hInterface;
-
+		CcspTraceInfo(("System Ira Interface is set\n"));
+		    CcspTraceInfo(("PsmFloSetSysIraIf ends \n"));
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -292,12 +300,14 @@ PsmFloGetProperty
         ANSC_HANDLE                 hProperty
     )
 {
+    CcspTraceInfo(("PsmFloGetProperty begins \n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT  )hThisObject;
     PPSM_FILE_LOADER_PROPERTY       pProperty    = (PPSM_FILE_LOADER_PROPERTY)&pMyObject->Property;
 
     *(PPSM_FILE_LOADER_PROPERTY)hProperty = *pProperty;
-
+		CcspTraceInfo(("retrieved Object Property\n"));
+		    CcspTraceInfo(("PsmFloGetProperty ends \n"));
     return  ANSC_STATUS_SUCCESS;
 }
 
@@ -337,12 +347,14 @@ PsmFloSetProperty
         ANSC_HANDLE                 hProperty
     )
 {
+    CcspTraceInfo(("PsmFloSetProperty begins \n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT  )hThisObject;
     PPSM_FILE_LOADER_PROPERTY       pProperty    = (PPSM_FILE_LOADER_PROPERTY)&pMyObject->Property;
 
     *pProperty = *(PPSM_FILE_LOADER_PROPERTY)hProperty;
-
+		CcspTraceInfo(("Object Property is Configured\n"));
+		CcspTraceInfo(("PsmFloSetProperty ends \n"));
     return  ANSC_STATUS_SUCCESS;
 }
 
@@ -382,7 +394,7 @@ PsmFloResetProperty
     PPSM_FILE_LOADER_PROPERTY       pProperty    = (PPSM_FILE_LOADER_PROPERTY)&pMyObject->Property;
 
     AnscZeroMemory(pProperty, sizeof(PSM_FILE_LOADER_PROPERTY));
-
+	CcspTraceInfo(("Object Property is Reset\n"));
     return  ANSC_STATUS_SUCCESS;
 }
 
@@ -417,9 +429,11 @@ PsmFloReset
         ANSC_HANDLE                 hThisObject
     )
 {
+	CcspTraceInfo(("PsmFloReset begins\n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT  )hThisObject;
     PPSM_FILE_LOADER_PROPERTY       pProperty    = (PPSM_FILE_LOADER_PROPERTY)&pMyObject->Property;
-
+	CcspTraceInfo(("Object states are Reset\n"));
+		CcspTraceInfo(("PsmFloReset ends\n"));
     return  ANSC_STATUS_SUCCESS;
 }

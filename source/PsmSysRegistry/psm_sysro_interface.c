@@ -130,8 +130,9 @@ PsmCreateSysRegistry
         ANSC_HANDLE                 hAnscReserved
     )
 {
+CcspTraceInfo(("\n##PsmCreateSysRegistry() begins##\n"));
     ANSC_STATUS                     returnStatus     = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pPsmSysRegistry = NULL;
-
+CcspTraceInfo(("\n##PsmCreateSysRegistry() ends##\n"));
     return  PsmSysroCreate(hContainerContext, hOwnerContext, hAnscReserved);
 }
