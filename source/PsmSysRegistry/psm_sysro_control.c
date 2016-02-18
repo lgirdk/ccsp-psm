@@ -126,7 +126,7 @@ PsmSysroSetupEnv
     PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
     ANSC_HANDLE                     hRfoKeyCfg         = (ANSC_HANDLE                )NULL;
     ANSC_HANDLE                     hRfoKeyCfgPrv      = (ANSC_HANDLE                )NULL;
-
+CcspTraceInfo(("\n##PsmSysroSetupEnv() beginss##\n"));
     if ( !pMyObject->bActive )
     {
         returnStatus = ANSC_STATUS_NOT_READY;
@@ -175,7 +175,7 @@ EXIT2:
     pIraIf->CloseFolder(pIraIf->hOwnerContext, hRfoKeyCfg);
 
 EXIT1:
-
+CcspTraceInfo(("\n##PsmSysroSetupEnv() ends##\n"));
     return  returnStatus;
 }
 
@@ -217,7 +217,7 @@ PsmSysroCloseEnv
     PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
     ANSC_HANDLE                     hRfoKeySys         = (ANSC_HANDLE                )NULL;
     ANSC_HANDLE                     hRfoKeyAcModules   = (ANSC_HANDLE                )NULL;
-
+CcspTraceInfo(("\n##PsmSysroCloseEnv() begins##\n"));
     if ( !pMyObject->bActive )
     {
         returnStatus = ANSC_STATUS_NOT_READY;
@@ -231,6 +231,6 @@ PsmSysroCloseEnv
     ******************************************************************/
 
 EXIT1:
-
+CcspTraceInfo(("\n##PsmSysroCloseEnv() ends##\n"));
     return  returnStatus;
 }

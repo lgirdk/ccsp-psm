@@ -601,7 +601,7 @@ ssp_CfmReadCurConfig
      *
      * it's always not overwrite.
      */
-
+    CcspTraceInfo(("ssp_CfmReadCurConfig begins\n"));    
     snprintf(path, sizeof(path), "%s%s", pProp->SysFilePath, pProp->CurFileName);
 again:
     /* load config file to Hash for fast merging and import */
@@ -627,9 +627,10 @@ again:
     /* flush merged records to buffer */
     if (flush_records((char **)ppCfgBuffer, pulCfgSize) != 0) {
         free_records();
+        CcspTraceInfo((" ssp_CfmReadCurConfig-flush_records((char **)ppCfgBuffer, pulCfgSize) != 0\n"));    
         return ANSC_STATUS_FAILURE;
     }
-    
+    CcspTraceInfo(("ssp_CfmReadCurConfig ends\n"));    
     return ssp_CfmSaveCurConfig(hThisObject, *ppCfgBuffer, *pulCfgSize);
 }
 
@@ -680,7 +681,7 @@ ssp_CfmReadDefConfig
     PPSM_SYS_REGISTRY_PROPERTY      pProp = (PPSM_SYS_REGISTRY_PROPERTY)&pPsm->Property;
 
     char                            path[256];
-
+    CcspTraceInfo(("ssp_CfmReadDefConfig begins\n"));    
     snprintf(path, sizeof(path), "%s%s", pProp->SysFilePath, pProp->DefFileName);
     if (load_records(path) != 0) {
         cfm_log_err(("%s: Fail to load config file: %s\n", __FUNCTION__, path));
@@ -697,9 +698,10 @@ ssp_CfmReadDefConfig
     /* flush merged records to buffer */
     if (flush_records((char **)ppCfgBuffer, pulCfgSize) != 0) {
         free_records();
+        CcspTraceInfo((" ssp_CfmReadDefConfig-flush_records((char **)ppCfgBuffer, pulCfgSize) != 0\n"));            
         return ANSC_STATUS_FAILURE;
     }
-    
+    CcspTraceInfo(("ssp_CfmReadDefConfig ends\n"));    
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -800,19 +802,21 @@ static ANSC_STATUS
 FileReadToBuffer(const char *file, char **buf, ULONG *size)
 {
     ANSC_HANDLE pFile;
-
+    CcspTraceInfo(("FileReadToBuffer begins\n"));    
     if ((pFile = AnscOpenFile((char *)file, ANSC_FILE_MODE_READ, ANSC_FILE_TYPE_RDWR)) == NULL)
         return ANSC_STATUS_FAILURE;
 
     if ((*size = AnscGetFileSize(pFile)) < 0)
     {
         AnscCloseFile(pFile);
+    	CcspTraceInfo(("FileReadToBuffer-> *size = AnscGetFileSize(pFile)) < 0\n"));            
         return ANSC_STATUS_FAILURE;
     }
 
     if ((*buf = AnscAllocateMemory(*size + 1)) == NULL)
     {
         AnscCloseFile(pFile);
+    	CcspTraceInfo(("FileReadToBuffer-> *buf = AnscAllocateMemory(*size + 1)) == NULL\n"));                 
         return ANSC_STATUS_FAILURE;
     }
 
@@ -821,12 +825,14 @@ FileReadToBuffer(const char *file, char **buf, ULONG *size)
     {
         AnscFreeMemory(*buf);
         AnscCloseFile(pFile);
+    	CcspTraceInfo(("FileReadToBuffer-> AnscReadFile(pFile, *buf, size) != ANSC_STATUS_SUCCESS\n"));                 
         return ANSC_STATUS_FAILURE;
     }
 
     (*buf)[*size] = '\0';
 
     AnscCloseFile(pFile);
+    CcspTraceInfo(("FileReadToBuffer ends\n"));    
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -995,6 +1001,7 @@ NodeGetRecord(PANSC_XML_DOM_NODE_OBJECT node, PsmRecord_t *rec)
     /* value */
     size = sizeof(rec->value) - 1;
     if (node->GetDataString(node, NULL, rec->value, &size) != ANSC_STATUS_SUCCESS)
+        CcspTraceInfo(("NodeGetRecord -> node->GetDataString(node, NULL, rec->value, &size) != ANSC_STATUS_SUCCESS\n"));    
         return ANSC_STATUS_FAILURE;
     rec->value[size] = '\0';
 
@@ -1007,11 +1014,13 @@ AddRecToXml(const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT xml)
     PANSC_XML_DOM_NODE_OBJECT node;
 
     if ((node = xml->AddChildByName(xml, ELEM_RECORD)) == NULL)
+    	CcspTraceInfo(("AddRecToXml-> node = xml->AddChildByName(xml, ELEM_RECORD) \n"));    
         return ANSC_STATUS_FAILURE;
 
     if (RecordSetNode(rec, node) != ANSC_STATUS_SUCCESS)
     {
         xml->DelChild(xml, node);
+        CcspTraceInfo(("AddRecToXml->RecordSetNode(rec, node) != ANSC_STATUS_SUCCESS \n"));    
         return ANSC_STATUS_FAILURE;
     }
 
@@ -1023,7 +1032,7 @@ XmlToBuffer(PANSC_XML_DOM_NODE_OBJECT xml, char **buf, ULONG *size)
 {
     char *newBuf = NULL;
     ULONG newSize;
-
+    CcspTraceInfo(("XmlToBuffer begins\n"));    
     if ((*size = newSize = xml->GetEncodedSize(xml)) == 0
             /* any one tell me the reason magic 16 ? */
             || (newBuf = AnscAllocateMemory(newSize + 16)) == NULL 
@@ -1031,10 +1040,12 @@ XmlToBuffer(PANSC_XML_DOM_NODE_OBJECT xml, char **buf, ULONG *size)
     {
         if (newBuf)
             AnscFreeMemory(newBuf);
+            CcspTraceInfo(("XmlToBuffer ends->newBuf"));    
         return ANSC_STATUS_FAILURE;
     }
 
     *buf = newBuf;
+    CcspTraceInfo(("XmlToBuffer ends\n"));    
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1044,14 +1055,16 @@ XmlToFile(PANSC_XML_DOM_NODE_OBJECT xml, const char *file)
     char *buf;
     ULONG size;
     ANSC_HANDLE pFile;
-
+    CcspTraceInfo(("XmlToFile begins\n"));    
     if (XmlToBuffer(xml, &buf, &size) != ANSC_STATUS_SUCCESS)
+     	CcspTraceInfo(("XmlToFile -> XmlToBuffer(xml, &buf, &size) != ANSC_STATUS_SUCCESS\n"));       
         return ANSC_STATUS_FAILURE;
 
     if ((pFile = AnscOpenFile((char *)file, 
                     ANSC_FILE_TYPE_RDWR, ANSC_FILE_TYPE_RDWR)) == NULL)
     {
         AnscFreeMemory(buf);
+        CcspTraceInfo(("XmlToFile -> (pFile=open(ANSC_FILE_TYPE_RDWR, ANSC_FILE_TYPE_RDWR))==NULL\n"));       
         return ANSC_STATUS_FAILURE;
     }
 
@@ -1059,11 +1072,13 @@ XmlToFile(PANSC_XML_DOM_NODE_OBJECT xml, const char *file)
     {
         AnscCloseFile(pFile);
         AnscFreeMemory(buf);
+        CcspTraceInfo(("XmlToFile -> AnscWriteFile(pFile, buf, &size) != ANSC_STATUS_SUCCESS\n"));              
         return ANSC_STATUS_FAILURE;
     }
 
     AnscCloseFile(pFile);
     AnscFreeMemory(buf);
+    CcspTraceInfo(("XmlToFile ends\n"));    
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1072,7 +1087,7 @@ IsRecChangedFromXml(const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT xml)
 {
     PANSC_XML_DOM_NODE_OBJECT node;
     PsmRecord_t cur;
-
+    CcspTraceInfo(("IsRecChangedFromXml begins\n"));    
     xml_for_each_child(node, xml)
     {
         if (NodeGetRecord(node, &cur) != ANSC_STATUS_SUCCESS)
@@ -1088,6 +1103,7 @@ IsRecChangedFromXml(const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT xml)
     }
 
     /* if no correspand record in xml, means "not changed" ? */
+        CcspTraceInfo(("IsRecChangedFromXml ends\n"));    
     return FALSE;
 }
 
@@ -1108,7 +1124,7 @@ ReadCfgXmlWithCustom(const char *path, int overwrite)
     int                         success = 0;
     int                         missing;
     ULONG                       size;
-
+    CcspTraceInfo(("ReadCfgXmlWithCustom begins\n"));    
     if (PsmHal_GetCustomParams(&cusParams, &cusCnt) != 0)
         cusParams = NULL, cusCnt = 0;
 
@@ -1168,7 +1184,7 @@ done:
         AnscFreeMemory(buf);
     if (cusParams)
         free(cusParams);
-
+    CcspTraceInfo(("ReadCfgXmlWithCustom ends\n"));    
     return root;
 }
 
@@ -1223,7 +1239,7 @@ ssp_CfmSaveCurConfig
     /* save current to backup config */
     snprintf(curPath, sizeof(curPath), "%s%s", pProp->SysFilePath, pProp->CurFileName);
     snprintf(bakPath, sizeof(bakPath), "%s%s", pProp->SysFilePath, pProp->BakFileName);
-
+    CcspTraceInfo(("ssp_CfmSaveCurConfig begins\n"));    
     if (AnscCopyFile(curPath, bakPath, TRUE) != ANSC_STATUS_SUCCESS)
         PsmHalDbg(("%s: fail to backup current config\n", __FUNCTION__));
 
@@ -1231,16 +1247,19 @@ ssp_CfmSaveCurConfig
             ANSC_FILE_TYPE_RDWR)) == NULL)
     {
         PsmHalDbg(("%s: fail open current config\n", __FUNCTION__));
+        CcspTraceInfo(("ssp_CfmSaveCurConfig -> fail open current config\n"));           
         return ANSC_STATUS_FAILURE;
     }
 
     if (AnscWriteFile(pFile, pCfgBuffer, &ulCfgSize) != ANSC_STATUS_SUCCESS)
     {
         AnscCloseFile(pFile);
+     	CcspTraceInfo(("ssp_CfmSaveCurConfig -> AnscWriteFile(pFile, pCfgBuffer, &ulCfgSize) != ANSC_STATUS_SUCCESS\n"));           
         return ANSC_STATUS_FAILURE;
     }
 
     AnscCloseFile(pFile);
+    CcspTraceInfo(("ssp_CfmSaveCurConfig ends\n"));    
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -1259,7 +1278,7 @@ ssp_CfmUpdateConfigs(ANSC_HANDLE hThisObject, const char *newConfPath)
     PsmRecord_t                     newRec, curRec;
     int                             missing;
     ANSC_STATUS                     err = ANSC_STATUS_FAILURE;
-
+    CcspTraceInfo(("ssp_CfmUpdateConfigs begins\n"));    
     if (!newConfPath || AnscSizeOfString(newConfPath) <= 0)
     {
         PsmHalDbg(("%s: bad param\n", __FUNCTION__));
@@ -1379,6 +1398,6 @@ done:
         curXml->Remove(curXml);
     if (defXml)
         defXml->Remove(defXml);
-
+    CcspTraceInfo(("ssp_CfmUpdateConfigs ends\n"));    
     return err;
 }

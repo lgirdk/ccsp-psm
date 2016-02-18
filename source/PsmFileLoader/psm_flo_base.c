@@ -141,13 +141,15 @@ PsmFloCreate
      * We create object by first allocating memory for holding the variables and member functions.
      */
     pMyObject = (PPSM_FILE_LOADER_OBJECT)AnscAllocateMemory(sizeof(PSM_FILE_LOADER_OBJECT));
-
+    	CcspTraceInfo(("PsmFloCreate begins \n"));
     if ( !pMyObject )
     {
+    	CcspTraceInfo(("%s, Failed to Create pMyObject \n",__FUNCTION__));
         return  (ANSC_HANDLE)NULL;
     }
     else
     {
+    	CcspTraceInfo(("%s, Created pMyObject\n",__FUNCTION__));
         pBaseObject = (PANSC_COMPONENT_OBJECT)pMyObject;
     }
 
@@ -167,6 +169,8 @@ PsmFloCreate
     pBaseObject->EnrollObjects((ANSC_HANDLE)pBaseObject);
     pBaseObject->Initialize   ((ANSC_HANDLE)pBaseObject);
 
+	CcspTraceInfo(("Initialized Common Variables'\n"));
+	CcspTraceInfo(("PsmFloCreate ends '\n"));
     return  (ANSC_HANDLE)pMyObject;
 }
 
@@ -201,6 +205,7 @@ PsmFloRemove
         ANSC_HANDLE                 hThisObject
     )
 {
+	CcspTraceInfo(("PsmFloRemove begins \n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
 
@@ -208,7 +213,8 @@ PsmFloRemove
     pMyObject->Reset ((ANSC_HANDLE)pMyObject);
 
     AnscCoRemove((ANSC_HANDLE)pMyObject);
-
+	CcspTraceInfo(("PsmFloRemove Removed pMyObject\n"));
+	CcspTraceInfo(("PsmFloRemove ends\n"));
     return  ANSC_STATUS_SUCCESS;
 }
 
@@ -243,11 +249,13 @@ PsmFloEnrollObjects
         ANSC_HANDLE                 hThisObject
     )
 {
+	CcspTraceInfo(("PsmFloEnrollObjects begins '\n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
 
     AnscCoEnrollObjects((ANSC_HANDLE)pMyObject);
-
+	CcspTraceInfo(("PsmFloEnrollObjects, Enrolled objectes required by pMyObject'\n"));
+	CcspTraceInfo(("PsmFloEnrollObjects ends '\n"));
     return  ANSC_STATUS_SUCCESS;
 }
 
@@ -295,7 +303,9 @@ PsmFloInitialize
      * C++ you don't have to initialize all the member fields inherited from the base class since
      * the compiler will do it for you, such is not the case with C.
      */
+    CcspTraceInfo(("PsmFloInitialize begins '\n"));
     AnscCoInitialize((ANSC_HANDLE)pMyObject);
+    CcspTraceInfo(("PsmFloInitialize, initialization member function of the base class'\n"));
 
     /*
      * Although we have initialized some of the member fields in the "create" member function, we
@@ -337,6 +347,7 @@ PsmFloInitialize
      * property, the following code also needs to be changed.
      */
     pMyObject->ResetProperty((ANSC_HANDLE)pMyObject);
-
+	CcspTraceInfo(("PsmFloInitialize, initialization of member fields'\n"));
+	    CcspTraceInfo(("PsmFloInitialize ends '\n"));
     return  ANSC_STATUS_SUCCESS;
 }

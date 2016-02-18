@@ -366,7 +366,7 @@ ANSC_STATUS getCommParam(
 )
 {
     PPARAMETER_VALUE    pParameterValue;
-
+   CcspTraceInfo((" inside getCommParam\n"));
     pParameterValue = AnscAllocateMemory(sizeof(PARAMETER_VALUE));
     pParameterValue->val = AnscAllocateMemory(sizeof(parameterValStruct_t));
     memset(pParameterValue->val, 0, sizeof(parameterValStruct_t));
@@ -496,7 +496,7 @@ ANSC_STATUS getCommParam(
 
 
     *ppParameterValue = pParameterValue;
-
+   CcspTraceInfo((" getCommParam exit\n"));
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -514,7 +514,7 @@ ANSC_STATUS doFactoryResetTask
 
     /* factory reset the PSM */
     returnStatus = pSroHandle->ResetToFactoryDefault((ANSC_HANDLE)pSroHandle);
-
+   CcspTraceInfo((" doFactoryResetTask begins\n"));
     if ( returnStatus == ANSC_STATUS_SUCCESS )
     {
         PsmHal_RestoreFactoryDefaults();
@@ -552,7 +552,7 @@ ANSC_STATUS doFactoryResetTask
             AnscFreeMemory(pStr);
         }
     }
-
+   CcspTraceInfo((" doFactoryResetTask exit\n"));
     return returnStatus;
 }
 
@@ -562,6 +562,7 @@ int  doFactoryReset
         ANSC_HANDLE hContext
     )
 {
+   CcspTraceInfo((" doFactoryReset begins\n"));
     /* since reboot will invoke from reboot manager, need to start another thread to make new DBus call */
     AnscSpawnTask
         (
@@ -569,7 +570,7 @@ int  doFactoryReset
             hContext,
             "CcspPsmFactoryResetTask"
         );
-
+   CcspTraceInfo((" doFactoryReset exit\n"));
     return 0;
 }
 
@@ -594,9 +595,10 @@ int  getParameterValues(
     PPARAMETER_VALUE                pParameterValue;
     SLIST_HEADER                    ParameterValueList;
     int                             i;
-
+   CcspTraceInfo((" inside getParameterValues\n"));
     if ( pPsmSysRegistry == NULL )
     {
+    	CcspTraceInfo(("getParameterValues- pPsmSysRegistry is NULL\n"));
         return CCSP_FAILURE;
     }
 
@@ -604,6 +606,7 @@ int  getParameterValues(
 
     if ( pSysInfoRepository == NULL )
     {
+       	CcspTraceInfo(("getParameterValues- pSysInfoRepository is NULL\n"));
         return CCSP_FAILURE;
     }
 
@@ -622,6 +625,7 @@ int  getParameterValues(
 
     if ( hSysRoot == NULL )
     {
+        CcspTraceInfo(("getParameterValues- hSysRoot is NULL\n"));
         pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
         return CCSP_FAILURE;
     }
@@ -667,7 +671,7 @@ int  getParameterValues(
 
         if ( returnStatus != ANSC_STATUS_BAD_SIZE )
         {
-            /*CcspTraceWarning(("++++ Can't find: %s! +++\n", parameterNames[i]));*/
+            CcspTraceWarning(("++++ Can't find: %s! +++\n", parameterNames[i]));
         }
         else
         {
@@ -714,7 +718,7 @@ int  getParameterValues(
             val[k-1] = pParameterValue->val;
             AnscFreeMemory(pParameterValue);
 
-            //            CcspTraceDebug(("getParameterValues -- *val_size:%d, %s: %s\n", *val_size, val[k-1]->parameterName, val[k-1]->parameterValue ));
+                        CcspTraceDebug(("getParameterValues -- *val_size:%d, %s: %s\n", *val_size, val[k-1]->parameterName, val[k-1]->parameterValue ));
         }
     }
 
@@ -726,6 +730,7 @@ int  getParameterValues(
     }
 
     pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
+       CcspTraceInfo((" getParameterValues exit\n"));
     return CCSP_SUCCESS;
 }
 
@@ -748,9 +753,10 @@ int  setParameterValues(
     PPSM_FILE_LOADER_OBJECT         pPsmFileLoader      = (PPSM_FILE_LOADER_OBJECT    )pPsmSysRegistry->hPsmFileLoader;
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj    = (PANSC_TIMER_DESCRIPTOR_OBJECT)pPsmSysRegistry->hRegTimerObj;
     int                             i;
-
+       CcspTraceInfo((" inside setParameterValues \n"));
     if ( pPsmSysRegistry == NULL )
     {
+       CcspTraceInfo(("setParameterValues- pPsmSysRegistry is NULL\n"));
         return CCSP_FAILURE;
     }
 
@@ -758,6 +764,7 @@ int  setParameterValues(
 
     if ( pSysInfoRepository == NULL )
     {
+           CcspTraceInfo(("setParameterValues- pSysInfoRepository is NULL\n"));
         return CCSP_FAILURE;
     }
 
@@ -775,6 +782,7 @@ int  setParameterValues(
 
     if ( hSysRoot == NULL )
     {
+               CcspTraceInfo(("setParameterValues- hSysRoot is NULL\n"));
         pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
         return CCSP_FAILURE;
     }
@@ -881,9 +889,9 @@ int  setParameterValues(
                     strlen(val[i].parameterValue) 
                 );
 
-/*
+
         CcspTraceWarning(("setParameterValues -- size:%d, %s: %s\n", size, val[i].parameterName, val[i].parameterValue));
-*/
+
 
         if ( returnStatus != ANSC_STATUS_SUCCESS )
         {
@@ -894,6 +902,7 @@ int  setParameterValues(
     pSysIraIf->CloseFolder(pSysIraIf->hOwnerContext, hSysRoot);
 
     pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
+           CcspTraceInfo((" setParameterValues exit\n"));
     return CCSP_SUCCESS;
 }
 
@@ -919,9 +928,10 @@ int  setParameterAttributes(
     ANSC_HANDLE                     hSysRoot            = NULL;
     ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
     int                             i;
-
+       CcspTraceInfo(("inside setParameterAttributes\n"));
     if ( pPsmSysRegistry == NULL )
     {
+        CcspTraceInfo(("setParameterAttributes- pPsmSysRegistry is NULL\n"));
         return CCSP_FAILURE;
     }
 
@@ -929,6 +939,7 @@ int  setParameterAttributes(
 
     if ( pSysInfoRepository == NULL )
     {
+        CcspTraceInfo(("setParameterAttributes- pSysInfoRepository is NULL\n"));
         return CCSP_FAILURE;
     }
 
@@ -946,6 +957,7 @@ int  setParameterAttributes(
 
     if ( hSysRoot == NULL )
     {
+        CcspTraceInfo(("setParameterAttributes- hSysRoot is NULL\n"));
         pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
         return CCSP_FAILURE;
     }
@@ -972,6 +984,7 @@ int  setParameterAttributes(
     pSysIraIf->CloseFolder(pSysIraIf->hOwnerContext, hSysRoot);
 
     pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
+    CcspTraceInfo(("setParameterAttributes exit\n"));
     return CCSP_SUCCESS;
 }
 
@@ -983,6 +996,7 @@ int  getParameterAttributes(
     void            *user_data
 )
 {
+    CcspTraceInfo(("!!getParameterAttributes!!!!!\n"));
     return CCSP_ERR_NOT_SUPPORT;
 }
 
@@ -1006,7 +1020,7 @@ int getParameterNames(
     SLIST_HEADER                    ParameterInfoList;
     PSINGLE_LINK_ENTRY              pSLinkEntry         = NULL;
     parameterInfoStruct_t         **val                 = NULL;
-
+    CcspTraceInfo(("getParameterNames begins\n"));
     if ( !parameterName )
     {
         CcspTraceError(("RDKB_SYSTEM_BOOT_UP_LOG : PSM Input parameter invalid for getParameterNames!\n"));
@@ -1015,13 +1029,15 @@ int getParameterNames(
 
     if ( pPsmSysRegistry == NULL )
     {
+        CcspTraceInfo(("getParameterNames- pPsmSysRegistry is NULL\n"));    
         return CCSP_FAILURE;
     }
 
     pSysInfoRepository = pPsmSysRegistry->hSysInfoRepository;
 
     if ( pSysInfoRepository == NULL )
-    {
+    {    
+    	CcspTraceInfo(("getParameterNames- pSysInfoRepository is NULL\n"));    
         return CCSP_FAILURE;
     }
 
@@ -1039,6 +1055,7 @@ int getParameterNames(
     if ( hSysRoot == NULL )
     {
         pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
+        CcspTraceInfo(("getParameterNames- hSysRoot is NULL\n"));    
         return CCSP_FAILURE;
     }
 
@@ -1149,6 +1166,7 @@ int getParameterNames(
     }
 
     pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
+        CcspTraceInfo(("getParameterNames ends\n"));
     return CCSP_SUCCESS;
 }
 

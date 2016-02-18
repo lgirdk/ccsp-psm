@@ -122,7 +122,7 @@ PsmFloEngage
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT  )hThisObject;
     PPSM_FILE_LOADER_PROPERTY       pProperty    = (PPSM_FILE_LOADER_PROPERTY)&pMyObject->Property;
-
+    CcspTraceInfo(("PsmFloEngage begins \n"));
     if ( pMyObject->bActive )
     {
         return  ANSC_STATUS_SUCCESS;
@@ -137,7 +137,8 @@ PsmFloEngage
     {
         pMyObject->bActive = TRUE;
     }
-
+	 CcspTraceInfo((" Engage in PsmFloEngage \n"));
+	 CcspTraceInfo(("PsmFloEngage ends '\n"));
     return  returnStatus;
 }
 
@@ -175,15 +176,19 @@ PsmFloCancel
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT  )hThisObject;
     PPSM_FILE_LOADER_PROPERTY       pProperty    = (PPSM_FILE_LOADER_PROPERTY)&pMyObject->Property;
-
+    CcspTraceInfo(("PsmFloCancel begins '\n"));
     if ( !pMyObject->bActive )
     {
+    	CcspTraceInfo(("PsmFloCancel, Object is not active so cancelled\n"));
         return  ANSC_STATUS_SUCCESS;
     }
     else
     {
+    		CcspTraceInfo(("PsmFloCancel, Object is deactivated\n"));
         pMyObject->bActive = FALSE;
     }
 
+	CcspTraceInfo((" Cancelled in PsmFloCancel\n"));
+	CcspTraceInfo(("PsmFloCancel ends '\n"));
     return  returnStatus;
 }

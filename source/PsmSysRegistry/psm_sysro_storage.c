@@ -140,6 +140,7 @@ PsmSysroResetToFactoryDefault
      * written by the pending changes.
      */
     pMyObject->bNoSave = TRUE;
+    CcspTraceInfo(("\n##PsmSysroResetToFactoryDefault() begins##\n"));
 
     if ( TRUE )
     {
@@ -161,7 +162,7 @@ PsmSysroResetToFactoryDefault
         returnStatus = AnscDeleteFile(curCfgFileName);
 
     }
-
+    CcspTraceInfo(("\n##PsmSysroResetToFactoryDefault() ends##\n"));
     return  returnStatus;
 }
 
@@ -230,7 +231,7 @@ PsmSysroImportConfig
     ANSC_CRYPTO_KEY                 desDecryptKey;
     ANSC_CRYPTO_IV                  desDecryptIv;
     char                            tmpCfgFileName[128];
-
+    CcspTraceInfo(("\n##PsmSysroImportConfig() begins##\n"));
     if ( pDecryptKey && (ulKeySize >= (ANSC_DES_KEY_SIZE + ANSC_DES_IV_SIZE)) )
     {
         if ( (ulCfgSize % ANSC_DES_BLOCK_SIZE) != 0 )
@@ -406,7 +407,7 @@ EXIT2:
     AnscDeleteFile(tmpCfgFileName);
 
 EXIT1:
-
+    CcspTraceInfo(("\n##PsmSysroImportConfig() ends##\n"));
     return  returnStatus;
 }
 
@@ -484,7 +485,7 @@ PsmSysroExportConfig
                 ANSC_FILE_MODE_RDWR,
                 ANSC_FILE_TYPE_RDWR
             );
-
+    CcspTraceInfo(("\n##PsmSysroExportConfig() begins##\n"));
     if ( !hCurCfgFile )
     {
         returnStatus = ANSC_STATUS_FAILURE;
@@ -552,7 +553,7 @@ PsmSysroExportConfig
     ******************************************************************/
 
 EXIT1:
-
+    CcspTraceInfo(("\n##PsmSysroExportConfig() ends##\n"));
     return  returnStatus;
 }
 
@@ -609,7 +610,7 @@ PsmSysroGetConfigSize
                 ANSC_FILE_MODE_RDWR,
                 ANSC_FILE_TYPE_RDWR
             );
-
+    CcspTraceInfo(("\n##PsmSysroGetConfigSize() begins##\n"));
     if ( !hCurCfgFile )
     {
         return  0;
@@ -620,7 +621,7 @@ PsmSysroGetConfigSize
     }
 
     AnscCloseFile(hCurCfgFile);
-
+    CcspTraceInfo(("\n##PsmSysroGetConfigSize() ends##\n"));
     return  ulFileSize;
 }
 

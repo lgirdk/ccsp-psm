@@ -147,6 +147,7 @@ static void daemonize(void) {
 
 void sig_handler(int sig)
 {
+	CcspTraceInfo((" inside sig_handler\n"));
     if ( sig == SIGINT ) {
     	signal(SIGINT, sig_handler); /* reset it to this function */
     	CcspTraceError(("SIGINT received, exiting!\n"));
@@ -200,7 +201,7 @@ void sig_handler(int sig)
     	CcspTraceError(("Signal %d received, exiting!\n", sig));
     	exit(0);
     }
-
+	CcspTraceInfo((" sig_handler exit\n"));
 }
 
 static int is_core_dump_opened(void)
@@ -373,16 +374,19 @@ int main(int argc, char* argv[])
 
 int  cmd_dispatch(int  command)
 {
+    	   CcspTraceInfo((" inside cmd_dispatch\n"));
     switch ( command )
     {
         case    'e' :
 
                 if ( !bEngaged )
                 {
+                    	   CcspTraceInfo((" inside case 'e' !bEngaged\n"));
                     pPsmSysRegistry = (PPSM_SYS_REGISTRY_OBJECT)PsmCreateSysRegistry(NULL, NULL, NULL);
 
                     if ( pPsmSysRegistry )
                     {
+                    	 CcspTraceInfo((" inside case 'e' !bEngaged-pPsmSysRegistry\n"));
                         PSM_SYS_REGISTRY_PROPERTY      psmSysroProperty;
 
                         AnscZeroMemory(&psmSysroProperty, sizeof(PSM_SYS_REGISTRY_PROPERTY));
@@ -433,6 +437,7 @@ int  cmd_dispatch(int  command)
 
                 if ( bEngaged )
                 {
+                    CcspTraceInfo((" inside case 'c' bEngaged\n"));
                     CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PSM is being unloaded ...\n"));
 
                     if ( bus_handle != NULL )
@@ -442,6 +447,7 @@ int  cmd_dispatch(int  command)
 
                     if ( pPsmSysRegistry )
                     {
+                    CcspTraceInfo((" inside case 'c' bEngaged-pPsmSysRegistry\n"));
 #ifdef USE_PLATFORM_SPECIFIC_HAL
                         if ( pPsmSysRegistry->hPsmCfmIf )
                         {
@@ -464,7 +470,7 @@ int  cmd_dispatch(int  command)
 
                 break;
     }
-
+    	   CcspTraceInfo((" cmd_dispatch exit\n"));
     return  0;
 }
 
