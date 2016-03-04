@@ -657,6 +657,7 @@ int  getParameterValues(
             continue;
         }
         
+        CcspTraceWarning(("call get record value for %s +++\n", parameterNames[i]));
         returnStatus =
             pSysIraIf->GetRecord
                 (
@@ -671,7 +672,15 @@ int  getParameterValues(
 
         if ( returnStatus != ANSC_STATUS_BAD_SIZE )
         {
-            CcspTraceWarning(("++++ Can't find: %s! +++\n", parameterNames[i]));
+            
+            if(returnStatus != ANSC_STATUS_SUCCESS)
+        	{
+        		CcspTraceWarning(("++++ Failed for %s +++\n", parameterNames[i]));
+        		CcspTraceInfo(("getParameterValues- returnStatus %d\n",returnStatus));
+        		CcspTraceInfo(("Release Thread Lock %d\n"));
+        		pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
+        		return CCSP_FAILURE;
+       		}
         }
         else
         {
@@ -696,7 +705,14 @@ int  getParameterValues(
                         pParameterValue->val->parameterValue,
                         &ulRecordSize
                     );
-
+               if(returnStatus != ANSC_STATUS_SUCCESS)
+        	{
+        		CcspTraceWarning(("++++ Failed for %s +++\n", parameterNames[i]));
+        		CcspTraceInfo(("getParameterValues- returnStatus %d\n",returnStatus));
+        		CcspTraceInfo(("Release Thread Lock %d\n"));
+        		pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
+        		return CCSP_FAILURE;
+       		}
             pParameterValue->val->type = pRroRenderAttr->ContentType;
 
             AnscSListPushEntry(&ParameterValueList, &pParameterValue->Linkage);
@@ -726,6 +742,7 @@ int  getParameterValues(
 
     if ( hSysRoot )
     {
+           CcspTraceInfo((" getParameterValues -hSysRoot\n"));
         pSysIraIf->CloseFolder(pSysIraIf->hOwnerContext, hSysRoot);
     }
 
@@ -913,6 +930,7 @@ int setCommit(
     void            *user_data
 )
 {
+       CcspTraceInfo((" setCommit!!\n"));
     return CCSP_ERR_NOT_SUPPORT;
 }
 
