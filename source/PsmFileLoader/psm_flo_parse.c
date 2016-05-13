@@ -429,7 +429,7 @@ decodeMacAddress
             if( tempChar != ':')
             {
                 CcspTraceWarning(("Invalid Mac Address String '%s'\n", pCharData));
-
+                AnscFreeMemory(pBinaryData); /*10-May-2016 RDKB-5568 CID-32890, free the pBinaryData in case of invalid Address String*/
                 return  ANSC_STATUS_FAILURE;
             }
         }
@@ -1700,6 +1700,7 @@ loadRecordFromXML
                     AnscXmlDomNodeGetDataBinary(pChildNode, NULL, NULL, &length);
 
                     CcspTraceWarning(("Failed to read binary text value '%s'\n", pChildNode->StringData));
+                    AnscFreeMemory(pRecordValue); /*10-May-2016 RDKB-5568 CID-33233, free pRecordValue before returning*/					
 
                     return returnStatus;
                 }
