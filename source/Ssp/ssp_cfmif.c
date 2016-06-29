@@ -790,7 +790,7 @@ CfgBufferToXml(const void *buf, ULONG size)
             (PCHAR *)&tmpBuf, tmpSize)) == NULL)
     {
         PsmHalDbg(("%s: parse error\n", __FUNCTION__));
-        /*AnscFreeMemory(tmpBuf); already freed */
+        AnscFreeMemory(tmpBuf); /*10-May-2016 RDKB-5567 CID-33369, free the buffer if rootNode is null*/
         return NULL;
     }
 
