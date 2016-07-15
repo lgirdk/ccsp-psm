@@ -806,5 +806,9 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.InterfaceDevicesWifiEnabled" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsEnabled" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPEnabled" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesStatusEnabled" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesTrafficEnabled" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.InterfaceDevicesWifiExtenderEnabled" type="astr">0</Record>
+
 </Provision>
 
