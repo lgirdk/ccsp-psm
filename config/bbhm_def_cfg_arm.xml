@@ -803,5 +803,8 @@
 
   <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.NotifyWiFiChanges" type="astr">true</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.NeighbouringDiagnosticEnable" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.InterfaceDevicesWifiEnabled" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsEnabled" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPEnabled" type="astr">0</Record>
 </Provision>
 
