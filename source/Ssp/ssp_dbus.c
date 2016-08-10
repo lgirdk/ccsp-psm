@@ -591,8 +591,8 @@ int  getParameterValues(
     ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
     ULONG                           ulRecordType;
     ULONG                           ulRecordSize;
-    PSYS_RRO_RENDER_ATTR            pRroRenderAttr      = NULL;
-    PPARAMETER_VALUE                pParameterValue;
+    PSYS_RRO_RENDER_ATTR            pRroRenderAttr      = (PSYS_RRO_RENDER_ATTR)NULL;
+    PPARAMETER_VALUE                pParameterValue     = (PPARAMETER_VALUE)NULL;
     SLIST_HEADER                    ParameterValueList;
     int                             i;
    CcspTraceInfo((" inside getParameterValues\n"));
@@ -674,48 +674,77 @@ int  getParameterValues(
         {
             
             if(returnStatus != ANSC_STATUS_SUCCESS)
-        	{
-        		CcspTraceWarning(("++++ Failed for %s +++\n", parameterNames[i]));
-        		CcspTraceInfo(("getParameterValues- returnStatus %d\n",returnStatus));
-        		CcspTraceInfo(("Release Thread Lock %d\n"));
-        		pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
-        		return CCSP_FAILURE;
-       		}
+            {
+                CcspTraceWarning(("++++ Failed for %s +++\n", parameterNames[i]));
+                CcspTraceInfo(("getParameterValues- returnStatus %d\n",returnStatus));
+                CcspTraceInfo(("Release Thread Lock %d\n"));
+                pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
+                return CCSP_FAILURE;
+            }
         }
         else
         {
             *val_size = *val_size + 1;
+            returnStatus = ANSC_STATUS_FAILURE;
 
-            pParameterValue = AnscAllocateMemory(sizeof(PARAMETER_VALUE));
-            pParameterValue->val = AnscAllocateMemory(sizeof(parameterValStruct_t));
-            memset(pParameterValue->val, 0, sizeof(parameterValStruct_t));
+            if(pParameterValue = AnscAllocateMemory(sizeof(PARAMETER_VALUE)))
+            {
+                if(pParameterValue->val = AnscAllocateMemory(sizeof(parameterValStruct_t)))
+                {
+                    memset(pParameterValue->val, 0, sizeof(parameterValStruct_t));
+                    if(pParameterValue->val->parameterName = AnscAllocateMemory(strlen(parameterNames[i])+1))
+                    {
+                        strcpy(pParameterValue->val->parameterName, parameterNames[i]);
+                        if(pParameterValue->val->parameterValue = AnscAllocateMemory(ulRecordSize+1))
+                        {
+                            returnStatus =
+                                pSysIraIf->GetRecord
+                                    (
+                                        pSysIraIf->hOwnerContext,
+                                        hSysRoot,
+                                        parameterNames[i],
+                                        &ulRecordType,
+                                        (PANSC_HANDLE)&pRroRenderAttr,
+                                        pParameterValue->val->parameterValue,
+                                        &ulRecordSize
+                                    );
+                            if(returnStatus != ANSC_STATUS_SUCCESS)
+                            {
+                                CcspTraceWarning(("++++ Failed for %s +++\n", parameterNames[i]));
+                                CcspTraceInfo(("getParameterValues- returnStatus %d\n",returnStatus));
+                                CcspTraceInfo(("Release Thread Lock %d\n"));
 
-            pParameterValue->val->parameterName = AnscAllocateMemory(strlen(parameterNames[i])+1);
-            strcpy(pParameterValue->val->parameterName, parameterNames[i]);
-            pParameterValue->val->parameterValue = AnscAllocateMemory(ulRecordSize+1);
-
-            returnStatus =
-                pSysIraIf->GetRecord
-                    (
-                        pSysIraIf->hOwnerContext,
-                        hSysRoot,
-                        parameterNames[i],
-                        &ulRecordType,
-                        (PANSC_HANDLE)&pRroRenderAttr,
-                        pParameterValue->val->parameterValue,
-                        &ulRecordSize
-                    );
-               if(returnStatus != ANSC_STATUS_SUCCESS)
-        	{
-        		CcspTraceWarning(("++++ Failed for %s +++\n", parameterNames[i]));
-        		CcspTraceInfo(("getParameterValues- returnStatus %d\n",returnStatus));
-        		CcspTraceInfo(("Release Thread Lock %d\n"));
-        		pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
-        		return CCSP_FAILURE;
-       		}
-            pParameterValue->val->type = pRroRenderAttr->ContentType;
-
-            AnscSListPushEntry(&ParameterValueList, &pParameterValue->Linkage);
+                                /* RDKB-6908, CID-33005, free unused resource before exit, 
+                                ** if checks are added to avoid crashed in case malloc fails.
+                                */
+                                pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
+                                AnscFreeMemory(pParameterValue->val->parameterValue);
+                                AnscFreeMemory(pParameterValue->val->parameterName);
+                                AnscFreeMemory(pParameterValue->val);
+                                AnscFreeMemory(pParameterValue);
+                                return CCSP_FAILURE;
+                            }
+                            pParameterValue->val->type = pRroRenderAttr->ContentType;
+                            AnscSListPushEntry(&ParameterValueList, &pParameterValue->Linkage);
+                        }
+                        else
+                        {
+                            AnscFreeMemory(pParameterValue->val->parameterName);
+                            AnscFreeMemory(pParameterValue->val);
+                            AnscFreeMemory(pParameterValue);
+                        }
+                    }
+                    else
+                    {
+                        AnscFreeMemory(pParameterValue->val);
+                        AnscFreeMemory(pParameterValue);
+                    }
+                }
+                else
+                {
+                    AnscFreeMemory(pParameterValue);
+                }
+            }
         }
     }
 
