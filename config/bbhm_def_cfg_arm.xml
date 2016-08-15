@@ -810,5 +810,18 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesTrafficEnabled" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.InterfaceDevicesWifiExtenderEnabled" type="astr">0</Record>
 
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesStatusReportingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesStatusPollingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesStatusDefReportingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesStatusDefPollingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesTrafficReportingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesTrafficPollingPeriod" type="astr">300</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesTrafficDefReportingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesTrafficDefPollingPeriod" type="astr">300</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.InterfaceDevicesWifiExtenderReportingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.InterfaceDevicesWifiExtenderPollingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.InterfaceDevicesWifiExtenderDefReportingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.InterfaceDevicesWifiExtenderDefPollingPeriod" type="astr">900</Record>
+
 </Provision>
 
