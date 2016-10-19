@@ -52,6 +52,10 @@
 
 #include "ssp_global.h"
 
+#ifdef ENABLE_SD_NOTIFY
+#include <systemd/sd-daemon.h>
+#endif
+
 #ifdef INCLUDE_BREAKPAD
 #include "breakpad_wrapper.h"
 #endif
@@ -290,13 +294,10 @@ int main(int argc, char* argv[])
     if ( bRunAsDaemon )
     	daemonize();
 
-    /*This is used for ccsp recovery manager */
-    fprintf(stderr, "%s -- %d", __FUNCTION__, __LINE__);
-
     fd = fopen("/var/tmp/PsmSsp.pid", "w+");
     if ( !fd )
     {
-        AnscTrace("Create /var/tmp/PsmSsp.pid error. \n");
+        CcspTraceWarning(("Create /var/tmp/PsmSsp.pid error. \n"));
         return 1;
     }
     else
@@ -338,6 +339,14 @@ int main(int argc, char* argv[])
     gather_info();
 
     cmd_dispatch('e');
+	
+#ifdef ENABLE_SD_NOTIFY
+    sd_notifyf(0, "READY=1\n"
+              "STATUS=PsmSsp is Successfully Initialized\n"
+              "MAINPID=%lu", (unsigned long) getpid());
+  
+    CcspTraceInfo(("RDKB_SYSTEM_BOOT_UP_LOG : PsmSsp sd_notify Called\n"));
+#endif
 
 	RDKLogEnable = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
 	RDKLogLevel = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LogLevel");
