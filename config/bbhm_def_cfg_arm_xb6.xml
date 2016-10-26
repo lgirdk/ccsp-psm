@@ -701,6 +701,65 @@
   <Record name="dmsb.dhcpv4.server.pool.3.IPInterface" type="astr">6</Record>
   <!-- guest network end -->
 
+  <!-- LnF network -->
+  <Record name="dmsb.l2net.6.AllowDelete" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.6.Name" type="astr">br106</Record>
+  <Record name="dmsb.l2net.6.Vid" type="astr">106</Record>
+  <Record name="dmsb.l2net.6.PriorityTag" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.6.Enable" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.6.Alias" type="astr">LnF</Record>
+  <Record name="dmsb.l2net.6.Standard" type="astr">BRG_STD_8021Q_2005</Record>
+  <Record name="dmsb.l2net.6.InstanceNum" type="astr">6</Record>
+  <Record name="dmsb.l2net.6.Type" type="astr">Bridge</Record>
+  <Record name="dmsb.l2net.6.Members.SW" type="astr"></Record>
+  <Record name="dmsb.l2net.6.Members.Eth" type="astr"> </Record>
+  <Record name="dmsb.l2net.6.Members.Moca" type="astr"> </Record>
+  <Record name="dmsb.l2net.6.Members.WiFi" type="astr">ath6 ath7</Record>
+  <Record name="dmsb.l2net.6.Members.Link" type="astr">l2sd0-t</Record>
+
+  <Record name="dmsb.l2net.6.Vlan.1.Alias" type="astr">CPE-VLAN1</Record>
+  <Record name="dmsb.l2net.6.Vlan.1.InstanceNum" type="astr">1</Record>
+
+  <Record name="dmsb.l2net.6.Port.1.AllowDelete" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.6.Port.1.Pvid" type="astr">106</Record>
+  <Record name="dmsb.l2net.6.Port.1.PriorityTag" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.6.Port.1.Enable" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.6.Port.1.Alias" type="astr">Port1</Record>
+  <Record name="dmsb.l2net.6.Port.1.Name" type="astr">br106</Record>
+  <Record name="dmsb.l2net.6.Port.1.LinkName" type="astr"> </Record>
+  <Record name="dmsb.l2net.6.Port.1.LinkType" type="astr">NONE</Record>
+  <Record name="dmsb.l2net.6.Port.1.Management" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.6.Port.1.Mode" type="astr">Tagging</Record>
+  <Record name="dmsb.l2net.6.Port.1.InstanceNum" type="astr">1</Record>
+  <Record name="dmsb.l2net.6.Port.1.Upstream" type="astr">FALSE</Record>
+  
+  <Record name="dmsb.l2net.6.Port.2.AllowDelete" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.6.Port.2.Pvid" type="astr">106</Record>
+  <Record name="dmsb.l2net.6.Port.2.PriorityTag" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.6.Port.2.Enable" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.6.Port.2.Alias" type="astr">Port2</Record>
+  <Record name="dmsb.l2net.6.Port.2.Name" type="astr">ath6</Record>
+  <Record name="dmsb.l2net.6.Port.2.LinkName" type="astr">ath6</Record>
+  <Record name="dmsb.l2net.6.Port.2.LinkType" type="astr">WiFi</Record>
+  <Record name="dmsb.l2net.6.Port.2.Management" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.6.Port.2.Mode" type="astr">Tagging</Record>
+  <Record name="dmsb.l2net.6.Port.2.InstanceNum" type="astr">2</Record>
+  <Record name="dmsb.l2net.6.Port.2.Upstream" type="astr">FALSE</Record>
+    
+  <Record name="dmsb.l2net.6.Port.3.AllowDelete" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.6.Port.3.Pvid" type="astr">106</Record>
+  <Record name="dmsb.l2net.6.Port.3.PriorityTag" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.6.Port.3.Enable" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.6.Port.3.Alias" type="astr">Port3</Record>
+  <Record name="dmsb.l2net.6.Port.3.Name" type="astr">ath7</Record>
+  <Record name="dmsb.l2net.6.Port.3.LinkName" type="astr">ath7</Record>
+  <Record name="dmsb.l2net.6.Port.3.LinkType" type="astr">WiFi</Record>
+  <Record name="dmsb.l2net.6.Port.3.Management" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.6.Port.3.Mode" type="astr">Tagging</Record>
+  <Record name="dmsb.l2net.6.Port.3.InstanceNum" type="astr">3</Record>
+  <Record name="dmsb.l2net.6.Port.3.Upstream" type="astr">FALSE</Record>
+  <!-- LnF network end -->
+  
   <Record name="dmsb.MultiLAN.PrimaryLAN_l3net" type="astr" contentType="uint">4</Record>
   <Record name="dmsb.MultiLAN.HomeSecurity_l3net" type="astr" contentType="uint">5</Record>
   <Record name="dmsb.MultiLAN.PrimaryLAN_l2net" type="astr" contentType="uint">1</Record>
@@ -803,5 +862,37 @@
 
   <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.NotifyWiFiChanges" type="astr">true</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.NeighbouringDiagnosticEnable" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.InterfaceDevicesWifiEnabled" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsEnabled" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPEnabled" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesStatusEnabled" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesTrafficEnabled" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.InterfaceDevicesWifiExtenderEnabled" type="astr">0</Record>
+
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesStatusReportingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesStatusPollingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesStatusDefReportingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesStatusDefPollingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesTrafficReportingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesTrafficPollingPeriod" type="astr">300</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesTrafficDefReportingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.NetworkDevicesTrafficDefPollingPeriod" type="astr">300</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.InterfaceDevicesWifiExtenderReportingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.InterfaceDevicesWifiExtenderPollingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.InterfaceDevicesWifiExtenderDefReportingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.InterfaceDevicesWifiExtenderDefPollingPeriod" type="astr">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.InterfaceDevicesWifiPollingPeriod" type="astr" contentType="uint">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.InterfaceDevicesWifiReportingPeriod" type="astr" contentType="uint">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsPollingPeriod" type="astr" contentType="uint">300</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsReportingPeriod" type="astr" contentType="uint">300</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPPollingPeriod" type="astr" contentType="uint">21600</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPReportingPeriod" type="astr" contentType="uint">43200</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.InterfaceDevicesWifiDefaultPollingPeriod" type="astr" contentType="uint">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.InterfaceDevicesWifiDefaultReportingPeriod" type="astr" contentType="uint">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsDefaultPollingPeriod" type="astr" contentType="uint">300</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsDefaultReportingPeriod" type="astr" contentType="uint">300</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPDefaultPollingPeriod" type="astr" contentType="uint">21600</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPDefaultReportingPeriod" type="astr" contentType="uint">43200</Record>
+
 </Provision>
 
