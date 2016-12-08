@@ -136,7 +136,7 @@ PsmSysroCreate
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PANSC_COMPONENT_OBJECT          pBaseObject  = NULL;
     PPSM_SYS_REGISTRY_OBJECT        pMyObject    = NULL;
-    CcspTraceInfo(("\n##PsmSysRoCreate() begins##\n"));
+   // CcspTraceInfo(("\n##PsmSysRoCreate() begins##\n"));
 
     /*
      * We create object by first allocating memory for holding the variables and member functions.
@@ -168,7 +168,7 @@ PsmSysroCreate
 
     pBaseObject->EnrollObjects((ANSC_HANDLE)pBaseObject);
     pBaseObject->Initialize   ((ANSC_HANDLE)pBaseObject);
-	CcspTraceInfo(("\n##PsmSysRoCreate() ends##\n"));
+	//CcspTraceInfo(("\n##PsmSysRoCreate() ends##\n"));
     return  (ANSC_HANDLE)pMyObject;
 }
 
@@ -298,7 +298,7 @@ PsmSysroEnrollObjects
     PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT  )pMyObject->hSysInfoRepository;
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj       = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
     PANSC_TDO_CLIENT_OBJECT         pRegTimerIf        = (PANSC_TDO_CLIENT_OBJECT      )pMyObject->hRegTimerIf;
-CcspTraceInfo(("\n##PsmSysroEnrollObjects() beginss##\n"));
+//CcspTraceInfo(("\n##PsmSysroEnrollObjects() beginss##\n"));
     if ( !pPsmCfmIf )
     {
         pPsmCfmIf = (PPSM_CFM_INTERFACE)AnscAllocateMemory(sizeof(PSM_CFM_INTERFACE));
@@ -430,7 +430,7 @@ CcspTraceInfo(("\n##PsmSysroEnrollObjects() beginss##\n"));
     }
 
     AnscCoEnrollObjects((ANSC_HANDLE)pMyObject);
-CcspTraceInfo(("\n##PsmSysroEnrollObjects() ends##\n"));
+//CcspTraceInfo(("\n##PsmSysroEnrollObjects() ends##\n"));
     return  ANSC_STATUS_SUCCESS;
 }
 

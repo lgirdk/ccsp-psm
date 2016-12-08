@@ -183,7 +183,7 @@ PsmFloLoadRegFile
         ANSC_HANDLE                 hThisObject
     )
 {
-    CcspTraceInfo(("PsmFloLoadRegFile begins\n"));
+    //CcspTraceInfo(("PsmFloLoadRegFile begins\n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
     PPSM_CFM_INTERFACE              pPsmCfmIf    = (PPSM_CFM_INTERFACE     )pMyObject->hPsmCfmIf;
@@ -279,7 +279,7 @@ EXIT:
     	CcspTraceInfo(("PsmFloLoadRegFile, hSysRoot folder closed\n"));
     }
 
-    CcspTraceInfo(("PsmFloLoadRegFile, ends '\n"));
+   // CcspTraceInfo(("PsmFloLoadRegFile, ends '\n"));
     return  returnStatus;
 }
 

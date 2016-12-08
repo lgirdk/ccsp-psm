@@ -141,7 +141,7 @@ PsmFloCreate
      * We create object by first allocating memory for holding the variables and member functions.
      */
     pMyObject = (PPSM_FILE_LOADER_OBJECT)AnscAllocateMemory(sizeof(PSM_FILE_LOADER_OBJECT));
-    	CcspTraceInfo(("PsmFloCreate begins \n"));
+    	//CcspTraceInfo(("PsmFloCreate begins \n"));
     if ( !pMyObject )
     {
     	CcspTraceInfo(("%s, Failed to Create pMyObject \n",__FUNCTION__));
@@ -170,7 +170,7 @@ PsmFloCreate
     pBaseObject->Initialize   ((ANSC_HANDLE)pBaseObject);
 
 	CcspTraceInfo(("Initialized Common Variables'\n"));
-	CcspTraceInfo(("PsmFloCreate ends '\n"));
+	//CcspTraceInfo(("PsmFloCreate ends '\n"));
     return  (ANSC_HANDLE)pMyObject;
 }
 
@@ -303,7 +303,7 @@ PsmFloInitialize
      * C++ you don't have to initialize all the member fields inherited from the base class since
      * the compiler will do it for you, such is not the case with C.
      */
-    CcspTraceInfo(("PsmFloInitialize begins '\n"));
+   // CcspTraceInfo(("PsmFloInitialize begins '\n"));
     AnscCoInitialize((ANSC_HANDLE)pMyObject);
     CcspTraceInfo(("PsmFloInitialize, initialization member function of the base class'\n"));
 
@@ -348,6 +348,6 @@ PsmFloInitialize
      */
     pMyObject->ResetProperty((ANSC_HANDLE)pMyObject);
 	CcspTraceInfo(("PsmFloInitialize, initialization of member fields'\n"));
-	    CcspTraceInfo(("PsmFloInitialize ends '\n"));
+	 //   CcspTraceInfo(("PsmFloInitialize ends '\n"));
     return  ANSC_STATUS_SUCCESS;
 }

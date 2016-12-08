@@ -2047,7 +2047,7 @@ PsmSysFolderFromXMLHandle
         ANSC_HANDLE                 hXMLHandle
     )
 {
-    CcspTraceInfo(("PsmSysFolderFromXMLHandle begins '\n"));  
+    //CcspTraceInfo(("PsmSysFolderFromXMLHandle begins '\n"));  
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PSYS_IRA_INTERFACE              pSysIraIf          = (PSYS_IRA_INTERFACE       )hSysIraIf;
     PANSC_XML_DOM_NODE_OBJECT       pXMLRoot           = (PANSC_XML_DOM_NODE_OBJECT)hXMLHandle;
@@ -2106,6 +2106,6 @@ PsmSysFolderFromXMLHandle
         pChildNode = (PANSC_XML_DOM_NODE_OBJECT)
             AnscXmlDomNodeGetNextChild(pXMLRoot, pChildNode);
     }
-    CcspTraceInfo(("PsmSysFolderFromXMLHandle ends '\n"));  
+    //CcspTraceInfo(("PsmSysFolderFromXMLHandle ends '\n"));  
     return  returnStatus;
 }

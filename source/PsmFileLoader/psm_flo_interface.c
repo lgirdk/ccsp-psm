@@ -130,9 +130,9 @@ PsmCreateFileLoader
         ANSC_HANDLE                 hAnscReserved
     )
 {
-    CcspTraceInfo(("PsmCreateFileLoader begins '\n"));
+    //CcspTraceInfo(("PsmCreateFileLoader begins '\n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
         CcspTraceInfo(("PsmCreateFileLoader-New File LoaderObject is created \n"));
-        CcspTraceInfo(("PsmCreateFileLoader ends '\n"));
+      //  CcspTraceInfo(("PsmCreateFileLoader ends '\n"));
          return  PsmFloCreate(hContainerContext, hOwnerContext, hAnscReserved);
 }
