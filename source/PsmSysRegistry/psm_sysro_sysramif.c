@@ -192,7 +192,7 @@ PsmSysroSysRamNotify
     PPSM_SYS_REGISTRY_PROPERTY     pProperty       = (PPSM_SYS_REGISTRY_PROPERTY  )&pMyObject->Property;
     PPSM_FILE_LOADER_OBJECT        pPsmFileLoader = (PPSM_FILE_LOADER_OBJECT     )pMyObject->hPsmFileLoader;
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj    = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
-CcspTraceInfo(("\n##PsmSysroSysRamNotify() begins##\n"));
+//CcspTraceInfo(("\n##PsmSysroSysRamNotify() begins##\n"));
     if ( pMyObject->bNoSave || pMyObject->bSaveInProgress )
     {
         return  ANSC_STATUS_SUCCESS;
@@ -221,6 +221,6 @@ CcspTraceInfo(("\n##PsmSysroSysRamNotify() begins##\n"));
 
                 break;
     }
-CcspTraceInfo(("\n##PsmSysroSysRamNotify() ends##\n"));
+//CcspTraceInfo(("\n##PsmSysroSysRamNotify() ends##\n"));
     return  returnStatus;
 }

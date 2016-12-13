@@ -595,7 +595,7 @@ int  getParameterValues(
     PPARAMETER_VALUE                pParameterValue     = (PPARAMETER_VALUE)NULL;
     SLIST_HEADER                    ParameterValueList;
     int                             i;
-   CcspTraceInfo((" inside getParameterValues\n"));
+ //  CcspTraceInfo((" inside getParameterValues\n"));
     if ( pPsmSysRegistry == NULL )
     {
     	CcspTraceInfo(("getParameterValues- pPsmSysRegistry is NULL\n"));
@@ -675,9 +675,9 @@ int  getParameterValues(
             
             if(returnStatus != ANSC_STATUS_SUCCESS)
             {
-                CcspTraceWarning(("++++ Failed for %s +++\n", parameterNames[i]));
+                //CcspTraceWarning(("++++ Failed for %s +++\n", parameterNames[i]));
                 CcspTraceInfo(("getParameterValues- returnStatus %d\n",returnStatus));
-                CcspTraceInfo(("Release Thread Lock %d\n"));
+                //CcspTraceInfo(("Release Thread Lock %d\n"));
                 pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
                 return CCSP_FAILURE;
             }
@@ -710,9 +710,9 @@ int  getParameterValues(
                                     );
                             if(returnStatus != ANSC_STATUS_SUCCESS)
                             {
-                                CcspTraceWarning(("++++ Failed for %s +++\n", parameterNames[i]));
+                                //CcspTraceWarning(("++++ Failed for %s +++\n", parameterNames[i]));
                                 CcspTraceInfo(("getParameterValues- returnStatus %d\n",returnStatus));
-                                CcspTraceInfo(("Release Thread Lock %d\n"));
+                               // CcspTraceInfo(("Release Thread Lock %d\n"));
 
                                 /* RDKB-6908, CID-33005, free unused resource before exit, 
                                 ** if checks are added to avoid crashed in case malloc fails.
@@ -771,12 +771,12 @@ int  getParameterValues(
 
     if ( hSysRoot )
     {
-           CcspTraceInfo((" getParameterValues -hSysRoot\n"));
+          // CcspTraceInfo((" getParameterValues -hSysRoot\n"));
         pSysIraIf->CloseFolder(pSysIraIf->hOwnerContext, hSysRoot);
     }
 
     pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
-       CcspTraceInfo((" getParameterValues exit\n"));
+     //  CcspTraceInfo((" getParameterValues exit\n"));
     return CCSP_SUCCESS;
 }
 
@@ -799,7 +799,7 @@ int  setParameterValues(
     PPSM_FILE_LOADER_OBJECT         pPsmFileLoader      = (PPSM_FILE_LOADER_OBJECT    )pPsmSysRegistry->hPsmFileLoader;
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj    = (PANSC_TIMER_DESCRIPTOR_OBJECT)pPsmSysRegistry->hRegTimerObj;
     int                             i;
-       CcspTraceInfo((" inside setParameterValues \n"));
+    //   CcspTraceInfo((" inside setParameterValues \n"));
     if ( pPsmSysRegistry == NULL )
     {
        CcspTraceInfo(("setParameterValues- pPsmSysRegistry is NULL\n"));
@@ -948,7 +948,7 @@ int  setParameterValues(
     pSysIraIf->CloseFolder(pSysIraIf->hOwnerContext, hSysRoot);
 
     pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
-           CcspTraceInfo((" setParameterValues exit\n"));
+         //  CcspTraceInfo((" setParameterValues exit\n"));
     return CCSP_SUCCESS;
 }
 
@@ -1067,7 +1067,7 @@ int getParameterNames(
     SLIST_HEADER                    ParameterInfoList;
     PSINGLE_LINK_ENTRY              pSLinkEntry         = NULL;
     parameterInfoStruct_t         **val                 = NULL;
-    CcspTraceInfo(("getParameterNames begins\n"));
+    //CcspTraceInfo(("getParameterNames begins\n"));
     if ( !parameterName )
     {
         CcspTraceError(("RDKB_SYSTEM_BOOT_UP_LOG : PSM Input parameter invalid for getParameterNames!\n"));
@@ -1213,7 +1213,7 @@ int getParameterNames(
     }
 
     pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
-        CcspTraceInfo(("getParameterNames ends\n"));
+        //CcspTraceInfo(("getParameterNames ends\n"));
     return CCSP_SUCCESS;
 }
 

@@ -601,7 +601,7 @@ ssp_CfmReadCurConfig
      *
      * it's always not overwrite.
      */
-    CcspTraceInfo(("ssp_CfmReadCurConfig begins\n"));    
+    //CcspTraceInfo(("ssp_CfmReadCurConfig begins\n"));    
     snprintf(path, sizeof(path), "%s%s", pProp->SysFilePath, pProp->CurFileName);
 again:
     /* load config file to Hash for fast merging and import */
@@ -630,7 +630,7 @@ again:
         CcspTraceInfo((" ssp_CfmReadCurConfig-flush_records((char **)ppCfgBuffer, pulCfgSize) != 0\n"));    
         return ANSC_STATUS_FAILURE;
     }
-    CcspTraceInfo(("ssp_CfmReadCurConfig ends\n"));    
+    //CcspTraceInfo(("ssp_CfmReadCurConfig ends\n"));    
     return ssp_CfmSaveCurConfig(hThisObject, *ppCfgBuffer, *pulCfgSize);
 }
 
@@ -1239,7 +1239,7 @@ ssp_CfmSaveCurConfig
     /* save current to backup config */
     snprintf(curPath, sizeof(curPath), "%s%s", pProp->SysFilePath, pProp->CurFileName);
     snprintf(bakPath, sizeof(bakPath), "%s%s", pProp->SysFilePath, pProp->BakFileName);
-    CcspTraceInfo(("ssp_CfmSaveCurConfig begins\n"));    
+    //CcspTraceInfo(("ssp_CfmSaveCurConfig begins\n"));    
     if (AnscCopyFile(curPath, bakPath, TRUE) != ANSC_STATUS_SUCCESS)
         PsmHalDbg(("%s: fail to backup current config\n", __FUNCTION__));
 
@@ -1259,7 +1259,7 @@ ssp_CfmSaveCurConfig
     }
 
     AnscCloseFile(pFile);
-    CcspTraceInfo(("ssp_CfmSaveCurConfig ends\n"));    
+    //CcspTraceInfo(("ssp_CfmSaveCurConfig ends\n"));    
     return ANSC_STATUS_SUCCESS;
 }
 

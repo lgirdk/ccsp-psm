@@ -169,13 +169,13 @@ PsmFloSetPsmCfmIf
         ANSC_HANDLE                 hInterface
     )
 {
-    CcspTraceInfo(("PsmFloSetPsmCfmIf begins \n"));
+    //CcspTraceInfo(("PsmFloSetPsmCfmIf begins \n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
 
     pMyObject->hPsmCfmIf = hInterface;
 		CcspTraceInfo(("Psm Cfm Interface is set\n"));
-		CcspTraceInfo(("PsmFloSetPsmCfmIf ends \n"));
+		//CcspTraceInfo(("PsmFloSetPsmCfmIf ends \n"));
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -254,13 +254,13 @@ PsmFloSetSysIraIf
         ANSC_HANDLE                 hInterface
     )
 {
-    CcspTraceInfo(("PsmFloSetSysIraIf begins \n"));
+   // CcspTraceInfo(("PsmFloSetSysIraIf begins \n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
 
     pMyObject->hSysIraIf = hInterface;
 		CcspTraceInfo(("System Ira Interface is set\n"));
-		    CcspTraceInfo(("PsmFloSetSysIraIf ends \n"));
+	//	    CcspTraceInfo(("PsmFloSetSysIraIf ends \n"));
     return ANSC_STATUS_SUCCESS;
 }
 
