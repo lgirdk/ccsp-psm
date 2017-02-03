@@ -200,7 +200,7 @@ PsmSysroRemove
 
     pMyObject->Cancel((ANSC_HANDLE)pMyObject);
     pMyObject->Reset ((ANSC_HANDLE)pMyObject);
-	CcspTraceInfo(("\n##PsmSysRoRemove() begins##\n"));
+//	CcspTraceInfo(("\n##PsmSysRoRemove() begins##\n"));
     if ( pPsmCfmIf )
     {
         AnscFreeMemory(pPsmCfmIf);
@@ -241,7 +241,7 @@ PsmSysroRemove
     AnscFreeLock(&pMyObject->AccessLock);
     AnscCoRemove((ANSC_HANDLE)pMyObject);
     CcspTraceInfo(("\nmemory dealloc\n"));
-	CcspTraceInfo(("\n##PsmSysRoRemove() ends##\n"));
+//	CcspTraceInfo(("\n##PsmSysRoRemove() ends##\n"));
     return  ANSC_STATUS_SUCCESS;
 }
 
@@ -465,7 +465,7 @@ PsmSysroInitialize
      * the compiler will do it for you, such is not the case with C.
      */
     AnscCoInitialize((ANSC_HANDLE)pMyObject);
-CcspTraceInfo(("\n##PsmSysroInitialize() beginss##\n"));
+//CcspTraceInfo(("\n##PsmSysroInitialize() beginss##\n"));
     /*
      * Although we have initialized some of the member fields in the "create" member function, we
      * repeat the work here for completeness. While this simulation approach is pretty stupid from
@@ -525,6 +525,6 @@ CcspTraceInfo(("\n##PsmSysroInitialize() beginss##\n"));
      * property, the following code also needs to be changed.
      */
     pMyObject->ResetProperty((ANSC_HANDLE)pMyObject);
-    CcspTraceInfo(("\n##PsmSysroInitialize() ends##\n"));
+//    CcspTraceInfo(("\n##PsmSysroInitialize() ends##\n"));
     return  ANSC_STATUS_SUCCESS;
 }

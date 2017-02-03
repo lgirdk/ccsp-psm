@@ -118,7 +118,7 @@ PsmFloTestRegFile
         ULONG                       ulCfgSize
     )
 {
-    CcspTraceInfo(("PsmFloTestRegFile begins '\n"));
+    //CcspTraceInfo(("PsmFloTestRegFile begins '\n"));
     PANSC_XML_DOM_NODE_OBJECT       pRootNode = NULL;
     PUCHAR                          pBack     = (PUCHAR)pCfgBuffer;
     ULONG                           uLength   = ulCfgSize;
@@ -134,7 +134,7 @@ PsmFloTestRegFile
     }
 
     AnscXmlDomNodeRemove(pRootNode);
-    CcspTraceInfo(("PsmFloTestRegFile, ends '\n"));
+    //CcspTraceInfo(("PsmFloTestRegFile, ends '\n"));
     return PSM_FLO_ERROR_CODE_noError;
 }
 
@@ -309,7 +309,7 @@ PsmFloSaveRegFile
     ULONG                           dataLength   = 0;
     ULONG                           totalLength  = 0;
     ANSC_HANDLE                     hSysRoot     = NULL;
-    CcspTraceInfo(("PsmFloSaveRegFile begins \n"));
+    //CcspTraceInfo(("PsmFloSaveRegFile begins \n"));
     if ( !pMyObject->bActive )
     {
         return ANSC_STATUS_NOT_READY;
@@ -439,6 +439,6 @@ EXIT:
     pSysIraIf->RelWriteAccess(pSysIraIf->hOwnerContext);
 
     CcspTraceInfo(("RelWriteAccess in 'PsmFloSaveRegFile'\n"));
-    CcspTraceInfo(("PsmFloSaveRegFile ends \n"));
+    //CcspTraceInfo(("PsmFloSaveRegFile ends \n"));
     return  returnStatus;
 }

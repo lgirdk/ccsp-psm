@@ -117,7 +117,7 @@ PsmSysroSysRamEnableFileSync
     PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
 
     AnscAcquireLock(&pMyObject->AccessLock);
-CcspTraceInfo(("\n##PsmSysroSysRamEnableFileSync() begins##\n"));
+//CcspTraceInfo(("\n##PsmSysroSysRamEnableFileSync() begins##\n"));
     if ( bEnabled )
     {
         pMyObject->FileSyncRefCount--;
@@ -128,7 +128,7 @@ CcspTraceInfo(("\n##PsmSysroSysRamEnableFileSync() begins##\n"));
     }
 
     AnscReleaseLock(&pMyObject->AccessLock);
-CcspTraceInfo(("\n##PsmSysroSysRamEnableFileSync() ENDs##\n"));
+//CcspTraceInfo(("\n##PsmSysroSysRamEnableFileSync() ENDs##\n"));
     return  ANSC_STATUS_SUCCESS;
 }
 

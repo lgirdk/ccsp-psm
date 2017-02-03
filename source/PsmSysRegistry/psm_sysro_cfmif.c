@@ -123,7 +123,7 @@ PsmSysroCfmReadCurConfig
     PPSM_FILE_LOADER_OBJECT        pPsmFileLoader    = (PPSM_FILE_LOADER_OBJECT   )pMyObject->hPsmFileLoader;
     PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT)pMyObject->hSysInfoRepository;
     PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
-     CcspTraceInfo(("\n##PsmSysroCfmReadCurConfig() beginss##\n"));
+//     CcspTraceInfo(("\n##PsmSysroCfmReadCurConfig() beginss##\n"));
     ANSC_HANDLE                     hCurCfgFile        = (ANSC_HANDLE                )NULL;
     ANSC_HANDLE                     hBakCfgFile        = (ANSC_HANDLE                )NULL;
     ULONG                           ulFileSize         = (ULONG                      )0;
@@ -327,7 +327,7 @@ EXIT2:
     }
 
 EXIT1:
-   CcspTraceInfo(("\n##PsmSysroCfmReadCurConfig() ends##\n"));
+//   CcspTraceInfo(("\n##PsmSysroCfmReadCurConfig() ends##\n"));
     return  returnStatus;
 }
 
@@ -379,7 +379,7 @@ PsmSysroCfmReadDefConfig
     PPSM_FILE_LOADER_OBJECT        pPsmFileLoader    = (PPSM_FILE_LOADER_OBJECT   )pMyObject->hPsmFileLoader;
     PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT)pMyObject->hSysInfoRepository;
     PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
-     CcspTraceInfo(("\n##PsmSysroCfmReadDefConfig() beginss##\n"));
+//     CcspTraceInfo(("\n##PsmSysroCfmReadDefConfig() beginss##\n"));
     ANSC_HANDLE                     hDefCfgFile        = (ANSC_HANDLE                )NULL;
     ULONG                           ulFileSize         = (ULONG                      )0;
     void*                           pCfgBuffer         = (void*                      )NULL;
@@ -470,7 +470,7 @@ EXIT2:
     }
 
 EXIT1:
-	       CcspTraceInfo(("\n##PsmSysroCfmReadDefConfig() ends##\n"));
+//	       CcspTraceInfo(("\n##PsmSysroCfmReadDefConfig() ends##\n"));
     return  returnStatus;
 }
 
@@ -522,7 +522,7 @@ PsmSysroCfmSaveCurConfig
     PPSM_FILE_LOADER_OBJECT        pPsmFileLoader    = (PPSM_FILE_LOADER_OBJECT   )pMyObject->hPsmFileLoader;
     PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT)pMyObject->hSysInfoRepository;
     PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
-    CcspTraceInfo(("\n##PsmSysroCfmSaveCurConfig() begins##\n"));
+//    CcspTraceInfo(("\n##PsmSysroCfmSaveCurConfig() begins##\n"));
     ANSC_HANDLE                     hCurCfgFile        = (ANSC_HANDLE                )NULL;
     char                            curCfgFileName[128];
     char                            bakCfgFileName[128];
@@ -607,6 +607,6 @@ EXIT2:
     }
 
 EXIT1:
-	CcspTraceInfo(("\n##PsmSysroCfmSaveCurConfig() ends##\n"));
+//	CcspTraceInfo(("\n##PsmSysroCfmSaveCurConfig() ends##\n"));
     return  returnStatus;
 }
