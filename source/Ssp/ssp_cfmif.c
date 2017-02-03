@@ -41,21 +41,7 @@
         For Persistent Storage Manager Implementation (PSM),
         Common Component Software Platform (CCSP)
 
-    ---------------------------------------------------------------
-
-                    Copyright (c) 2011, Cisco Systems, Inc.
-
-                            CISCO CONFIDENTIAL
-              Unauthorized distribution or copying is prohibited
-                            All rights reserved
-
- No part of this computer software may be reprinted, reproduced or utilized
- in any form or by any electronic, mechanical, or other means, now known or
- hereafter invented, including photocopying and recording, or using any
- information storage and retrieval system, without permission in writing
- from Cisco Systems, Inc.
-
-    ---------------------------------------------------------------
+   ---------------------------------------------------------------
 
     description:
 
