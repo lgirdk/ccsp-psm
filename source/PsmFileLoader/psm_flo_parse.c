@@ -1846,7 +1846,7 @@ PsmSysFolderToXMLHandle
         ANSC_HANDLE                 hXMLHandle
     )
 {
-    CcspTraceInfo(("PsmSysFolderToXMLHandle begins '\n"));  
+    //CcspTraceInfo(("PsmSysFolderToXMLHandle begins '\n"));  
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PSYS_IRA_INTERFACE              pSysIraIf          = (PSYS_IRA_INTERFACE       )hSysIraIf;
     PANSC_XML_DOM_NODE_OBJECT       pXMLRoot           = (PANSC_XML_DOM_NODE_OBJECT)hXMLHandle;
@@ -1988,7 +1988,7 @@ PsmSysFolderToXMLHandle
             CcspTraceWarning(("Failed to EnumSubFolder - %d\n", i));
         }
     }
-    CcspTraceInfo(("PsmSysFolderToXMLHandle ends '\n"));  
+    //CcspTraceInfo(("PsmSysFolderToXMLHandle ends '\n"));  
     return  returnStatus;
 }
 

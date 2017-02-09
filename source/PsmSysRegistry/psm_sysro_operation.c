@@ -116,7 +116,7 @@ PsmSysroEngage
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj           = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
     PSYS_IRA_INTERFACE              pSysIraIf              = (PSYS_IRA_INTERFACE           )pSysInfoRepository->GetIraIf    ((ANSC_HANDLE)pSysInfoRepository);
 
-    CcspTraceInfo(("\n##PsmSysRegistry.Engage() begins##\n"));
+//    CcspTraceInfo(("\n##PsmSysRegistry.Engage() begins##\n"));
 
     if ( pMyObject->bActive )
     {
@@ -158,7 +158,7 @@ PsmSysroEngage
 
     returnStatus = ANSC_STATUS_SUCCESS;
 
-    CcspTraceInfo(("\n##PsmSysRegistry.Engage() ends##\n"));
+//    CcspTraceInfo(("\n##PsmSysRegistry.Engage() ends##\n"));
 
     goto  EXIT1;
 
@@ -290,7 +290,7 @@ PsmSysroRegTimerInvoke
         return  ANSC_STATUS_SUCCESS;
     }
 
-    CcspTraceInfo(("\n##PsmSysRegistry.RegTimerInvoke() begins##\n"));
+//    CcspTraceInfo(("\n##PsmSysRegistry.RegTimerInvoke() begins##\n"));
 
     AnscAcquireLock(&pMyObject->AccessLock);
     pSysIraIf->AcqThreadLock(pSysIraIf->hOwnerContext);
@@ -320,7 +320,7 @@ EXIT1:
     pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
     AnscReleaseLock(&pMyObject->AccessLock);
 
-    CcspTraceInfo(("\n##PsmSysRegistry.RegTimerInvoke() ends##\n"));
+//    CcspTraceInfo(("\n##PsmSysRegistry.RegTimerInvoke() ends##\n"));
 
     return  returnStatus;
 }

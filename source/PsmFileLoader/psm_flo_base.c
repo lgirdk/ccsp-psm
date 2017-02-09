@@ -135,7 +135,7 @@ PsmFloCreate
     }
     else
     {
-    	CcspTraceInfo(("%s, Created pMyObject\n",__FUNCTION__));
+    	//CcspTraceInfo(("%s, Created pMyObject\n",__FUNCTION__));
         pBaseObject = (PANSC_COMPONENT_OBJECT)pMyObject;
     }
 
@@ -191,7 +191,7 @@ PsmFloRemove
         ANSC_HANDLE                 hThisObject
     )
 {
-	CcspTraceInfo(("PsmFloRemove begins \n"));
+	//CcspTraceInfo(("PsmFloRemove begins \n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
 
@@ -200,7 +200,7 @@ PsmFloRemove
 
     AnscCoRemove((ANSC_HANDLE)pMyObject);
 	CcspTraceInfo(("PsmFloRemove Removed pMyObject\n"));
-	CcspTraceInfo(("PsmFloRemove ends\n"));
+	//CcspTraceInfo(("PsmFloRemove ends\n"));
     return  ANSC_STATUS_SUCCESS;
 }
 
@@ -235,13 +235,13 @@ PsmFloEnrollObjects
         ANSC_HANDLE                 hThisObject
     )
 {
-	CcspTraceInfo(("PsmFloEnrollObjects begins '\n"));
+	//CcspTraceInfo(("PsmFloEnrollObjects begins '\n"));
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
 
     AnscCoEnrollObjects((ANSC_HANDLE)pMyObject);
 	CcspTraceInfo(("PsmFloEnrollObjects, Enrolled objectes required by pMyObject'\n"));
-	CcspTraceInfo(("PsmFloEnrollObjects ends '\n"));
+	//CcspTraceInfo(("PsmFloEnrollObjects ends '\n"));
     return  ANSC_STATUS_SUCCESS;
 }
 

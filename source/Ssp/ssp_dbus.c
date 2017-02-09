@@ -657,7 +657,7 @@ int  getParameterValues(
             continue;
         }
         
-        CcspTraceWarning(("call get record value for %s +++\n", parameterNames[i]));
+        //CcspTraceWarning(("call get record value for %s +++\n", parameterNames[i]));
         returnStatus =
             pSysIraIf->GetRecord
                 (
@@ -675,8 +675,8 @@ int  getParameterValues(
             
             if(returnStatus != ANSC_STATUS_SUCCESS)
             {
-                //CcspTraceWarning(("++++ Failed for %s +++\n", parameterNames[i]));
-                CcspTraceInfo(("getParameterValues- returnStatus %d\n",returnStatus));
+                CcspTraceWarning(("++++ getParameterValues Failed for %s , returnStatus %d +++\n", parameterNames[i], returnStatus));
+                //CcspTraceWarning(("getParameterValues- returnStatus %d\n",returnStatus));
                 //CcspTraceInfo(("Release Thread Lock %d\n"));
                 pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
                 return CCSP_FAILURE;
@@ -936,12 +936,12 @@ int  setParameterValues(
                 );
 
 
-        CcspTraceWarning(("setParameterValues -- size:%d, %s: %s\n", size, val[i].parameterName, val[i].parameterValue));
+        //CcspTraceWarning(("setParameterValues -- size:%d, %s: %s\n", size, val[i].parameterName, val[i].parameterValue));
 
 
         if ( returnStatus != ANSC_STATUS_SUCCESS )
         {
-            CcspTraceError(("+++ Add entry: %s failed! +++\n", val[i].parameterName));
+            CcspTraceError(("+++ Add entry: size:%d , param : %s , val : %s failed! , return %d +++\n", size, val[i].parameterName, val[i].parameterValue, returnStatus));
         }
     }
 
@@ -975,7 +975,7 @@ int  setParameterAttributes(
     ANSC_HANDLE                     hSysRoot            = NULL;
     ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
     int                             i;
-       CcspTraceInfo(("inside setParameterAttributes\n"));
+ //      CcspTraceInfo(("inside setParameterAttributes\n"));
     if ( pPsmSysRegistry == NULL )
     {
         CcspTraceInfo(("setParameterAttributes- pPsmSysRegistry is NULL\n"));
@@ -1031,7 +1031,7 @@ int  setParameterAttributes(
     pSysIraIf->CloseFolder(pSysIraIf->hOwnerContext, hSysRoot);
 
     pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
-    CcspTraceInfo(("setParameterAttributes exit\n"));
+ //   CcspTraceInfo(("setParameterAttributes exit\n"));
     return CCSP_SUCCESS;
 }
 
