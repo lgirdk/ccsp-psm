@@ -347,6 +347,8 @@ int main(int argc, char* argv[])
   
     CcspTraceInfo(("RDKB_SYSTEM_BOOT_UP_LOG : PsmSsp sd_notify Called\n"));
 #endif
+	
+	system("touch /tmp/psm_initialized");
 
 	RDKLogEnable = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
 	RDKLogLevel = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LogLevel");
