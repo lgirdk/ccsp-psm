@@ -36,6 +36,16 @@ if [ -f $2 ] ; then
 	rm /tmp/b2
 	fi
 
+	grep "<Record name=\"eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.9.ApIsolationEnable\" type=\"astr\">0<\/Record>" $2
+	if [  "$?" == "1" ] ; then
+	cp $2 /tmp/b1
+	cat /tmp/b1 | sed s/"<Record name=\"eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.9.ApIsolationEnable\" type=\"astr\">0<\/Record>"/"<Record name=\"eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.9.ApIsolationEnable\" type=\"astr\">1<\/Record>"/ >/tmp/b2
+	cat /tmp/b2 | sed s/"<Record name=\"eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.10.ApIsolationEnable\" type=\"astr\">0<\/Record>"/"<Record name=\"eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.10.ApIsolationEnable\" type=\"astr\">1<\/Record>"/ >/tmp/b1
+	cp /tmp/b1 $2
+        rm /tmp/b1
+        rm /tmp/b2
+	fi
+
 	# Check if bbhm has Notify flag present
 	NOTIFYPRESENT=`cat $2 | grep NotifyWiFiChanges`
 	REDIRCTEXISTS=""
