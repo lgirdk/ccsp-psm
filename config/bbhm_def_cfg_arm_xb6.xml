@@ -146,8 +146,8 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.6.ApIsolationEnable" type="astr">1</Record> 
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.7.ApIsolationEnable" type="astr">0</Record> 
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.8.ApIsolationEnable" type="astr">0</Record> 
-  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.9.ApIsolationEnable" type="astr">0</Record> 
-  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.10.ApIsolationEnable" type="astr">0</Record> 
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.9.ApIsolationEnable" type="astr">1</Record> 
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.10.ApIsolationEnable" type="astr">1</Record> 
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.11.ApIsolationEnable" type="astr">0</Record> 
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.12.ApIsolationEnable" type="astr">0</Record> 
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.13.ApIsolationEnable" type="astr">0</Record> 
