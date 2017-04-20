@@ -894,5 +894,19 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPDefaultPollingPeriod" type="astr" contentType="uint">21600</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPDefaultReportingPeriod" type="astr" contentType="uint">43200</Record>
 
+  <Record name="Device.X_RDKCENTRAL-COM_MDC.BootConfiguration.MulticastContentRouterURL" type="astr"></Record>
+  <Record name="Device.X_RDKCENTRAL-COM_MDC.BootConfiguration.MulticastInterface" type="astr"></Record>
+  <Record name="Device.X_RDKCENTRAL-COM_MDC.BootConfiguration.CacheSize" type="astr">100</Record>
+  <Record name="Device.X_RDKCENTRAL-COM_MDC.BootConfiguration.MemoryResourceLimit" type="astr">500</Record>
+  <Record name="Device.X_RDKCENTRAL-COM_MDC.BootConfiguration.MemoryUsageWarningThreshold" type="astr">100</Record>
+  <Record name="Device.X_RDKCENTRAL-COM_MDC.BootConfiguration.HTTPPort" type="astr">8000</Record>
+  <Record name="Device.X_RDKCENTRAL-COM_MDC.MulticastStream.EntryCount" type="astr">0</Record>
+  <!--MDC-FIREWALL-->
+  <Record name="Device.X_RDKCENTRAL-COM_MDC.SrcStatAddress" type="astr">192.168.1.1</Record>
+  <Record name="Device.X_RDKCENTRAL-COM_MDC.DestStatAddress" type="astr">192.168.1.2</Record>
+  <Record name="Device.X_RDKCENTRAL-COM_MDC.SrcAddress" type="astr">10.0.1.2</Record>
+  <Record name="Device.X_RDKCENTRAL-COM_MDC.IpAddress.IpEntryCount" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.mdc.Enable" type="astr">0</Record>
+
 </Provision>
 
