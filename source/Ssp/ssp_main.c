@@ -442,8 +442,8 @@ int  cmd_dispatch(int  command)
                         bEngaged = TRUE;
 
                         CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PSM started ...\n"));
-#if !defined(INTEL_PUMA7) && !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_)
-                        system("sysevent set bring-lan up");
+#if !defined(INTEL_PUMA7) && !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_)                      
+                        system("/etc/utopia/service.d/bring_lan.sh &"); 
 #endif                      
                     }
                     else
