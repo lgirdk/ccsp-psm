@@ -15,6 +15,18 @@ fi
 
 if [ -f $2 ] ; then
 
+	grep "<Record name=\"dmsb.l2net.5.Members.WiFi\" type=\"astr\">ath9</Record>" $2
+	if [  "$?" == "0" ] ; then
+	cp $2 /tmp/b1
+	cat /tmp/b1 | sed s/"<Record name=\"dmsb.l2net.5.Members.WiFi\" type=\"astr\">ath9<\/Record>"/"<Record name=\"dmsb.l2net.5.Members.WiFi\" type=\"astr\">ath14 ath15<\/Record>"/ >/tmp/b2
+	cat /tmp/b2 | sed s/"<Record name=\"dmsb.l2net.5.Port.2.LinkName\" type=\"astr\" \/>"/"<Record name=\"dmsb.l2net.5.Port.2.LinkName\" type=\"astr\">ath14<\/Record>"/ >/tmp/b1
+	cat /tmp/b1 | sed s/"<Record name=\"dmsb.l2net.5.Port.2.LinkType\" type=\"astr\" \/>"/"<Record name=\"dmsb.l2net.5.Port.2.LinkType\" type=\"astr\">WiFi<\/Record>"/ >/tmp/b2
+	cat /tmp/b2 | sed s/"<Record name=\"dmsb.l2net.5.Port.2.Name\" type=\"astr\" \/>"/"<Record name=\"dmsb.l2net.5.Port.2.Name\" type=\"astr\">ath14<\/Record>"/ >/tmp/b1
+	cp /tmp/b1 $2
+	rm /tmp/b1
+	rm /tmp/b2
+	fi
+
 	grep "<Record name=\"dmsb.l2net.2.Members.WiFi\" type=\"astr\">ath2 ath3<\/Record>" $2
 	if [  "$?" == "1" ] ; then
 	#bbhm=$2;
