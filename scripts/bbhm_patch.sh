@@ -15,35 +15,11 @@ fi
 
 if [ -f $2 ] ; then
 
-	grep "<Record name=\"dmsb.l2net.5.Members.WiFi\" type=\"astr\">ath9</Record>" $2
+	grep "dmsb.l2net.5." $2
 	if [  "$?" == "0" ] ; then
 	cp $2 /tmp/b1
-	cat /tmp/b1 | sed s/"<Record name=\"dmsb.l2net.5.Members.WiFi\" type=\"astr\">ath9<\/Record>"/"<Record name=\"dmsb.l2net.5.Members.WiFi\" type=\"astr\">ath14 ath15<\/Record>"/ >/tmp/b2
-	cat /tmp/b2 | sed s/"<Record name=\"dmsb.l2net.5.Port.2.LinkName\" type=\"astr\" \/>"/"<Record name=\"dmsb.l2net.5.Port.2.LinkName\" type=\"astr\">ath14<\/Record>"/ >/tmp/b1
-	cat /tmp/b1 | sed s/"<Record name=\"dmsb.l2net.5.Port.2.LinkType\" type=\"astr\" \/>"/"<Record name=\"dmsb.l2net.5.Port.2.LinkType\" type=\"astr\">WiFi<\/Record>"/ >/tmp/b2
-	cat /tmp/b2 | sed s/"<Record name=\"dmsb.l2net.5.Port.2.Name\" type=\"astr\" \/>"/"<Record name=\"dmsb.l2net.5.Port.2.Name\" type=\"astr\">ath14<\/Record>"/ >/tmp/b1
-	cp /tmp/b1 $2
-	rm /tmp/b1
-	rm /tmp/b2
-	fi
-
-	grep "<Record name=\"dmsb.l2net.2.Members.WiFi\" type=\"astr\">ath2 ath3<\/Record>" $2
-	if [  "$?" == "1" ] ; then
-	#bbhm=$2;
-	cp $2 /tmp/b1
-	cat /tmp/b1 | sed s/"<Record name=\"dmsb.l2net.2.Members.WiFi\" type=\"astr\">ath2<\/Record>"/"<Record name=\"dmsb.l2net.2.Members.WiFi\" type=\"astr\">ath2 ath3<\/Record>"/ >/tmp/b2
-	cat /tmp/b2 | sed s/"<Record name=\"dmsb.l2net.5.Name\" type=\"astr\">brlan4<\/Record>"/"<Record name=\"dmsb.l2net.5.Name\" type=\"astr\">brlan7<\/Record>"/ >/tmp/b1
-	cat /tmp/b1 | sed s/"<Record name=\"dmsb.l2net.5.Vid\" type=\"astr\">104<\/Record>"/"<Record name=\"dmsb.l2net.5.Vid\" type=\"astr\">107<\/Record>"/ >/tmp/b2
-	cat /tmp/b2 | sed s/"<Record name=\"dmsb.l2net.5.Members.WiFi\" type=\"astr\">ath8 ath9<\/Record>"/"<Record name=\"dmsb.l2net.5.Members.WiFi\" type=\"astr\">ath14 ath15<\/Record>"/ >/tmp/b1
-	cat /tmp/b1 | sed s/"<Record name=\"dmsb.l2net.5.Port.1.Pvid\" type=\"astr\">104<\/Record>"/"<Record name=\"dmsb.l2net.5.Port.1.Pvid\" type=\"astr\">107<\/Record>"/ >/tmp/b2
-	cat /tmp/b2 | sed s/"<Record name=\"dmsb.l2net.5.Port.1.Name\" type=\"astr\">brlan4<\/Record>"/"<Record name=\"dmsb.l2net.5.Port.1.Name\" type=\"astr\">brlan7<\/Record>"/ >/tmp/b1
-	cat /tmp/b1 | sed s/"<Record name=\"dmsb.l2net.5.Port.2.Pvid\" type=\"astr\">104<\/Record>"/"<Record name=\"dmsb.l2net.5.Port.2.Pvid\" type=\"astr\">107<\/Record>"/ >/tmp/b2
-	cat /tmp/b2 | sed s/"<Record name=\"dmsb.l2net.5.Port.2.Name\" type=\"astr\">ath8<\/Record>"/"<Record name=\"dmsb.l2net.5.Port.2.Name\" type=\"astr\">ath14<\/Record>"/ >/tmp/b1
-	cat /tmp/b1 | sed s/"<Record name=\"dmsb.l2net.5.Port.2.LinkName\" type=\"astr\">ath8<\/Record>"/"<Record name=\"dmsb.l2net.5.Port.2.LinkName\" type=\"astr\">ath14<\/Record>"/ >/tmp/b2
-	cat /tmp/b2 | sed s/"<Record name=\"dmsb.l2net.5.Port.3.Pvid\" type=\"astr\">104<\/Record>"/"<Record name=\"dmsb.l2net.5.Port.3.Pvid\" type=\"astr\">107<\/Record>"/ >/tmp/b1
-	cat /tmp/b1 | sed s/"<Record name=\"dmsb.l2net.5.Port.3.Name\" type=\"astr\">ath9<\/Record>"/"<Record name=\"dmsb.l2net.5.Port.3.Name\" type=\"astr\">ath15<\/Record>"/ >/tmp/b2
-	cat /tmp/b2 | sed s/"<Record name=\"dmsb.l2net.5.Port.3.LinkName\" type=\"astr\">ath9<\/Record>"/"<Record name=\"dmsb.l2net.5.Port.3.LinkName\" type=\"astr\">ath15<\/Record>"/ >/tmp/b1
-	cp /tmp/b1 $2
+	grep -v  "dmsb.l2net.5." /tmp/b1 > /tmp/b2
+	cp /tmp/b2 $2
 	rm /tmp/b1
 	rm /tmp/b2
 	fi
