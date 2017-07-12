@@ -24,6 +24,15 @@ if [ -f $2 ] ; then
 	rm /tmp/b2
 	fi
 
+        grep "<Record name=\"dmsb.hotspot.gre.1.LocalInterfaces\" type=\"astr\">Device.WiFi.SSID.5.,Device.WiFi.SSID.6.,Device.WiFi.SSID.9.,Device.WiFi.SSID.10.<\/Record>" $2
+        if [  "$?" == "1" ] ; then
+        cp $2 /tmp/b1
+        cat /tmp/b1 | sed s/"<Record name=\"dmsb.hotspot.gre.1.LocalInterfaces\" type=\"astr\">Device.WiFi.SSID.5.,Device.WiFi.SSID.6.<\/Record>"/"<Record name=\"dmsb.hotspot.gre.1.LocalInterfaces\" type=\"astr\">Device.WiFi.SSID.5.,Device.WiFi.SSID.6.,Device.WiFi.SSID.9.,Device.WiFi.SSID.10.<\/Record>"/ >/tmp/b2
+        cp /tmp/b2 $2
+        rm /tmp/b1
+        rm /tmp/b2
+        fi
+
 	grep "<Record name=\"eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.9.ApIsolationEnable\" type=\"astr\">1<\/Record>" $2
 	if [  "$?" == "1" ] ; then
 	cp $2 /tmp/b1

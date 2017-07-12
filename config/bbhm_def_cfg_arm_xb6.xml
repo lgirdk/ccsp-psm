@@ -520,6 +520,126 @@
   <Record name="dmsb.l2net.4.Port.3.Mode" type="astr">PassThrough</Record>
   <Record name="dmsb.l2net.4.Port.3.InstanceNum" type="astr">3</Record>
   <Record name="dmsb.l2net.4.Port.3.Upstream" type="astr">FALSE</Record>
+
+  <!-- Secure SSID Start -->
+
+  <Record name="dmsb.l2net.7.AllowDelete" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.7.Name" type="astr">brlan4</Record>
+  <Record name="dmsb.l2net.7.Vid" type="astr">104</Record>
+  <Record name="dmsb.l2net.7.PriorityTag" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.7.Enable" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.7.Alias" type="astr">Hotspot Network 3</Record>
+  <Record name="dmsb.l2net.7.Standard" type="astr">BRG_STD_8021Q_2005</Record>
+  <Record name="dmsb.l2net.7.InstanceNum" type="astr">7</Record>
+  <Record name="dmsb.l2net.7.Type" type="astr">Bridge</Record>
+  <Record name="dmsb.l2net.7.Members.SW" type="astr"></Record>
+  <Record name="dmsb.l2net.7.Members.Eth" type="astr"> </Record>
+  <Record name="dmsb.l2net.7.Members.Moca" type="astr"> </Record>
+  <Record name="dmsb.l2net.7.Members.WiFi" type="astr">ath8</Record>
+  <Record name="dmsb.l2net.7.Members.Link" type="astr">l2sd0-t</Record>
+  <Record name="dmsb.l2net.7.Members.Gre" type="astr">gretap0-t</Record>
+  
+  <Record name="dmsb.l2net.7.Vlan.1.Alias" type="astr">CPE-VLAN1</Record>
+  <Record name="dmsb.l2net.7.Vlan.1.InstanceNum" type="astr">1</Record>
+
+  <Record name="dmsb.l2net.7.Port.1.AllowDelete" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.7.Port.1.Pvid" type="astr">104</Record>
+  <Record name="dmsb.l2net.7.Port.1.PriorityTag" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.7.Port.1.Enable" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.7.Port.1.Alias" type="astr">Port1</Record>
+  <Record name="dmsb.l2net.7.Port.1.Name" type="astr">brlan4</Record>
+  <Record name="dmsb.l2net.7.Port.1.LinkName" type="astr"> </Record>
+  <Record name="dmsb.l2net.7.Port.1.LinkType" type="astr">NONE</Record>
+  <Record name="dmsb.l2net.7.Port.1.Management" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.7.Port.1.Mode" type="astr">Tagging</Record>
+  <Record name="dmsb.l2net.7.Port.1.InstanceNum" type="astr">1</Record>
+  <Record name="dmsb.l2net.7.Port.1.Upstream" type="astr">FALSE</Record>
+  
+  <Record name="dmsb.l2net.7.Port.2.AllowDelete" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.7.Port.2.Pvid" type="astr">104</Record>
+  <Record name="dmsb.l2net.7.Port.2.PriorityTag" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.7.Port.2.Enable" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.7.Port.2.Alias" type="astr">Port2</Record>
+  <Record name="dmsb.l2net.7.Port.2.Name" type="astr">ath8</Record>
+  <Record name="dmsb.l2net.7.Port.2.LinkName" type="astr">ath8</Record>
+  <Record name="dmsb.l2net.7.Port.2.LinkType" type="astr">WiFi</Record>
+  <Record name="dmsb.l2net.7.Port.2.Management" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.7.Port.2.Mode" type="astr">Tagging</Record>
+  <Record name="dmsb.l2net.7.Port.2.InstanceNum" type="astr">2</Record>
+  <Record name="dmsb.l2net.7.Port.2.Upstream" type="astr">FALSE</Record>
+  
+  <Record name="dmsb.l2net.7.Port.3.AllowDelete" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.7.Port.3.Pvid" type="astr">104</Record>
+  <Record name="dmsb.l2net.7.Port.3.PriorityTag" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.7.Port.3.Enable" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.7.Port.3.Alias" type="astr">Port3</Record>
+  <Record name="dmsb.l2net.7.Port.3.Name" type="astr">gretap0</Record>
+  <Record name="dmsb.l2net.7.Port.3.LinkName" type="astr">gretap0</Record>
+  <Record name="dmsb.l2net.7.Port.3.LinkType" type="astr">Gre</Record>
+  <Record name="dmsb.l2net.7.Port.3.Management" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.7.Port.3.Mode" type="astr">PassThrough</Record>
+  <Record name="dmsb.l2net.7.Port.3.InstanceNum" type="astr">3</Record>
+  <Record name="dmsb.l2net.7.Port.3.Upstream" type="astr">FALSE</Record>
+  
+  <Record name="dmsb.l2net.8.AllowDelete" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.8.Name" type="astr">brlan5</Record>
+  <Record name="dmsb.l2net.8.Vid" type="astr">105</Record>
+  <Record name="dmsb.l2net.8.PriorityTag" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.8.Enable" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.8.Alias" type="astr">Hotspot Network 4</Record>
+  <Record name="dmsb.l2net.8.Standard" type="astr">BRG_STD_8021Q_2005</Record>
+  <Record name="dmsb.l2net.8.InstanceNum" type="astr">8</Record>
+  <Record name="dmsb.l2net.8.Type" type="astr">Bridge</Record>
+  <Record name="dmsb.l2net.8.Members.SW" type="astr"></Record>
+  <Record name="dmsb.l2net.8.Members.Eth" type="astr"> </Record>
+  <Record name="dmsb.l2net.8.Members.Moca" type="astr"> </Record>
+  <Record name="dmsb.l2net.8.Members.WiFi" type="astr">ath9</Record>
+  <Record name="dmsb.l2net.8.Members.Link" type="astr">l2sd0-t</Record>
+  <Record name="dmsb.l2net.8.Members.Gre" type="astr">gretap0-t</Record>
+  
+  <Record name="dmsb.l2net.8.Vlan.1.Alias" type="astr">CPE-VLAN1</Record>
+  <Record name="dmsb.l2net.8.Vlan.1.InstanceNum" type="astr">1</Record>
+
+  <Record name="dmsb.l2net.8.Port.1.AllowDelete" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.8.Port.1.Pvid" type="astr">105</Record>
+  <Record name="dmsb.l2net.8.Port.1.PriorityTag" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.8.Port.1.Enable" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.8.Port.1.Alias" type="astr">Port1</Record>
+  <Record name="dmsb.l2net.8.Port.1.Name" type="astr">brlan5</Record>
+  <Record name="dmsb.l2net.8.Port.1.LinkName" type="astr"> </Record>
+  <Record name="dmsb.l2net.8.Port.1.LinkType" type="astr">NONE</Record>
+  <Record name="dmsb.l2net.8.Port.1.Management" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.8.Port.1.Mode" type="astr">Tagging</Record>
+  <Record name="dmsb.l2net.8.Port.1.InstanceNum" type="astr">1</Record>
+  <Record name="dmsb.l2net.8.Port.1.Upstream" type="astr">FALSE</Record>
+  
+  <Record name="dmsb.l2net.8.Port.2.AllowDelete" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.8.Port.2.Pvid" type="astr">105</Record>
+  <Record name="dmsb.l2net.8.Port.2.PriorityTag" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.8.Port.2.Enable" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.8.Port.2.Alias" type="astr">Port2</Record>
+  <Record name="dmsb.l2net.8.Port.2.Name" type="astr">ath9</Record>
+  <Record name="dmsb.l2net.8.Port.2.LinkName" type="astr">ath9</Record>
+  <Record name="dmsb.l2net.8.Port.2.LinkType" type="astr">WiFi</Record>
+  <Record name="dmsb.l2net.8.Port.2.Management" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.8.Port.2.Mode" type="astr">Tagging</Record>
+  <Record name="dmsb.l2net.8.Port.2.InstanceNum" type="astr">2</Record>
+  <Record name="dmsb.l2net.8.Port.2.Upstream" type="astr">FALSE</Record>
+  
+  <Record name="dmsb.l2net.8.Port.3.AllowDelete" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.8.Port.3.Pvid" type="astr">105</Record>
+  <Record name="dmsb.l2net.8.Port.3.PriorityTag" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.8.Port.3.Enable" type="astr">TRUE</Record>
+  <Record name="dmsb.l2net.8.Port.3.Alias" type="astr">Port3</Record>
+  <Record name="dmsb.l2net.8.Port.3.Name" type="astr">gretap0</Record>
+  <Record name="dmsb.l2net.8.Port.3.LinkName" type="astr">gretap0</Record>
+  <Record name="dmsb.l2net.8.Port.3.LinkType" type="astr">Gre</Record>
+  <Record name="dmsb.l2net.8.Port.3.Management" type="astr">FALSE</Record>
+  <Record name="dmsb.l2net.8.Port.3.Mode" type="astr">PassThrough</Record>
+  <Record name="dmsb.l2net.8.Port.3.InstanceNum" type="astr">3</Record>
+  <Record name="dmsb.l2net.8.Port.3.Upstream" type="astr">FALSE</Record>
+
+  <!-- Secure SSID End -->
   
   <Record name="dmsb.EthLink.1.l2net" type="astr" contentType="uint">1</Record>
   <Record name="dmsb.EthLink.1.l2netType" type="astr">Bridge</Record>
@@ -719,7 +839,7 @@
   <Record name="dmsb.hotspot.enable" type="astr">0</Record>
 
   <Record name="dmsb.hotspot.gre.1.Enable" type="astr">0</Record>
-  <Record name="dmsb.hotspot.gre.1.LocalInterfaces" type="astr">Device.WiFi.SSID.5.,Device.WiFi.SSID.6.</Record>
+  <Record name="dmsb.hotspot.gre.1.LocalInterfaces" type="astr">Device.WiFi.SSID.5.,Device.WiFi.SSID.6.,Device.WiFi.SSID.9.,Device.WiFi.SSID.10.</Record>
   <Record name="dmsb.hotspot.gre.1.Endpoints" type="astr">0.0.0.0,0.0.0.0</Record>
   <Record name="dmsb.hotspot.gre.1.KeyIDGenPolicy" type="astr">1</Record>
   <Record name="dmsb.hotspot.gre.1.KeyID" type="astr">12</Record>
@@ -770,6 +890,17 @@
   <Record name="dmsb.hotspot.tunnel.1.interface.2.AssociatedBridges" type="astr">Device.Bridging.Bridge.4.</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.2.AssociatedBridgesWiFiPort" type="astr">Device.Bridging.Bridge.4.Port.2.</Record>
 
+  <Record name="dmsb.hotspot.tunnel.1.interface.3.Enable" type="astr">0</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.3.LocalInterfaces" type="astr">Device.WiFi.SSID.9.</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.3.VLANID" type="astr">104</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.3.AssociatedBridges" type="astr">Device.Bridging.Bridge.7.</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.3.AssociatedBridgesWiFiPort" type="astr">Device.Bridging.Bridge.7.Port.2.</Record>
+
+  <Record name="dmsb.hotspot.tunnel.1.interface.4.Enable" type="astr">0</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.4.LocalInterfaces" type="astr">Device.WiFi.SSID.10.</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.4.VLANID" type="astr">105</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.4.AssociatedBridges" type="astr">Device.Bridging.Bridge.8.</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.4.AssociatedBridgesWiFiPort" type="astr">Device.Bridging.Bridge.8.Port.2.</Record>
 
   <Record name="dmsb.cisco.gre.1.enable" type="astr">0</Record>
   <Record name="dmsb.cisco.gre.1.alias" type="astr">cpe-cgreif-1</Record>
