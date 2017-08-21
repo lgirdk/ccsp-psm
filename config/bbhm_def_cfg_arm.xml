@@ -980,6 +980,7 @@
   <Record name="Device.X_RDKCENTRAL-COM_MDC.SrcAddress" type="astr">10.0.1.2</Record>
   <Record name="Device.X_RDKCENTRAL-COM_MDC.IpAddress.IpEntryCount" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.mdc.Enable" type="astr">0</Record>
+
   <!-- MoCA Home Isolation -->
   <Record name="dmsb.l2net.HomeNetworkIsolation" type="astr">0</Record>
   <Record name="dmsb.l2net.9.AllowDelete" type="astr">FALSE</Record>
@@ -1024,6 +1025,10 @@
   <Record name="dmsb.l2net.9.Port.2.Mode" type="astr">Tagging</Record>
   <Record name="dmsb.l2net.9.Port.2.InstanceNum" type="astr">2</Record>
   <Record name="dmsb.l2net.9.Port.2.Upstream" type="astr">FALSE</Record>
+  
+  <Record name="eRT.com.cisco.spvtg.ccsp.webpa.X_COMCAST-COM_CID" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.webpa.X_COMCAST-COM_SyncProtocolVersion" type="astr">0</Record>  
+  <Record name="eRT.com.cisco.spvtg.ccsp.webpa.X_COMCAST-COM_CMC" type="astr">0</Record>	  
 
 </Provision>
 
