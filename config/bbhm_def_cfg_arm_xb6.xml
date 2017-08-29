@@ -956,14 +956,14 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.lmlite.InterfaceDevicesWifiExtenderDefPollingPeriod" type="astr">900</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.InterfaceDevicesWifiPollingPeriod" type="astr" contentType="uint">900</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.InterfaceDevicesWifiReportingPeriod" type="astr" contentType="uint">900</Record>
-  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsPollingPeriod" type="astr" contentType="uint">300</Record>
-  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsReportingPeriod" type="astr" contentType="uint">300</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsPollingPeriod" type="astr" contentType="uint">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsReportingPeriod" type="astr" contentType="uint">900</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPPollingPeriod" type="astr" contentType="uint">21600</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPReportingPeriod" type="astr" contentType="uint">43200</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.InterfaceDevicesWifiDefaultPollingPeriod" type="astr" contentType="uint">900</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.InterfaceDevicesWifiDefaultReportingPeriod" type="astr" contentType="uint">900</Record>
-  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsDefaultPollingPeriod" type="astr" contentType="uint">300</Record>
-  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsDefaultReportingPeriod" type="astr" contentType="uint">300</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsDefaultPollingPeriod" type="astr" contentType="uint">900</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.harvester.RadioInterfaceStatisticsDefaultReportingPeriod" type="astr" contentType="uint">900</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPDefaultPollingPeriod" type="astr" contentType="uint">21600</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.harvester.NeighboringAPDefaultReportingPeriod" type="astr" contentType="uint">43200</Record>
 
