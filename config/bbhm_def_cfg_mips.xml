@@ -98,8 +98,8 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.6.BssMaxNumSta" type="astr">5</Record> 
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.7.BssMaxNumSta" type="astr">30</Record> 
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.8.BssMaxNumSta" type="astr">30</Record> 
-  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.9.BssMaxNumSta" type="astr">30</Record> 
-  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.10.BssMaxNumSta" type="astr">30</Record> 
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.9.BssMaxNumSta" type="astr">5</Record> 
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.10.BssMaxNumSta" type="astr">5</Record> 
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.11.BssMaxNumSta" type="astr">30</Record> 
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.12.BssMaxNumSta" type="astr">30</Record> 
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.13.BssMaxNumSta" type="astr">30</Record> 
@@ -836,6 +836,8 @@
   <Record name="dmsb.MultiLAN.HomeSecurity_WiFiAp" type="astr" contentType="uint">3</Record>
 
   <Record name="dmsb.hotspot.enable" type="astr">0</Record>
+
+  <Record name="dmsb.hotspot.max_num_sta_set" type="astr">0</Record>
 
   <Record name="dmsb.hotspot.gre.1.Enable" type="astr">0</Record>
   <Record name="dmsb.hotspot.gre.1.LocalInterfaces" type="astr">Device.WiFi.SSID.5.,Device.WiFi.SSID.6.,Device.WiFi.SSID.9.,Device.WiFi.SSID.10.</Record>
