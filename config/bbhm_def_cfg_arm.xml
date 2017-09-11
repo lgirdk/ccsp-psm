@@ -990,9 +990,9 @@
   <Record name="dmsb.l2net.9.Vid" type="astr">111</Record>
   <Record name="dmsb.l2net.9.PriorityTag" type="astr">FALSE</Record>
   <Record name="dmsb.l2net.9.Enable" type="astr">TRUE</Record>
-  <Record name="dmsb.l2net.9.Alias" type="astr">Primary Bridge</Record>
+  <Record name="dmsb.l2net.9.Alias" type="astr">MoCA Bridge</Record>
   <Record name="dmsb.l2net.9.Standard" type="astr">BRG_STD_8021Q_2005</Record>
-  <Record name="dmsb.l2net.9.InstanceNum" type="astr">1</Record>
+  <Record name="dmsb.l2net.9.InstanceNum" type="astr">9</Record>
   <Record name="dmsb.l2net.9.Type" type="astr">Bridge</Record>
   <Record name="dmsb.l2net.9.Members.SW" type="astr">sw_5</Record>
   <Record name="dmsb.l2net.9.Members.Eth" type="astr"> </Record>
