@@ -590,5 +590,7 @@
   <Record name="dmsb.device.deviceinfo.ProductClass" type="astr">XB3</Record>
   <Record name="dmsb.device.deviceinfo.ManufacturerOUI" type="astr">088039</Record>
 
+  <!--RFC Feature for Container -->
+  <Record name="Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Container" type="astr">0</Record>
 </Provision>
 
