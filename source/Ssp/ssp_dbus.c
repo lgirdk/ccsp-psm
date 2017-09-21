@@ -596,6 +596,11 @@ int  getParameterValues(
     SLIST_HEADER                    ParameterValueList;
     int                             i;
  //  CcspTraceInfo((" inside getParameterValues\n"));
+    if ( g_psmHealth != CCSP_COMMON_COMPONENT_HEALTH_Green )
+    {
+        CcspTraceInfo(("!!! PSM is not ready !!!\n"));
+        return CCSP_FAILURE;
+    }
     if ( pPsmSysRegistry == NULL )
     {
     	CcspTraceInfo(("getParameterValues- pPsmSysRegistry is NULL\n"));
@@ -800,6 +805,11 @@ int  setParameterValues(
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj    = (PANSC_TIMER_DESCRIPTOR_OBJECT)pPsmSysRegistry->hRegTimerObj;
     int                             i;
     //   CcspTraceInfo((" inside setParameterValues \n"));
+    if ( g_psmHealth != CCSP_COMMON_COMPONENT_HEALTH_Green )
+    {
+        CcspTraceInfo(("!!! PSM is not ready !!!\n"));
+        return CCSP_FAILURE;
+    }
     if ( pPsmSysRegistry == NULL )
     {
        CcspTraceInfo(("setParameterValues- pPsmSysRegistry is NULL\n"));
@@ -976,6 +986,11 @@ int  setParameterAttributes(
     ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
     int                             i;
  //      CcspTraceInfo(("inside setParameterAttributes\n"));
+    if ( g_psmHealth != CCSP_COMMON_COMPONENT_HEALTH_Green )
+    {
+        CcspTraceInfo(("!!! PSM is not ready !!!\n"));
+        return CCSP_FAILURE;
+    }
     if ( pPsmSysRegistry == NULL )
     {
         CcspTraceInfo(("setParameterAttributes- pPsmSysRegistry is NULL\n"));
@@ -1068,6 +1083,11 @@ int getParameterNames(
     PSINGLE_LINK_ENTRY              pSLinkEntry         = NULL;
     parameterInfoStruct_t         **val                 = NULL;
     //CcspTraceInfo(("getParameterNames begins\n"));
+    if ( g_psmHealth != CCSP_COMMON_COMPONENT_HEALTH_Green )
+    {
+        CcspTraceInfo(("!!! PSM is not ready !!!\n"));
+        return CCSP_FAILURE;
+    }
     if ( !parameterName )
     {
         CcspTraceError(("RDKB_SYSTEM_BOOT_UP_LOG : PSM Input parameter invalid for getParameterNames!\n"));
