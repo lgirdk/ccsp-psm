@@ -1032,6 +1032,7 @@
 
   <!--RFC Feature for Container -->
   <Record name="Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Container" type="astr">0</Record>
+  <Record name="Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MEMSWAP.Enable" type="astr">0</Record>
 
 </Provision>
 
