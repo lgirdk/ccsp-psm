@@ -80,7 +80,7 @@
 
 #include "psm_hal_apis.h"
 #include "ssp_global.h"
-
+#include <unistd.h>
 #include "pthread.h"
 
 
@@ -100,11 +100,15 @@ static void print_time(const char *msg)
     gettimeofday(&tv, NULL);
     fprintf(stderr, "[PSM-CFM] %-20s: %6d.%06d\n", msg ? msg : "", tv.tv_sec, tv.tv_usec);
 }
+int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt );
 
 #define PSM_REC_HASH_SIZE       1024
 
 #define PSM_REC_TEMP            "  <Record name=\"%s\" type=\"%s\" contentType=\"%s\">%s</Record>\n"
 #define PSM_REC_TEMP_NOCTYPE    "  <Record name=\"%s\" type=\"%s\">%s</Record>\n"
+#define PARTNER_DEFAULT_APPLY_FILE  	"/nvram/.apply_partner_defaults"
+#define PSM_CUR_CONFIG_FILE_NAME        "/nvram/bbhm_cur_cfg.xml"
+#define PSM_BAK_CONFIG_FILE_NAME        "/nvram/bbhm_bak_cfg.xml"
 
 struct psm_record {
     struct psm_record   *next;
@@ -506,6 +510,115 @@ out:
     return err;
 }
 
+int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
+{
+	int isNeedtoProceedfurther = 0;
+	
+	if ( ( access( PSM_CUR_CONFIG_FILE_NAME , F_OK ) != 0 ) && \
+		 ( access( PSM_BAK_CONFIG_FILE_NAME , F_OK ) != 0 )
+		)
+	{
+		isNeedtoProceedfurther = 1;
+	}
+
+	CcspTraceInfo(("-- %s - isNeedtoProceedfurther:%d \n", __FUNCTION__, isNeedtoProceedfurther ));
+
+	if( isNeedtoProceedfurther )
+	{
+		int isNeedToApplyPartnersDefault = 1;
+		
+		if ( access( PARTNER_DEFAULT_APPLY_FILE , F_OK ) != 0 )  
+		{
+			isNeedToApplyPartnersDefault = 0;
+		}
+		else
+		{
+			CcspTraceInfo(("-- %s - Deleting this file :%s\n", __FUNCTION__, PARTNER_DEFAULT_APPLY_FILE ));
+			system( "rm -rf /nvram/.apply_partner_defaults" );
+		}
+		
+		if( isNeedToApplyPartnersDefault )
+		{
+			PsmHalParam_t *ptr				 = NULL;
+			char		   value_buf[ 64 ];
+			int 		   ret 				= -1;
+		
+			// Init syscfg
+			syscfg_init( );
+						
+			*cnt	= 1;
+			*params =( PsmHalParam_t * ) malloc( sizeof( PsmHalParam_t ) * ( *cnt ) );
+			
+			ptr = ( PsmHalParam_t *)*params;
+			
+			/* eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code */
+			//Copy the PSM Paramater name
+			sprintf( ptr[ 0 ].name , "%s", "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" );
+	
+			//Get the syscfg.db value of PSM Param
+			memset( value_buf, 0 , sizeof( value_buf ) );
+			ret = syscfg_get( NULL, "WiFiRegionCode", value_buf, sizeof( value_buf ) );
+
+			if( ( ret != 0 ) || \
+				( '\0' == value_buf[ 0 ] ) 
+			   )
+			{
+				CcspTraceInfo(("-- %s - Fail to get WiFiRegionCode\n", __FUNCTION__ ));
+				free( ptr );
+				return	-1;
+			}
+			
+			sprintf( ptr[ 0 ].value, "%s", value_buf );
+			CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, ptr[ 0 ].name, ptr[ 0 ].value ));
+
+			// Remove DB variable. It won't use
+			syscfg_unset( NULL, "WiFiRegionCode" );
+			syscfg_commit();
+			
+			return	0;
+		}
+	}
+
+	return	-1;
+}
+static int import_custom_partners_params(int overwrite)
+{
+    struct psm_record   *rec;
+    PsmHalParam_t       *cus_params;
+    int                 cus_cnt;
+    int                 i, err = -1;
+
+    if (Psm_GetCustomPartnersParams(&cus_params, &cus_cnt) != 0)
+        return -1;
+
+    for (i = 0; i < cus_cnt; i++) 
+	{
+        if (!cus_params[i].name || !strlen(cus_params[i].name)) {
+            cfm_log_err(("%s: invalid custom partners param\n", __FUNCTION__));
+            continue;
+        }
+
+        rec = record_create(cus_params[i].name, "astr", NULL, cus_params[i].value);
+        if (rec == NULL) {
+            cfm_log_err(("%s: record_create fail\n", __FUNCTION__));
+            goto out;
+        }
+
+        if (insert_record(rec, overwrite) != 0) {
+            cfm_log_err(("%s: insert_record() fail\n", __FUNCTION__));
+            record_free(rec);
+            goto out;
+        }
+    }
+
+    err = 0;
+
+out:
+    if (cus_params)
+        free(cus_params);
+    return err;
+}
+
 static int merge_missing_param(const char *from, int overwrite)
 {
     FILE *fp;
@@ -609,6 +722,10 @@ again:
     if (merge_missing_param(path, 0) != 0) {
         cfm_log_err(("%s: Fail to merge def config\n", __FUNCTION__));
     }
+
+    /* import customer params with overwrite */
+    if (import_custom_partners_params(1) != 0)
+        CcspTraceInfo(("%s: Fail to import custom partners params\n", __FUNCTION__));
 
     /* flush merged records to buffer */
     if (flush_records((char **)ppCfgBuffer, pulCfgSize) != 0) {
