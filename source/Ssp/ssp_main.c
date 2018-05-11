@@ -67,9 +67,10 @@ PPSM_SYS_REGISTRY_OBJECT            pPsmSysRegistry   = (PPSM_SYS_REGISTRY_OBJEC
 void                               *bus_handle        = NULL;
 char                                g_Subsystem[32]   = {0};
 BOOL                                g_bLogEnable      = FALSE;
+static BOOL                         g_running         = TRUE;
 extern char*                        pComponentName;
 #ifdef USE_PLATFORM_SPECIFIC_HAL
-PSM_CFM_INTERFACE                   cfm_ifo;
+PSM_CFM_INTERFACE                  *cfm_ifo;
 #endif
 
 
@@ -156,12 +157,20 @@ void sig_handler(int sig)
 {
 	CcspTraceInfo((" inside sig_handler\n"));
     if ( sig == SIGINT ) {
+#ifdef INCLUDE_GPERFTOOLS
+        g_running = FALSE;
+    }
+    else if ( sig == SIGTERM )
+    {
+        g_running = FALSE;
+#else
     	signal(SIGINT, sig_handler); /* reset it to this function */
     	CcspTraceError(("SIGINT received, exiting!\n"));
 #if  defined(_DEBUG)
     	_print_stack_backtrace();
 #endif
 	exit(0);
+#endif
     }
     else if ( sig == SIGUSR1 ) {
     	signal(SIGUSR1, sig_handler); /* reset it to this function */
@@ -309,7 +318,12 @@ int main(int argc, char* argv[])
 
 #ifdef INCLUDE_BREAKPAD
     breakpad_ExceptionHandler();
-#else
+#endif
+    
+#if defined(INCLUDE_GPERFTOOLS)
+    signal(SIGINT, sig_handler);
+    signal(SIGTERM, sig_handler);
+#elif !defined(INCLUDE_BREAKPAD)
     if (is_core_dump_opened())
     {
         signal(SIGUSR1, sig_handler);
@@ -356,11 +370,11 @@ int main(int argc, char* argv[])
 	PSM_RDKLogEnable = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PSM_LoggerEnable");
 
     if ( bRunAsDaemon ) {
-		while (1)
+		while (g_running)
 			sleep(30);
     }
     else {
-        while ( cmdChar != 'q' )
+        while ( cmdChar != 'q' && g_running)
         {
             cmdChar = getchar();
             if (cmdChar < 0) 
@@ -418,21 +432,25 @@ int  cmd_dispatch(int  command)
                         pPsmSysRegistry->SetProperty((ANSC_HANDLE)pPsmSysRegistry, (ANSC_HANDLE)&psmSysroProperty);
 
 #ifdef USE_PLATFORM_SPECIFIC_HAL
-                        cfm_ifo.InterfaceId   = PSM_CFM_INTERFACE_ID;
-                        cfm_ifo.hOwnerContext = (ANSC_HANDLE)pPsmSysRegistry;
-                        cfm_ifo.Size          = sizeof(PSM_CFM_INTERFACE);
+                        cfm_ifo = (PSM_CFM_INTERFACE *)AnscAllocateMemory(sizeof(PSM_CFM_INTERFACE));
+                        if(cfm_ifo == NULL) {
+                           exit(-1);
+                        }
+                        cfm_ifo->InterfaceId   = PSM_CFM_INTERFACE_ID;
+                        cfm_ifo->hOwnerContext = (ANSC_HANDLE)pPsmSysRegistry;
+                        cfm_ifo->Size          = sizeof(PSM_CFM_INTERFACE);
 
-                        cfm_ifo.ReadCurConfig = ssp_CfmReadCurConfig;
-                        cfm_ifo.ReadDefConfig = ssp_CfmReadDefConfig;
-                        cfm_ifo.SaveCurConfig = ssp_CfmSaveCurConfig;
-                        cfm_ifo.UpdateConfigs = ssp_CfmUpdateConfigs;
+                        cfm_ifo->ReadCurConfig = ssp_CfmReadCurConfig;
+                        cfm_ifo->ReadDefConfig = ssp_CfmReadDefConfig;
+                        cfm_ifo->SaveCurConfig = ssp_CfmSaveCurConfig;
+                        cfm_ifo->UpdateConfigs = ssp_CfmUpdateConfigs;
 
                         if ( pPsmSysRegistry->hPsmCfmIf )
                         {
                             AnscFreeMemory(pPsmSysRegistry->hPsmCfmIf);
                         }
 
-                        pPsmSysRegistry->hPsmCfmIf = (ANSC_HANDLE)&cfm_ifo;
+                        pPsmSysRegistry->hPsmCfmIf = (ANSC_HANDLE)cfm_ifo;
 #endif
 
                         pPsmSysRegistry->Engage     ((ANSC_HANDLE)pPsmSysRegistry);
