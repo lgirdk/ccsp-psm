@@ -1109,7 +1109,6 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.webpa.X_COMCAST-COM_SyncProtocolVersion" type="astr">0</Record>  
   <Record name="eRT.com.cisco.spvtg.ccsp.webpa.X_COMCAST-COM_CMC" type="astr">0</Record>	  
 
-  <Record name="dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.enable" type="astr">FALSE</Record>
   <Record name="dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" type="astr"></Record>
 
   <!--RFC Feature for Container -->

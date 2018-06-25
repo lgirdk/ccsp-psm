@@ -609,7 +609,6 @@
   <Record name="dmsb.device.deviceinfo.ProductClass" type="astr">XB3</Record>
   <Record name="dmsb.device.deviceinfo.ManufacturerOUI" type="astr">088039</Record>
 
-  <Record name="dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.enable" type="astr">FALSE</Record>
   <Record name="dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" type="astr"></Record>
 
   <!--RFC Feature for Container -->

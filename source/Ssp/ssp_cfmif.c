@@ -546,7 +546,7 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 			// Init syscfg
 			syscfg_init( );
 						
-			*cnt	= 1;
+			*cnt	= 2;
 			*params =( PsmHalParam_t * ) malloc( sizeof( PsmHalParam_t ) * ( *cnt ) );
 			
 			ptr = ( PsmHalParam_t *)*params;
@@ -573,6 +573,29 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 
 			// Remove DB variable. It won't use
 			syscfg_unset( NULL, "WiFiRegionCode" );
+
+                        /* dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation */
+                        //Copy the PSM Paramater name
+                        sprintf( ptr[ 1 ].name , "%s", "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" );
+
+                        //Get the syscfg.db value of PSM Param
+                        memset( value_buf, 0 , sizeof( value_buf ) );
+                        ret = syscfg_get( NULL, "TR69CertLocation", value_buf, sizeof( value_buf ) );
+
+                        if( ( ret != 0 ) || \
+                                ( '\0' == value_buf[ 0 ] )
+                           )
+                        {
+                                CcspTraceInfo(("-- %s - Fail to get TR69CertLocation\n", __FUNCTION__ ));
+                                free( ptr );
+                                return  -1;
+                        }
+
+                        sprintf( ptr[ 1 ].value, "%s", value_buf );
+                        CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, ptr[ 1 ].name, ptr[ 1 ].value ));
+
+                        // Remove DB variable. It won't be used
+                        syscfg_unset( NULL, "TR69CertLocation" );
 			syscfg_commit();
 			
 			return	0;
