@@ -43,6 +43,8 @@
 #ifdef _ANSC_LINUX
 #include <sys/types.h>
 #include <sys/ipc.h>
+#include <semaphore.h>
+#include <fcntl.h>
 #ifdef _BUILD_ANDROID
 #include <linux/msg.h>
 #else
@@ -51,10 +53,6 @@
 #endif
 
 #include "ssp_global.h"
-
-#ifdef ENABLE_SD_NOTIFY
-#include <systemd/sd-daemon.h>
-#endif
 
 #ifdef INCLUDE_BREAKPAD
 #include "breakpad_wrapper.h"
@@ -73,6 +71,9 @@ extern char*                        pComponentName;
 PSM_CFM_INTERFACE                  *cfm_ifo;
 #endif
 
+#ifdef _ANSC_LINUX
+    sem_t *sem;
+#endif
 
 
 static void _print_stack_backtrace(void)
@@ -115,6 +116,19 @@ static void daemonize(void) {
 #ifndef  _DEBUG
 	int fd;
 #endif
+       /* initialize semaphores for shared processes */
+        sem = sem_open ("pSemPsm", O_CREAT | O_EXCL, 0644, 0);
+        if(SEM_FAILED == sem)
+        {
+               AnscTrace("Failed to create semaphore %d - %s\n", errno, strerror(errno));
+               _exit(1);
+        }
+       /* name of semaphore is "pSemPsm", semaphore is reached using this name */
+        sem_unlink ("pSemPsm");
+       /* unlink prevents the semaphore existing forever */
+       /* if a crash occurs during the execution         */
+        AnscTrace("Semaphore initialization Done!!\n");
+
 	switch (fork()) {
 	case 0:
 		break;
@@ -125,6 +139,8 @@ static void daemonize(void) {
 		exit(0);
 		break;
 	default:
+                sem_wait (sem);
+                sem_close (sem);
 		_exit(0);
 	}
 
@@ -354,22 +370,16 @@ int main(int argc, char* argv[])
 
     cmd_dispatch('e');
 	
-#ifdef ENABLE_SD_NOTIFY
-    sd_notifyf(0, "READY=1\n"
-              "STATUS=PsmSsp is Successfully Initialized\n"
-              "MAINPID=%lu", (unsigned long) getpid());
-  
-    CcspTraceInfo(("RDKB_SYSTEM_BOOT_UP_LOG : PsmSsp sd_notify Called\n"));
-#endif
-	
-	system("touch /tmp/psm_initialized");
+    system("touch /tmp/psm_initialized");
 
-	RDKLogEnable = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
-	RDKLogLevel = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LogLevel");
-	PSM_RDKLogLevel = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PSM_LogLevel");
-	PSM_RDKLogEnable = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PSM_LoggerEnable");
+    RDKLogEnable = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
+    RDKLogLevel = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LogLevel");
+    PSM_RDKLogLevel = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PSM_LogLevel");
+    PSM_RDKLogEnable = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PSM_LoggerEnable");
 
     if ( bRunAsDaemon ) {
+               sem_post (sem);
+               sem_close(sem);
 		while (g_running)
 			sleep(30);
     }
