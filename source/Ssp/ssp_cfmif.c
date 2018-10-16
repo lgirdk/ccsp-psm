@@ -76,13 +76,19 @@
         08/28/12    adding "Update Configs" and some internal functions.
 
 **********************************************************************/
-
-
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <syscfg/syscfg.h>
+#include "cJSON.h"
 #include "psm_hal_apis.h"
 #include "ssp_global.h"
 #include <unistd.h>
 #include "pthread.h"
 
+#define PARTNERS_INFO_JSON_FILE                      "/nvram/partners_defaults.json"
+#define PARTNERID_LEN 64
 
 #ifdef _COSA_SIM_
 #define cfm_log_dbg(x)          printf x
@@ -100,7 +106,8 @@ static void print_time(const char *msg)
     gettimeofday(&tv, NULL);
     fprintf(stderr, "[PSM-CFM] %-20s: %6d.%06d\n", msg ? msg : "", tv.tv_sec, tv.tv_usec);
 }
-int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt );
+int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt1 );
+int Psm_ApplyCustomPartnersParams( PsmHalParam_t **params, int *cnt2 );
 
 #define PSM_REC_HASH_SIZE       1024
 
@@ -515,6 +522,104 @@ out:
     return err;
 }
 
+char * partner_json_file_parse(char *path){
+         cJSON  *json = NULL;
+         FILE    *fileRead = NULL;
+         char   *data = NULL;
+         int    len ;
+         fileRead = fopen( path, "r" );
+         if( fileRead == NULL )
+         {
+                 printf("%s-%d : Error in opening JSON file\n" , __FUNCTION__, __LINE__ );
+         }
+
+         fseek( fileRead, 0, SEEK_END );
+         len = ftell( fileRead );
+         fseek( fileRead, 0, SEEK_SET );
+         data = ( char* )malloc( len + 1 );
+         if (data != NULL)
+         {
+                fread( data, 1, len, fileRead );
+         }
+         else
+         {
+                 printf("%s-%d : Memory allocation failed \n", __FUNCTION__, __LINE__);
+         }
+
+         fclose( fileRead );
+
+        return data;
+
+}
+
+int Psm_ApplyCustomPartnersParams( PsmHalParam_t **params, int *cnt2 )
+{
+	cJSON   *partnerObj = NULL;
+	cJSON   *json = NULL;
+	PsmHalParam_t *ptr = NULL;
+        char value_buf[ 64 ];
+        int  ret= -1;
+	char *db_val = NULL,*SSIDprefix = NULL;
+	char    PartnerID[ PARTNERID_LEN ]  = { 0 };
+
+        // Init syscfg
+        syscfg_init( );
+	char buf[64] = {0} ;
+        syscfg_get( NULL, "PartnerID", buf, sizeof(buf));
+
+        if( buf != NULL )
+        {
+            strncpy(PartnerID, buf , strlen( buf ));
+        }
+	//Fill Total count to be added in PSM data base
+        *cnt2    = 1;
+        *params =( PsmHalParam_t * ) malloc( sizeof( PsmHalParam_t ) * ( *cnt2 ) );
+
+        ptr = ( PsmHalParam_t *)*params;
+	//SSID prefix
+        sprintf( ptr[ 0 ].name , "%s", "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" );
+
+	db_val = partner_json_file_parse(PARTNERS_INFO_JSON_FILE);
+	if(db_val){
+		json = cJSON_Parse(db_val);
+		partnerObj = cJSON_GetObjectItem( json, PartnerID );
+		if( partnerObj != NULL)
+		{
+			if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix") != NULL )
+			{
+				SSIDprefix = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix")->valuestring;
+
+				if (SSIDprefix != NULL)
+				{
+					sprintf( ptr[ 0 ].value, "%s",SSIDprefix );
+					CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, ptr[ 0 ].name, ptr[ 0 ].value ));
+					SSIDprefix = NULL;
+					return  0;
+				}
+				else
+				{
+					CcspTraceError(("%s - SSIDprefix Value is NULL\n", __FUNCTION__ ));
+					return -1;
+				}
+			}
+			else
+			{
+				CcspTraceError(("%s - SSIDprefix object is NULL\n", __FUNCTION__ ));
+				return -1;
+			}
+		}
+		else
+		{
+			CcspTraceError(("%s: GetPartnerObj SSIDprefix Failed\n", __FUNCTION__));
+			return -1;
+		}
+	}
+	else {
+			CcspTraceError(("%s: Parsing json Failed\n", __FUNCTION__));
+			return -1;
+	}
+}
+
 int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 {
 	int isNeedtoProceedfurther = 0;
@@ -609,17 +714,56 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 
 	return	-1;
 }
+
+static int applyPsm_custom_partners_params(int overwrite)
+{
+    struct psm_record   *rec;
+    PsmHalParam_t       *cus_params;
+    int                 cus_cnt2=0;
+    int                 i, err = -1;
+
+    if (Psm_ApplyCustomPartnersParams(&cus_params, &cus_cnt2) !=0)
+        return -1;
+
+    for (i = 0; i < cus_cnt2; i++)
+        {
+        if (!cus_params[i].name || !strlen(cus_params[i].name)) {
+            CcspTraceError(("%s: invalid custom partners param\n", __FUNCTION__));
+            continue;
+        }
+
+        rec = record_create(cus_params[i].name, "astr", NULL, cus_params[i].value);
+        if (rec == NULL) {
+            CcspTraceError(("%s: record_create fail\n", __FUNCTION__));
+            goto out;
+        }
+
+        if (insert_record(rec, overwrite) != 0) {
+            CcspTraceError(("%s: insert_record() fail\n", __FUNCTION__));
+            record_free(rec);
+            goto out;
+        }
+    }
+
+    err = 0;
+
+out:
+    if (cus_params)
+        free(cus_params);
+    return err;
+}
+
 static int import_custom_partners_params(int overwrite)
 {
     struct psm_record   *rec;
     PsmHalParam_t       *cus_params;
-    int                 cus_cnt;
+    int                 cus_cnt1=0;
     int                 i, err = -1;
 
-    if (Psm_GetCustomPartnersParams(&cus_params, &cus_cnt) != 0)
+    if (Psm_GetCustomPartnersParams(&cus_params, &cus_cnt1) != 0)
         return -1;
 
-    for (i = 0; i < cus_cnt; i++) 
+    for (i = 0; i < cus_cnt1; i++) 
 	{
         if (!cus_params[i].name || !strlen(cus_params[i].name)) {
             CcspTraceError(("%s: invalid custom partners param\n", __FUNCTION__));
@@ -754,6 +898,10 @@ again:
     /* import customer params with overwrite */
     if (import_custom_partners_params(1) != 0)
         CcspTraceInfo(("%s: Fail to import custom partners params\n", __FUNCTION__));
+
+    /* Apply customer params with overwrite */
+    if (applyPsm_custom_partners_params(1) != 0)
+        CcspTraceInfo(("%s: Fail to apply psm custom partners params\n", __FUNCTION__));
 
     /* flush merged records to buffer */
     if (flush_records((char **)ppCfgBuffer, pulCfgSize) != 0) {
