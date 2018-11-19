@@ -369,6 +369,8 @@ int main(int argc, char* argv[])
 	PSM_RDKLogEnable = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PSM_LoggerEnable");
 
     if ( bRunAsDaemon ) {
+		sem_post (sem);
+		sem_close(sem);
 		while (1)
 			sem_post (sem);
 			sem_close(sem);
