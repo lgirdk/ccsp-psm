@@ -1348,7 +1348,6 @@ int PsmDbusInit()
     g_psmHealth = CCSP_COMMON_COMPONENT_HEALTH_Yellow;
     /* Wait for CR ready */
     waitConditionReady(bus_handle, CrName, CCSP_DBUS_PATH_CR, CName);
-    CCSP_Message_Bus_Register_Path(bus_handle, CCSP_DBUS_PATH_PSM, path_message_func, bus_handle);
     
     CCSP_Base_Func_CB cb;
     memset(&cb, 0 , sizeof(cb));
@@ -1371,6 +1370,8 @@ int PsmDbusInit()
         bus_handle,
         &cb
     );
+
+    CCSP_Message_Bus_Register_Path(bus_handle, CCSP_DBUS_PATH_PSM, path_message_func, bus_handle);
 
     do
     {
