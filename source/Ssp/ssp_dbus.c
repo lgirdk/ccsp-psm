@@ -662,6 +662,7 @@ int  getParameterValues(
             continue;
         }
         
+        //CcspTraceWarning(("call get record value for %s +++\n", parameterNames[i]));
         returnStatus =
             pSysIraIf->GetRecord
                 (
