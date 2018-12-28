@@ -372,8 +372,6 @@ int main(int argc, char* argv[])
 		sem_post (sem);
 		sem_close(sem);
 		while (1)
-			sem_post (sem);
-			sem_close(sem);
 			sleep(30);
     }
     else {
