@@ -116,6 +116,7 @@ int Psm_ApplyCustomPartnersParams( PsmHalParam_t **params, int *cnt2 );
 #define PARTNER_DEFAULT_APPLY_FILE  	"/nvram/.apply_partner_defaults"
 #define PSM_CUR_CONFIG_FILE_NAME        "/nvram/bbhm_cur_cfg.xml"
 #define PSM_BAK_CONFIG_FILE_NAME        "/nvram/bbhm_bak_cfg.xml"
+#define PARTNER_DEFAULT_MIGRATE_PSM  	"/tmp/.apply_partner_defaults_psm"
 
 struct psm_record {
     struct psm_record   *next;
@@ -623,6 +624,7 @@ int Psm_ApplyCustomPartnersParams( PsmHalParam_t **params, int *cnt2 )
 int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 {
 	int isNeedtoProceedfurther = 0;
+	int isNeedToApplyPartnersDefault_PSM = 0;
 	
 	if ( ( access( PSM_CUR_CONFIG_FILE_NAME , F_OK ) != 0 ) && \
 		 ( access( PSM_BAK_CONFIG_FILE_NAME , F_OK ) != 0 )
@@ -630,6 +632,14 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 	{
 		isNeedtoProceedfurther = 1;
 	}
+	if ( access( PARTNER_DEFAULT_MIGRATE_PSM , F_OK ) == 0 )  
+	{
+		isNeedToApplyPartnersDefault_PSM = 1;
+		isNeedtoProceedfurther = 1;
+		CcspTraceInfo(("-- %s - Deleting this file :%s\n", __FUNCTION__, PARTNER_DEFAULT_MIGRATE_PSM ));
+		system( "rm -rf /tmp/.apply_partner_defaults_psm" );
+	}
+
 
 	CcspTraceInfo(("-- %s - isNeedtoProceedfurther:%d \n", __FUNCTION__, isNeedtoProceedfurther ));
 
@@ -647,7 +657,7 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 			system( "rm -rf /nvram/.apply_partner_defaults" );
 		}
 		
-		if( isNeedToApplyPartnersDefault )
+		if( (isNeedToApplyPartnersDefault == 1) || (isNeedToApplyPartnersDefault_PSM == 1) )
 		{
 			PsmHalParam_t *ptr				 = NULL;
 			char		   value_buf[ 64 ];
