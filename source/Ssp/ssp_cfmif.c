@@ -87,9 +87,6 @@
 #include <unistd.h>
 #include "pthread.h"
 
-#define PARTNERS_INFO_JSON_FILE                      "/nvram/partners_defaults.json"
-#define PARTNERID_LEN 64
-
 #ifdef _COSA_SIM_
 #define cfm_log_dbg(x)          printf x
 #define cfm_log_err(x)          printf x
@@ -117,6 +114,7 @@ int Psm_ApplyCustomPartnersParams( PsmHalParam_t **params, int *cnt2 );
 #define PSM_CUR_CONFIG_FILE_NAME        "/nvram/bbhm_cur_cfg.xml"
 #define PSM_BAK_CONFIG_FILE_NAME        "/nvram/bbhm_bak_cfg.xml"
 #define PARTNER_DEFAULT_MIGRATE_PSM  	"/tmp/.apply_partner_defaults_psm"
+#define PARTNER_DEFAULT_MIGRATE_FOR_NEW_PSM_MEMBER  	"/tmp/.apply_partner_defaults_new_psm_member"
 
 struct psm_record {
     struct psm_record   *next;
@@ -523,104 +521,6 @@ out:
     return err;
 }
 
-char * partner_json_file_parse(char *path){
-         cJSON  *json = NULL;
-         FILE    *fileRead = NULL;
-         char   *data = NULL;
-         int    len ;
-         fileRead = fopen( path, "r" );
-         if( fileRead == NULL )
-         {
-                 printf("%s-%d : Error in opening JSON file\n" , __FUNCTION__, __LINE__ );
-         }
-
-         fseek( fileRead, 0, SEEK_END );
-         len = ftell( fileRead );
-         fseek( fileRead, 0, SEEK_SET );
-         data = ( char* )malloc( len + 1 );
-         if (data != NULL)
-         {
-                fread( data, 1, len, fileRead );
-         }
-         else
-         {
-                 printf("%s-%d : Memory allocation failed \n", __FUNCTION__, __LINE__);
-         }
-
-         fclose( fileRead );
-
-        return data;
-
-}
-
-int Psm_ApplyCustomPartnersParams( PsmHalParam_t **params, int *cnt2 )
-{
-	cJSON   *partnerObj = NULL;
-	cJSON   *json = NULL;
-	PsmHalParam_t *ptr = NULL;
-        char value_buf[ 64 ];
-        int  ret= -1;
-	char *db_val = NULL,*SSIDprefix = NULL;
-	char    PartnerID[ PARTNERID_LEN ]  = { 0 };
-
-        // Init syscfg
-        syscfg_init( );
-	char buf[64] = {0} ;
-        syscfg_get( NULL, "PartnerID", buf, sizeof(buf));
-
-        if( buf != NULL )
-        {
-            strncpy(PartnerID, buf , strlen( buf ));
-        }
-	//Fill Total count to be added in PSM data base
-        *cnt2    = 1;
-        *params =( PsmHalParam_t * ) malloc( sizeof( PsmHalParam_t ) * ( *cnt2 ) );
-
-        ptr = ( PsmHalParam_t *)*params;
-	//SSID prefix
-        sprintf( ptr[ 0 ].name , "%s", "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" );
-
-	db_val = partner_json_file_parse(PARTNERS_INFO_JSON_FILE);
-	if(db_val){
-		json = cJSON_Parse(db_val);
-		partnerObj = cJSON_GetObjectItem( json, PartnerID );
-		if( partnerObj != NULL)
-		{
-			if ( cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix") != NULL )
-			{
-				SSIDprefix = cJSON_GetObjectItem( partnerObj, "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix")->valuestring;
-
-				if (SSIDprefix != NULL)
-				{
-					sprintf( ptr[ 0 ].value, "%s",SSIDprefix );
-					CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, ptr[ 0 ].name, ptr[ 0 ].value ));
-					SSIDprefix = NULL;
-					return  0;
-				}
-				else
-				{
-					CcspTraceError(("%s - SSIDprefix Value is NULL\n", __FUNCTION__ ));
-					return -1;
-				}
-			}
-			else
-			{
-				CcspTraceError(("%s - SSIDprefix object is NULL\n", __FUNCTION__ ));
-				return -1;
-			}
-		}
-		else
-		{
-			CcspTraceError(("%s: GetPartnerObj SSIDprefix Failed\n", __FUNCTION__));
-			return -1;
-		}
-	}
-	else {
-			CcspTraceError(("%s: Parsing json Failed\n", __FUNCTION__));
-			return -1;
-	}
-}
-
 int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 {
 	int isNeedtoProceedfurther = 0;
@@ -632,6 +532,7 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 	{
 		isNeedtoProceedfurther = 1;
 	}
+
 	if ( access( PARTNER_DEFAULT_MIGRATE_PSM , F_OK ) == 0 )  
 	{
 		isNeedToApplyPartnersDefault_PSM = 1;
@@ -640,6 +541,13 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 		system( "rm -rf /tmp/.apply_partner_defaults_psm" );
 	}
 
+	if ( access( PARTNER_DEFAULT_MIGRATE_FOR_NEW_PSM_MEMBER , F_OK ) == 0 )  
+	{
+		isNeedToApplyPartnersDefault_PSM = 1;
+		isNeedtoProceedfurther = 1;
+		CcspTraceInfo(("-- %s - Deleting this file :%s\n", __FUNCTION__, PARTNER_DEFAULT_MIGRATE_FOR_NEW_PSM_MEMBER ));
+		system( "rm -rf /tmp/.apply_partner_defaults_new_psm_member" );
+	}
 
 	CcspTraceInfo(("-- %s - isNeedtoProceedfurther:%d \n", __FUNCTION__, isNeedtoProceedfurther ));
 
@@ -657,68 +565,110 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 			system( "rm -rf /nvram/.apply_partner_defaults" );
 		}
 		
-		if( (isNeedToApplyPartnersDefault == 1) || (isNeedToApplyPartnersDefault_PSM == 1) )
+		if( ( isNeedToApplyPartnersDefault == 1 ) || \
+			( isNeedToApplyPartnersDefault_PSM == 1 )
+		  )
 		{
-			PsmHalParam_t *ptr				 = NULL;
+			PsmHalParam_t  localparamArray[ 128 ]	= { 0 }; //Just given max size as 128 if more than 128 then dev should change it			
 			char		   value_buf[ 64 ];
-			int 		   ret 				= -1;
+			int 		   ret 						= -1,
+						   localCount		 		= 0;
 		
 			// Init syscfg
 			syscfg_init( );
 						
-			*cnt	= 2;
-			*params =( PsmHalParam_t * ) malloc( sizeof( PsmHalParam_t ) * ( *cnt ) );
-			
-			ptr = ( PsmHalParam_t *)*params;
-			
 			/* eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code */
-			//Copy the PSM Paramater name
-			sprintf( ptr[ 0 ].name , "%s", "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" );
-	
+
 			//Get the syscfg.db value of PSM Param
 			memset( value_buf, 0 , sizeof( value_buf ) );
 			ret = syscfg_get( NULL, "WiFiRegionCode", value_buf, sizeof( value_buf ) );
 
-			if( ( ret != 0 ) || \
-				( '\0' == value_buf[ 0 ] ) 
+			if( ( ret == 0 ) && \
+				( '\0' != value_buf[ 0 ] ) 
 			   )
 			{
-				CcspTraceInfo(("-- %s - Fail to get WiFiRegionCode\n", __FUNCTION__ ));
-				free( ptr );
-				return	-1;
+				//Copy the PSM Paramater name
+				sprintf( localparamArray[ localCount ].name , "%s", "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" );
+				sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+				CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+				
+				// Remove DB variable. It won't use
+				syscfg_unset( NULL, "WiFiRegionCode" );
+
+				//Increment the count by 1
+				localCount++;
 			}
+	
+            /* dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation */
+
+            //Get the syscfg.db value of PSM Param
+            memset( value_buf, 0 , sizeof( value_buf ) );
+            ret = syscfg_get( NULL, "TR69CertLocation", value_buf, sizeof( value_buf ) );
+
+            if( ( ret == 0 ) && \
+                ( '\0' != value_buf[ 0 ] )
+               )
+            {
+				//Copy the PSM Paramater name
+				sprintf( localparamArray[ localCount ].name , "%s", "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" );
+				sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+				CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+				
+				// Remove DB variable. It won't be used
+				syscfg_unset( NULL, "TR69CertLocation" );
+
+				//Increment the count by 1
+				localCount++;
+            }
+
+            /* Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix */
 			
-			sprintf( ptr[ 0 ].value, "%s", value_buf );
-			CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, ptr[ 0 ].name, ptr[ 0 ].value ));
+            //Get the syscfg.db value of PSM Param
+            memset( value_buf, 0 , sizeof( value_buf ) );
+            ret = syscfg_get( NULL, "XHS_SSIDprefix", value_buf, sizeof( value_buf ) );
 
-			// Remove DB variable. It won't use
-			syscfg_unset( NULL, "WiFiRegionCode" );
+            if( ( ret == 0 ) && \
+                ( '\0' != value_buf[ 0 ] )
+               )
+            {
+				//Copy the PSM Paramater name
+				sprintf( localparamArray[ localCount ].name , "%s", "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" );
+				sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+				CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+				
+				// Remove DB variable. It won't be used
+				syscfg_unset( NULL, "XHS_SSIDprefix" );
 
-                        /* dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation */
-                        //Copy the PSM Paramater name
-                        sprintf( ptr[ 1 ].name , "%s", "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" );
+				//Increment the count by 1
+				localCount++;
+            }
 
-                        //Get the syscfg.db value of PSM Param
-                        memset( value_buf, 0 , sizeof( value_buf ) );
-                        ret = syscfg_get( NULL, "TR69CertLocation", value_buf, sizeof( value_buf ) );
-
-                        if( ( ret != 0 ) || \
-                                ( '\0' == value_buf[ 0 ] )
-                           )
-                        {
-                                CcspTraceInfo(("-- %s - Fail to get TR69CertLocation\n", __FUNCTION__ ));
-                                free( ptr );
-                                return  -1;
-                        }
-
-                        sprintf( ptr[ 1 ].value, "%s", value_buf );
-                        CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, ptr[ 1 ].name, ptr[ 1 ].value ));
-
-                        // Remove DB variable. It won't be used
-                        syscfg_unset( NULL, "TR69CertLocation" );
 			syscfg_commit();
-			
-			return	0;
+
+			//Initialize count as 0 here
+			*cnt	= 0;
+
+			CcspTraceInfo(("-- %s - Total Count:%d\n", __FUNCTION__, localCount ));
+
+			//Check whether any Data to be copy
+			if( 0 < localCount )
+			{
+				*cnt	= localCount;
+				*params =( PsmHalParam_t * ) malloc( sizeof( PsmHalParam_t ) * ( *cnt ) );
+
+				if( NULL == *params )
+				{
+					*cnt	= 0;
+
+					CcspTraceInfo(("-- %s - Failed to allocate memory\n", __FUNCTION__ ));
+					return	-1;					
+				}
+
+				//Copy all current data to passed param
+				memcpy( *params, &localparamArray, ( sizeof( PsmHalParam_t ) * ( *cnt ) ) );
+
+				return	0;
+			}
 		}
 	}
 
@@ -908,10 +858,6 @@ again:
     /* import customer params with overwrite */
     if (import_custom_partners_params(1) != 0)
         CcspTraceInfo(("%s: Fail to import custom partners params\n", __FUNCTION__));
-
-    /* Apply customer params with overwrite */
-    if (applyPsm_custom_partners_params(1) != 0)
-        CcspTraceInfo(("%s: Fail to apply psm custom partners params\n", __FUNCTION__));
 
     /* flush merged records to buffer */
     if (flush_records((char **)ppCfgBuffer, pulCfgSize) != 0) {
