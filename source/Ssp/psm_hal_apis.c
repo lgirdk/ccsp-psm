@@ -41,13 +41,6 @@
 
     ---------------------------------------------------------------
 
-    copyright:
-
-        Cisco Systems, Inc.
-        All Rights Reserved. 2012~2014
-
-    ---------------------------------------------------------------
-
     description:
 
         This file defines Persistent Storage Manager component 
