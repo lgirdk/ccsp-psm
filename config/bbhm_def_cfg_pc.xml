@@ -649,7 +649,7 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.15.RapidReconnThreshold" type="astr">180</Record>  
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.16.RapidReconnThreshold" type="astr">180</Record>  
 
-  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.vAPStatsEnable" type="astr">false</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.vAPStatsEnable" type="astr">true</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.1.vAPStatsEnable" type="astr">true</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.2.vAPStatsEnable" type="astr">true</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.3.vAPStatsEnable" type="astr">false</Record>
