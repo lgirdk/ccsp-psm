@@ -218,10 +218,12 @@ void sig_handler(int sig)
     	signal(SIGALRM, sig_handler); /* reset it to this function */
     	CcspTraceInfo(("SIGALRM received!\n"));
 
+		#ifndef DISABLE_LOGAGENT
 		RDKLogEnable = GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
 		RDKLogLevel = (char)GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_LogLevel");
 		PSM_RDKLogLevel = GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_PSM_LogLevel");
 		PSM_RDKLogEnable = (char)GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_PSM_LoggerEnable");
+		#endif
 	}
     else {
     	/* get stack trace first */
@@ -363,10 +365,12 @@ int main(int argc, char* argv[])
 	
 	system("touch /tmp/psm_initialized");
 
+	#ifndef DISABLE_LOGAGENT
 	RDKLogEnable = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
 	RDKLogLevel = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LogLevel");
 	PSM_RDKLogLevel = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PSM_LogLevel");
 	PSM_RDKLogEnable = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PSM_LoggerEnable");
+	#endif
 
     if ( bRunAsDaemon ) {
 		sem_post (sem);
