@@ -642,7 +642,38 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 				//Increment the count by 1
 				localCount++;
             }
+            //Get the syscfg.db value of DefaultAdminIP PSM Param
+            memset( value_buf, 0 , sizeof( value_buf ) );
+            ret = syscfg_get( NULL, "lan_ipaddr", value_buf, sizeof( value_buf ) );
 
+            if( ( ret == 0 ) && \
+                ( '\0' != value_buf[ 0 ] )
+               )
+            {
+				//Copy the PSM Paramater name
+				sprintf( localparamArray[ localCount ].name , "%s", "dmsb.l3net.4.V4Addr" );
+				sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+				CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+				
+        			//Increment the count by 1
+				localCount++;
+            }
+            //Get the syscfg.db value of DefaultLocalIPv4SubnetRange PSM Param
+            memset( value_buf, 0 , sizeof( value_buf ) );
+            ret = syscfg_get( NULL, "lan_netmask", value_buf, sizeof( value_buf ) );
+
+            if( ( ret == 0 ) && \
+                ( '\0' != value_buf[ 0 ] )
+               )
+            {
+				//Copy the PSM Paramater name
+				sprintf( localparamArray[ localCount ].name , "%s", "dmsb.l3net.4.V4SubnetMask" );
+				sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+				CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+				
+        			//Increment the count by 1
+				localCount++;
+            }
 			syscfg_commit();
 
 			//Initialize count as 0 here
