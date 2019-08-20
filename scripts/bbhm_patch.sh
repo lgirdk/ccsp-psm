@@ -22,6 +22,11 @@
 #bbhm patch for 2.1s11
 
 . /etc/device.properties
+SECURE_SYSCFG=`syscfg get UpdateNvram`
+SYSCFG_DB_FILE="/nvram/syscfg.db"
+if [ "$SECURE_SYSCFG" = "false" ]; then
+      SYSCFG_DB_FILE="/opt/secure/data/syscfg.db"
+fi
 
 usage() 
 {
@@ -99,7 +104,7 @@ if [ -f $2 ] ; then
 		if [ "$REDIRECT_VALUE" = "" ]
 		then
 			#Just making sure if syscfg command didn't fail
-			REDIRCTEXISTS=`cat /nvram/syscfg.db | grep redirection_flag | cut -f2 -d=`
+			REDIRCTEXISTS=`cat $SYSCFG_DB_FILE | grep redirection_flag | cut -f2 -d=`
 		fi
 
 		if [ "$REDIRECT_VALUE" = "false" ] || [ "$REDIRCTEXISTS" = "false" ];
