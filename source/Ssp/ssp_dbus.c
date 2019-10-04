@@ -804,6 +804,10 @@ int  setParameterValues(
     PPSM_FILE_LOADER_OBJECT         pPsmFileLoader      = (PPSM_FILE_LOADER_OBJECT    )pPsmSysRegistry->hPsmFileLoader;
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj    = (PANSC_TIMER_DESCRIPTOR_OBJECT)pPsmSysRegistry->hRegTimerObj;
     int                             i;
+    char		oldValBuf[512];
+    ULONG		ulRecordType;
+    ULONG		ulRecordSize;
+
     //   CcspTraceInfo((" inside setParameterValues \n"));
     if ( g_psmHealth != CCSP_COMMON_COMPONENT_HEALTH_Green )
     {
@@ -929,9 +933,34 @@ int  setParameterValues(
             continue;
         }
  
+	 /*RDKB-24884 : PSM set operation with same value should not update bbhm xml*/
+	 rroRenderAttr.ContentType = val[i].type;
+	 memset(oldValBuf, 0, sizeof(oldValBuf));
+
+	 returnStatus =
+		  pSysIraIf->GetRecord
+				(
+					 pSysIraIf->hOwnerContext,
+					 hSysRoot,
+					 val[i].parameterName,
+					 &ulRecordType,
+					 (PANSC_HANDLE)&rroRenderAttr,
+					 oldValBuf,
+					 &ulRecordSize
+				);
+
+	if ( returnStatus == ANSC_STATUS_SUCCESS )
+	{
+		if(strcmp(oldValBuf ,val[i].parameterValue) == 0)
+		{
+			CcspTraceWarning(("setParameterValues: +++ Add entry:  is already present-- size:%d, %s: %s \n", size, val[i].parameterName, val[i].parameterValue));
+			continue;
+		}
+	}
 
         rroRenderAttr.ContentType = val[i].type;
-
+	returnStatus	= ANSC_STATUS_SUCCESS;
+        
         returnStatus =
             pSysIraIf->AddRecord2
                 (
