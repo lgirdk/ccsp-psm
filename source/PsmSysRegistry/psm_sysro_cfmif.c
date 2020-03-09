@@ -252,6 +252,13 @@ PsmSysroCfmReadCurConfig
         {
             ulFileSize = AnscGetFileSize(hCurCfgFile);
         }
+	
+	/* Coverity Issue Fix - CID:71497 : Negative Returns */
+	if ( ulFileSize < 0 )
+	{
+	    returnStatus =  ANSC_STATUS_FAILURE;
+	    goto EXIT2;
+	}
 
         if ( ulFileSize == 0 )
         {
@@ -420,6 +427,13 @@ PsmSysroCfmReadDefConfig
     else
     {
         ulFileSize = AnscGetFileSize(hDefCfgFile);
+    }
+
+    /* Coverity Issue Fix - CID:67758 : Negative Returns*/
+    if ( ulFileSize < 0 )
+    {
+	    returnStatus =  ANSC_STATUS_FAILURE;
+	    goto EXIT2;
     }
 
     if ( ulFileSize == 0 )
