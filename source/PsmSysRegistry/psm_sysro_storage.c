@@ -321,8 +321,8 @@ PsmSysroImportConfig
         {
             ulFileSize = AnscGetFileSize(hTmpCfgFile);
         }
-
-        if ( ulFileSize == 0 )
+	/* Coverity Issue Fix - CID: 64024 : Negative Returns */
+        if ( ulFileSize <= 0 )
         {
             returnStatus = ANSC_STATUS_FAILURE;
 

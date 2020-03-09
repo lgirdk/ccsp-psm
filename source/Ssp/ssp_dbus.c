@@ -510,7 +510,8 @@ ANSC_STATUS doFactoryResetTask
     ANSC_STATUS                     returnStatus   = ANSC_STATUS_SUCCESS;
     char                            CrName[256];
     parameterValStruct_t            val[1];
-    char*                           pStr;
+    /* Coverity Issue Fix - CID:119052 : UnInitialised variable */
+    char*                           pStr = NULL;
 
     /* factory reset the PSM */
     returnStatus = pSroHandle->ResetToFactoryDefault((ANSC_HANDLE)pSroHandle);

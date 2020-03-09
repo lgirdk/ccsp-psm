@@ -299,7 +299,15 @@ static int load_records(const char *file)
         } else {
             for (last = rec_hash[idx]; last && last->next; last = last->next)
                 ;
-            last->next = rec;
+           	/* Coverity Issue Fix - CID:57323 : Forward NULL*/ 
+		if(last == NULL)
+        	{	
+                  	CcspTraceError(("%s-%d:Coverity Error occured as Forward NULL in last\n",__FUNCTION__,__LINE__));
+                  	pthread_mutex_unlock(&rec_hash_lock);
+                  	fclose(fp);
+                	return -1;
+       	        }
+		last->next = rec;
         }
         pthread_mutex_unlock(&rec_hash_lock);
     }
@@ -570,7 +578,7 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 		  )
 		{
 			PsmHalParam_t  localparamArray[ 128 ]	= { 0 }; //Just given max size as 128 if more than 128 then dev should change it			
-			char		   value_buf[ 64 ];
+			char		   value_buf[ 64 ] = {0};
 			int 		   ret 						= -1,
 						   localCount		 		= 0;
 		
@@ -580,7 +588,6 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 			/* eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code */
 
 			//Get the syscfg.db value of PSM Param
-			memset( value_buf, 0 , sizeof( value_buf ) );
 			ret = syscfg_get( NULL, "WiFiRegionCode", value_buf, sizeof( value_buf ) );
 
 			if( ( ret == 0 ) && \

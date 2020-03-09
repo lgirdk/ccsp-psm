@@ -252,9 +252,10 @@ decodeCalendar
     )
 {
     ULONG                               ulIndex = 0;
-    ULONG                               ulDate[6];
+    /* Coverity Issue Fix - CID:68447 : UnInitialised Variable*/
+    ULONG                               ulDate[6] = {0};
     PUCHAR                              pPos, pNext;
-    char                                value[8];
+    char                                value[8] = {0};
     char                                ch;
 
     while (pDate)
@@ -887,6 +888,7 @@ addRecordToXMLHandle
     ULONG                           recType, dataSize;
     ULONG                           access,contentType;
     CHAR                            pName[SYS_MAX_RECORD_NAME_SIZE];
+    
     PUCHAR                          pData;
 
     AnscZeroMemory(pName, SYS_MAX_RECORD_NAME_SIZE);
