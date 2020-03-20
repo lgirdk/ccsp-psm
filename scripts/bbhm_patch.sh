@@ -31,7 +31,7 @@ fi
 usage() 
 {
 	echo "Usage: $0 -f <bbhm file path> "
-	echo "Example: $0 -f /nvram/bbhm_cur_cfg.xml"
+	echo "Example: $0 -f /tmp/bbhm_cur_cfg.xml"
 }
 
 if [ \"$2\" == \"\" ] ; then
