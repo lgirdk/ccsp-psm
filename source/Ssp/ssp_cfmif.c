@@ -587,7 +587,7 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 		  )
 		{
 			PsmHalParam_t  localparamArray[ 128 ]	= { 0 }; //Just given max size as 128 if more than 128 then dev should change it			
-			char		   value_buf[ 64 ] = {0};
+			char		   value_buf[ 128 ] = {0};
 			int 		   ret 						= -1,
 						   localCount		 		= 0;
 		
@@ -689,6 +689,29 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 				
         			//Increment the count by 1
 				localCount++;
+            }
+
+
+            /* Device.X_RDK_WebConfig.URL */
+
+            //Get the syscfg.db value of PSM Param
+            memset( value_buf, 0 , sizeof( value_buf ) );
+            ret = syscfg_get( NULL, "WEBCONFIG_INIT_URL", value_buf, sizeof( value_buf ) );
+
+            if( ( ret == 0 ) && \
+                ( '\0' != value_buf[ 0 ] )
+               )
+            {
+                                //Copy the PSM Paramater name
+                                sprintf( localparamArray[ localCount ].name , "%s", "Device.X_RDK_WebConfig.URL" );
+                                sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+                                CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+
+                                // Remove DB variable. It won't be used
+                                syscfg_unset( NULL, "WEBCONFIG_INIT_URL" );
+
+                                //Increment the count by 1
+                                localCount++;
             }
 			syscfg_commit();
 

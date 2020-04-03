@@ -78,7 +78,7 @@
 #define  USE_PLATFORM_SPECIFIC_HAL                  1
 
 #define  MAX_NAME_SZ                                128
-#define  MAX_VALUE_SZ                               64
+#define  MAX_VALUE_SZ                               128
 
 /**********************************************************************
                             HAL APIs
