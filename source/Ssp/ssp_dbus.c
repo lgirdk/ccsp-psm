@@ -768,7 +768,15 @@ int  getParameterValues(
             val[k-1] = pParameterValue->val;
             AnscFreeMemory(pParameterValue);
 
-                        CcspTraceDebug(("getParameterValues -- *val_size:%d, %s: %s\n", *val_size, val[k-1]->parameterName, val[k-1]->parameterValue ));
+            /* Security Requiremnt: Log messages must not disclose any confidential data
+               like cryptographic keys and password. So don't save Passphrase on log message.
+             */
+            if ( NULL == strstr(val[k-1]->parameterName, "Passphrase" ) ) {
+                CcspTraceDebug(("getParameterValues -- *val_size:%d, %s: %s\n", *val_size, val[k-1]->parameterName, val[k-1]->parameterValue ));
+           }
+           else {
+                CcspTraceDebug(("getParameterValues – Not printing the value of parameter %s as it will disclose the confidential information.\n", val[k-1]->parameterName ));
+           }
         }
     }
 

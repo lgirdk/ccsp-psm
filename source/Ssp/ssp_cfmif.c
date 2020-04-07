@@ -477,7 +477,16 @@ static int insert_record(struct psm_record *new, int overwrite)
     if (!rec) {
         new->next = rec_hash[h_idx];
         rec_hash[h_idx] = new;
-        CcspTraceInfo(("%s : [IMPORTED-NEW] %s %s\n",__FUNCTION__, new->name, new->value ? new->value : ""));
+
+       /* Security Requiremnt: Log messages must not disclose any confidential data
+           like cryptographic keys and password. So don't save Passphrase on log message.
+        */
+        if ( NULL == strstr(new->name, "Passphrase" ) ) {
+            CcspTraceInfo(("%s : [IMPORTED-NEW] %s %s\n",__FUNCTION__, new->name, new->value ? new->value : ""));
+       }
+       else {
+           CcspTraceInfo(("%s : [IMPORTED-NEW] Not storing the value for parameter %s due to security restriction. \n",__FUNCTION__, new->name));
+       }
     }
 
     pthread_mutex_unlock(&rec_hash_lock);
