@@ -75,6 +75,7 @@
 
 
 #include "psm_sysro_global.h"
+#include "safec_lib_common.h"
 
 
 /**********************************************************************
@@ -284,6 +285,9 @@ PsmSysroEnrollObjects
     PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT  )pMyObject->hSysInfoRepository;
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj       = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
     PANSC_TDO_CLIENT_OBJECT         pRegTimerIf        = (PANSC_TDO_CLIENT_OBJECT      )pMyObject->hRegTimerIf;
+    errno_t                         rc                 = -1;
+    int                             ind                = -1;
+
 //CcspTraceInfo(("\n##PsmSysroEnrollObjects() beginss##\n"));
     if ( !pPsmCfmIf )
     {
@@ -298,7 +302,13 @@ PsmSysroEnrollObjects
             pMyObject->hPsmCfmIf = (ANSC_HANDLE)pPsmCfmIf;
         }
 
-        AnscCopyString(pPsmCfmIf->Name, PSM_CFM_INTERFACE_NAME);
+	rc = strcpy_s(pPsmCfmIf->Name, sizeof(pPsmCfmIf->Name), PSM_CFM_INTERFACE_NAME);
+	if(rc != EOK)
+        {
+	     ERR_CHK(rc);
+             free(pPsmCfmIf);
+	     return ANSC_STATUS_FAILURE;
+	}
 
         pPsmCfmIf->InterfaceId   = PSM_CFM_INTERFACE_ID;
         pPsmCfmIf->hOwnerContext = (ANSC_HANDLE)pMyObject;
@@ -342,7 +352,13 @@ PsmSysroEnrollObjects
             pMyObject->hSysRamIf = (ANSC_HANDLE)pSysRamIf;
         }
 
-        AnscCopyString(pSysRamIf->Name, SYS_RAM_INTERFACE_NAME);
+        rc = strcpy_s(pSysRamIf->Name, sizeof(pSysRamIf->Name), SYS_RAM_INTERFACE_NAME);
+        if(rc != EOK)
+        {
+             ERR_CHK(rc);
+             free(pSysRamIf);
+             return ANSC_STATUS_FAILURE;
+        }
 
         pSysRamIf->InterfaceId    = SYS_RAM_INTERFACE_ID;
         pSysRamIf->hOwnerContext  = (ANSC_HANDLE)pMyObject;

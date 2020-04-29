@@ -44,6 +44,7 @@
 #include <slap_definitions.h>
 #include <ccsp_psm_helper.h>
 #include "ssp_global.h"
+#include "safec_lib_common.h"
 #include "ansc_tso_interface.h"
 
 extern  void *bus_handle;
@@ -54,6 +55,15 @@ extern  BOOL  g_bLogEnable;
 #define  CCSP_COMMON_COMPONENT_HEALTH_Red                   1
 #define  CCSP_COMMON_COMPONENT_HEALTH_Yellow                2
 #define  CCSP_COMMON_COMPONENT_HEALTH_Green                 3
+
+#define  MALLOC_EIGHT_BYTES                            8
+#define  MALLOC_SIXTEEN_BYTES                          16
+#define  MALLOC_THIRTYTWO_BYTES                        32
+#define  MALLOC_ONE_TWENTY_EIGHT_BYTES                 128
+#define  MALLOC_TWO_FIFTY_SIX_BYTES                    256
+
+#define  COMPVALUES_SET                                3
+
 int     g_psmHealth = CCSP_COMMON_COMPONENT_HEALTH_Red;
 PDSLH_CPE_CONTROLLER_OBJECT     pDslhCpeController        = NULL;
 
@@ -75,9 +85,29 @@ _PARAMETER_VALUE
 }
 PARAMETER_VALUE,  *PPARAMETER_VALUE;
 
+enum psmIndex_e{
+    NONE = 0,
+    FACTORY_RESET,
+    PSM_NAME,
+    PSM_VERSION,
+    PSM_AUTHOR,
+    PSM_HEALTH,
+    PSM_STATE,
+    PSM_DTXML,
+    PSM_DISABLE_WRITING,
+    PSM_LOGGING_ENABLE,
+    PSM_LOG_LEVEL,
+    PSM_MEM_MINUSAGE,
+    PSM_MEM_MAXUSAGE,
+    PSM_MEM_CONSUMED,
+    PSM_RELOAD_CONFIG,
+    PSM_UPDATE_CONFIG,
+    PSM_NEW_CONFIGPATH,
+};
+
 name_spaceType_t NamespacePsm[] =
 {
-    {"com.cisco.spvtg.ccsp.psm", ccsp_none}, 
+    {"com.cisco.spvtg.ccsp.psm", ccsp_none},
     {"com.cisco.spvtg.ccsp.command.FactoryReset", ccsp_boolean},
     {"com.cisco.spvtg.ccsp.psm.Name", ccsp_string},
     {"com.cisco.spvtg.ccsp.psm.Version", ccsp_unsignedInt},
@@ -359,6 +389,72 @@ static const char* PSM_Introspect_msg =
     "</node>\n"
     ;
 
+int get_psm_type_from_name(char *name, enum dataType_e *type_ptr, enum psmIndex_e *index)
+{
+  int rc = -1;
+  int ind = -1;
+  int i = 0;
+  if((name == NULL) || (type_ptr == NULL) || (index == NULL))
+     return 0;
+  for (i = 0 ; i < sizeof(NamespacePsm)/sizeof(name_spaceType_t) ; ++i)
+  {
+      rc = strcmp_s(name, strlen(name), NamespacePsm[i].name_space, &ind);
+      ERR_CHK(rc);
+      if((rc == EOK) && (!ind))
+      {
+          *type_ptr = NamespacePsm[i].dataType;
+          *index = i;
+          return 1;
+      }
+  }
+  return 0;
+}
+
+int getCompareValue(char *name)
+{
+    const char *compValues[COMPVALUES_SET] = {"1", "true", "TRUE"};
+
+    int i = 0;
+    int rc = -1;
+    int ind = -1;
+
+    if(name == NULL)
+         return 0;
+    for(i = 0; i < COMPVALUES_SET; i++)
+    {
+       rc = strcmp_s(compValues[i], strlen(compValues[i]), name, &ind);
+       ERR_CHK(rc);
+       if((rc == EOK) && (!ind))
+       {
+	   return 1;
+       }
+    }
+    return 0;
+}
+
+
+void free_commParam_pointers(PPARAMETER_VALUE pParameterValue)
+{
+    if(pParameterValue)
+    {
+        if(pParameterValue->val)
+        {
+            if(pParameterValue->val->parameterName)
+            {
+                free(pParameterValue->val->parameterName);
+            }
+
+            if(pParameterValue->val->parameterValue)
+            {
+                free(pParameterValue->val->parameterValue);
+            }
+            free(pParameterValue->val);
+        }
+        free(pParameterValue);
+    }
+    return;
+}
+
 
 ANSC_STATUS getCommParam(
         char *paramName,
@@ -366,137 +462,331 @@ ANSC_STATUS getCommParam(
 )
 {
     PPARAMETER_VALUE    pParameterValue;
-   CcspTraceInfo((" inside getCommParam\n"));
+    enum dataType_e type;
+    enum psmIndex_e index;
+    errno_t rc = -1;
+    CcspTraceInfo((" inside getCommParam\n"));
     pParameterValue = AnscAllocateMemory(sizeof(PARAMETER_VALUE));
+    if(pParameterValue == NULL)
+    {
+        CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+        return ANSC_STATUS_FAILURE;
+    }
+    rc = memset_s(pParameterValue, sizeof(PARAMETER_VALUE), 0, sizeof(PARAMETER_VALUE));
+    ERR_CHK(rc);
+
     pParameterValue->val = AnscAllocateMemory(sizeof(parameterValStruct_t));
-    memset(pParameterValue->val, 0, sizeof(parameterValStruct_t));
+    if(pParameterValue->val == NULL)
+    {
+        CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+        free_commParam_pointers(pParameterValue);
+        return ANSC_STATUS_FAILURE;
+    }
+    rc = memset_s(pParameterValue->val, sizeof(parameterValStruct_t), 0, sizeof(parameterValStruct_t));
+    ERR_CHK(rc);
 
     pParameterValue->val->parameterName = AnscAllocateMemory(strlen(paramName)+1);
-    strcpy(pParameterValue->val->parameterName, paramName);
-
-    if ( strcmp(paramName, "com.cisco.spvtg.ccsp.command.FactoryReset") == 0 )
+    if(pParameterValue->val->parameterName == NULL)
     {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(8);
-        strcpy(pParameterValue->val->parameterValue, "false");
-        pParameterValue->val->type = ccsp_boolean;
+        CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+        free_commParam_pointers(pParameterValue);
+        return ANSC_STATUS_FAILURE;
     }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.Name") == 0 )
+    rc = strcpy_s(pParameterValue->val->parameterName, strlen(paramName)+1,  paramName);
+    if(rc != EOK)
     {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(128);
-        strcpy(pParameterValue->val->parameterValue, pComponentName);
-        pParameterValue->val->type = ccsp_string;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.Version") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(8);
-        sprintf(pParameterValue->val->parameterValue, "%d", CCSP_COMPONENT_VERSION_PSM);
-        pParameterValue->val->type = ccsp_unsignedInt;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.Author") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(32);
-        strcpy(pParameterValue->val->parameterValue, CCSP_COMPONENT_AUTHOR_PSM);
-        pParameterValue->val->type = ccsp_string;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.Health") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(8);
-        strcpy(pParameterValue->val->parameterValue, "Green");
-        pParameterValue->val->type = ccsp_string;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.State") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(8);
-        sprintf(pParameterValue->val->parameterValue, "%d", 1);
-        pParameterValue->val->type = ccsp_unsignedInt;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.DTXml") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(8);
-        strcpy(pParameterValue->val->parameterValue, "Null");
-        pParameterValue->val->type = ccsp_string;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.DisableWriting") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(8);
-        if ( pPsmSysRegistry && (pPsmSysRegistry->FileSyncRefCount > 0) )
-        {
-            strcpy(pParameterValue->val->parameterValue, "true");
-        }
-        else
-        {
-            strcpy(pParameterValue->val->parameterValue, "false");
-        }
-
-        pParameterValue->val->type = ccsp_boolean;
-
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.Logging.Enable") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(8);
-        if ( g_bLogEnable )
-        {
-            strcpy(pParameterValue->val->parameterValue, "true");
-        }
-        else
-        {
-            strcpy(pParameterValue->val->parameterValue, "false");
-        }
-        pParameterValue->val->type = ccsp_boolean;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.Logging.LogLevel") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(128);
-        sprintf(pParameterValue->val->parameterValue, "%d", g_iTraceLevel);
-        pParameterValue->val->type = ccsp_unsignedInt;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.Memory.MinUsage") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(128);
-        sprintf(pParameterValue->val->parameterValue, "%d", 0);
-        pParameterValue->val->type = ccsp_unsignedInt;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.Memory.MaxUsage") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(128);
-        sprintf(pParameterValue->val->parameterValue, "%lu", g_ulAllocatedSizePeak);
-        pParameterValue->val->type = ccsp_unsignedInt;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.Memory.Consumed") == 0 )
-    {
-        LONG  lMemSize = 0;
-
-        lMemSize = AnscGetComponentMemorySize(pComponentName);
-
-        if ( lMemSize == -1 )
-            lMemSize = 0;
-
-        pParameterValue->val->parameterValue = AnscAllocateMemory(128);
-        sprintf(pParameterValue->val->parameterValue, "%lu", (ULONG)lMemSize);
-        pParameterValue->val->type = ccsp_unsignedInt;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.ReloadConfig") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(8);
-        strcpy(pParameterValue->val->parameterValue, "false");
-        pParameterValue->val->type = ccsp_boolean;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.UpdateConfigs") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(16);
-        strcpy(pParameterValue->val->parameterValue, "false");
-        pParameterValue->val->type = ccsp_boolean;
-    }
-    else if ( strcmp(paramName, "com.cisco.spvtg.ccsp.psm.NewConfigPath") == 0 )
-    {
-        pParameterValue->val->parameterValue = AnscAllocateMemory(256);
-        strcpy(pParameterValue->val->parameterValue, g_NewConfigPath);
-        pParameterValue->val->type = ccsp_string;
+	ERR_CHK(rc);
+        free_commParam_pointers(pParameterValue);
+	return ANSC_STATUS_FAILURE;
     }
 
+    if (get_psm_type_from_name(paramName, &type, &index))
+    {
+	    pParameterValue->val->type = type;
+
+	    if(index == FACTORY_RESET)
+	    {
+		pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_EIGHT_BYTES);
+                if(pParameterValue->val->parameterValue == NULL)
+                {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                }
+
+                rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_EIGHT_BYTES, "false");
+		if(rc != EOK)
+		{
+		    ERR_CHK(rc);
+                    free_commParam_pointers(pParameterValue);
+		    return ANSC_STATUS_FAILURE;
+		}
+	    }
+	    else if(index == PSM_NAME)
+	    {
+		pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_ONE_TWENTY_EIGHT_BYTES);
+                if(pParameterValue->val->parameterValue == NULL)
+                {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                }
+
+		rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_ONE_TWENTY_EIGHT_BYTES, pComponentName);
+		if(rc != EOK)
+		{
+                    ERR_CHK(rc);
+                    free_commParam_pointers(pParameterValue);
+		    return ANSC_STATUS_FAILURE;
+		}
+	    }
+	    else if(index == PSM_VERSION)
+	    {
+		pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_EIGHT_BYTES);
+                if(pParameterValue->val->parameterValue == NULL)
+                {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                }
+		sprintf(pParameterValue->val->parameterValue, "%d", CCSP_COMPONENT_VERSION_PSM);
+	    }
+	    else if(index == PSM_AUTHOR)
+	    {
+		pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_THIRTYTWO_BYTES);
+                if(pParameterValue->val->parameterValue == NULL)
+                {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                }
+
+                rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_THIRTYTWO_BYTES, CCSP_COMPONENT_AUTHOR_PSM);
+		if(rc != EOK)
+		{
+		    ERR_CHK(rc);
+                    free_commParam_pointers(pParameterValue);
+		    return ANSC_STATUS_FAILURE;
+		}
+	    }
+	    else if(index == PSM_HEALTH)
+	    {
+		pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_EIGHT_BYTES);
+                if(pParameterValue->val->parameterValue == NULL)
+                {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                }
+
+                rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_EIGHT_BYTES,  "Green");
+		if(rc != EOK)
+		{
+                    ERR_CHK(rc);
+                    free_commParam_pointers(pParameterValue);
+		    return ANSC_STATUS_FAILURE;
+		}
+	    }
+	    else if(index == PSM_STATE)
+            {
+		pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_EIGHT_BYTES);
+                if(pParameterValue->val->parameterValue == NULL)
+                {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                }
+		sprintf(pParameterValue->val->parameterValue, "%d", 1);
+	    }
+	    else if(index == PSM_DTXML)
+	    {
+		pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_EIGHT_BYTES);
+                if(pParameterValue->val->parameterValue == NULL)
+                {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                }
+
+		rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_EIGHT_BYTES, "Null");
+		if(rc != EOK)
+		{
+		    ERR_CHK(rc);
+                    free_commParam_pointers(pParameterValue);
+		    return ANSC_STATUS_FAILURE;
+		}
+	    }
+	    else if(index == PSM_DISABLE_WRITING)
+	    {
+		pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_EIGHT_BYTES);
+                if(pParameterValue->val->parameterValue == NULL)
+                {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                }
+
+                if ( pPsmSysRegistry && (pPsmSysRegistry->FileSyncRefCount > 0) )
+		{
+		    rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_EIGHT_BYTES, "true");
+		    if(rc != EOK)
+		    {
+			ERR_CHK(rc);
+                        free_commParam_pointers(pParameterValue);
+			return ANSC_STATUS_FAILURE;
+		    }
+		}
+		else
+		{
+		    rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_EIGHT_BYTES, "false");
+		    if(rc != EOK)
+		    {
+			ERR_CHK(rc);
+                        free_commParam_pointers(pParameterValue);
+			return ANSC_STATUS_FAILURE;
+		    }
+		}
+	     }
+	     else if(index == PSM_LOGGING_ENABLE)
+	     {
+		 pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_EIGHT_BYTES);
+                 if(pParameterValue->val->parameterValue == NULL)
+                 {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                 }
+
+		 if ( g_bLogEnable )
+		 {
+                     rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_EIGHT_BYTES, "true");
+		     if(rc != EOK)
+		     {
+                         ERR_CHK(rc);
+                         free_commParam_pointers(pParameterValue);
+			 return ANSC_STATUS_FAILURE;
+		     }
+		 }
+		 else
+		 {
+		     rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_EIGHT_BYTES, "false");
+		     if(rc != EOK)
+		     {
+			 ERR_CHK(rc);
+                         free_commParam_pointers(pParameterValue);
+			 return ANSC_STATUS_FAILURE;
+		     }
+		 }
+	     }
+	     else if(index == PSM_LOG_LEVEL)
+	     {
+                 pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_ONE_TWENTY_EIGHT_BYTES);
+                 if(pParameterValue->val->parameterValue == NULL)
+                 {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                 }
+		 sprintf(pParameterValue->val->parameterValue, "%d", g_iTraceLevel);
+	     }
+	     else if(index == PSM_MEM_MINUSAGE)
+	     {
+                 pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_ONE_TWENTY_EIGHT_BYTES);
+                 if(pParameterValue->val->parameterValue == NULL)
+                 {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                 }
+		 sprintf(pParameterValue->val->parameterValue, "%d", 0);
+	     }
+	     else if(index == PSM_MEM_MAXUSAGE)
+	     {
+                 pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_ONE_TWENTY_EIGHT_BYTES);
+                 if(pParameterValue->val->parameterValue == NULL)
+                 {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                 }
+		 sprintf(pParameterValue->val->parameterValue, "%lu", g_ulAllocatedSizePeak);
+	     }
+	     else if(index == PSM_MEM_CONSUMED)
+	     {
+		 LONG  lMemSize = 0;
+
+		 lMemSize = AnscGetComponentMemorySize(pComponentName);
+
+		 if ( lMemSize == -1 )
+		     lMemSize = 0;
+
+		 pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_ONE_TWENTY_EIGHT_BYTES);
+                 if(pParameterValue->val->parameterValue == NULL)
+                 {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                 }
+		 sprintf(pParameterValue->val->parameterValue, "%lu", (ULONG)lMemSize);
+	     }
+	     else if(index == PSM_RELOAD_CONFIG)
+	     {
+		 pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_EIGHT_BYTES);
+                 if(pParameterValue->val->parameterValue == NULL)
+                 {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                 }
+
+		 rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_EIGHT_BYTES, "false");
+		 if(rc != EOK)
+		 {
+		     ERR_CHK(rc);
+                     free_commParam_pointers(pParameterValue);
+		     return ANSC_STATUS_FAILURE;
+		}
+	     }
+             else if(index == PSM_UPDATE_CONFIG)
+	     {
+	         pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_SIXTEEN_BYTES);
+                 if(pParameterValue->val->parameterValue == NULL)
+                 {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                 }
+
+		 rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_SIXTEEN_BYTES, "false");
+		 if(rc != EOK)
+		 {
+		     ERR_CHK(rc);
+                     free_commParam_pointers(pParameterValue);
+		     return ANSC_STATUS_FAILURE;
+		 }
+	      }
+	      else if(index == PSM_NEW_CONFIGPATH)
+	      {
+	          pParameterValue->val->parameterValue = AnscAllocateMemory(MALLOC_TWO_FIFTY_SIX_BYTES);
+                  if(pParameterValue->val->parameterValue == NULL)
+                  {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free_commParam_pointers(pParameterValue);
+                      return ANSC_STATUS_FAILURE;
+                  }
+
+		  rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_TWO_FIFTY_SIX_BYTES, g_NewConfigPath);
+		  if(rc != EOK)
+		  {
+		      ERR_CHK(rc);
+                      free_commParam_pointers(pParameterValue);
+		      return ANSC_STATUS_FAILURE;
+		  }
+	      }
+     }
 
     *ppParameterValue = pParameterValue;
-   CcspTraceInfo((" getCommParam exit\n"));
+    CcspTraceInfo((" getCommParam exit\n"));
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -512,6 +802,7 @@ ANSC_STATUS doFactoryResetTask
     parameterValStruct_t            val[1];
     /* Coverity Issue Fix - CID:119052 : UnInitialised variable */
     char*                           pStr = NULL;
+    errno_t                         rc = -1;
 
     /* factory reset the PSM */
     returnStatus = pSroHandle->ResetToFactoryDefault((ANSC_HANDLE)pSroHandle);
@@ -527,7 +818,12 @@ ANSC_STATUS doFactoryResetTask
         }
         else
         {
-            AnscCopyString(CrName, CCSP_DBUS_INTERFACE_CR);
+            rc = strcpy_s(CrName, sizeof(CrName), CCSP_DBUS_INTERFACE_CR);
+            if(rc != EOK)
+	    {
+		ERR_CHK(rc);
+		return ANSC_STATUS_FAILURE;
+	    }
         }
 
         val[0].parameterName  = "com.cisco.spvtg.ccsp.rm.Reboot.Enable";
@@ -596,6 +892,8 @@ int  getParameterValues(
     PPARAMETER_VALUE                pParameterValue     = (PPARAMETER_VALUE)NULL;
     SLIST_HEADER                    ParameterValueList;
     int                             i;
+    errno_t                         rc                  = -1;
+    int                             ind                 = -1;
  //  CcspTraceInfo((" inside getParameterValues\n"));
     if ( g_psmHealth != CCSP_COMMON_COMPONENT_HEALTH_Green )
     {
@@ -645,7 +943,9 @@ int  getParameterValues(
 
         for ( k = 1; k < sizeof(NamespacePsm)/sizeof(name_spaceType_t); k++ )
         {
-            if ( strcmp(parameterNames[i], NamespacePsm[k].name_space) == 0 )
+            rc = strcmp_s(parameterNames[i], sizeof(parameterNames[i]), NamespacePsm[k].name_space, &ind);
+	    ERR_CHK(rc);
+	    if((rc == EOK) && (ind == 0))
             {
                 returnStatus = getCommParam(parameterNames[i], &pParameterValue);
 
@@ -697,10 +997,17 @@ int  getParameterValues(
             {
                 if(pParameterValue->val = AnscAllocateMemory(sizeof(parameterValStruct_t)))
                 {
-                    memset(pParameterValue->val, 0, sizeof(parameterValStruct_t));
+                    rc = memset_s(pParameterValue->val, sizeof(parameterValStruct_t), 0, sizeof(parameterValStruct_t));
+		    ERR_CHK(rc);
                     if(pParameterValue->val->parameterName = AnscAllocateMemory(strlen(parameterNames[i])+1))
                     {
-                        strcpy(pParameterValue->val->parameterName, parameterNames[i]);
+                        rc = strcpy_s(pParameterValue->val->parameterName, strlen(parameterNames[i])+1, parameterNames[i]);
+			if(rc != EOK)
+			{
+		            ERR_CHK(rc);
+                            free_commParam_pointers(pParameterValue);
+			    return CCSP_FAILURE;
+			}
                         if(pParameterValue->val->parameterValue = AnscAllocateMemory(ulRecordSize+1))
                         {
                             returnStatus =
@@ -760,7 +1067,13 @@ int  getParameterValues(
         PSINGLE_LINK_ENTRY      pSLinkEntry = NULL;
 
         val = AnscAllocateMemory(*val_size*sizeof(parameterValStruct_t *));
-        memset(val, 0, *val_size*sizeof(parameterValStruct_t *));
+        if(val == NULL)
+        {
+             CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+             return CCSP_FAILURE;
+        }
+        rc = memset_s(val, *val_size*sizeof(parameterValStruct_t *), 0, *val_size*sizeof(parameterValStruct_t *));
+	ERR_CHK(rc);
 
         for ( ; k > 0; k-- )
         {
@@ -813,9 +1126,11 @@ int  setParameterValues(
     PPSM_FILE_LOADER_OBJECT         pPsmFileLoader      = (PPSM_FILE_LOADER_OBJECT    )pPsmSysRegistry->hPsmFileLoader;
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj    = (PANSC_TIMER_DESCRIPTOR_OBJECT)pPsmSysRegistry->hRegTimerObj;
     int                             i;
-    char		oldValBuf[512];
+    char		oldValBuf[512] = {0};
     ULONG		ulRecordType;
     ULONG		ulRecordSize;
+    errno_t             rc = -1;
+    int                 ind = -1;
 
     //   CcspTraceInfo((" inside setParameterValues \n"));
     if ( g_psmHealth != CCSP_COMMON_COMPONENT_HEALTH_Green )
@@ -858,93 +1173,86 @@ int  setParameterValues(
  
     SysInitRroRenderAttr((&rroRenderAttr));
 
+    enum dataType_e type;
+    int index = 0;
+
     for ( i = 0; i < size; i++ )
     {
-        if ( strcmp(val[i].parameterName, "com.cisco.spvtg.ccsp.command.FactoryReset") == 0 )
+	if (get_psm_type_from_name(val[i].parameterName, &type, &index))
         {
-            if ( (strcmp(val[i].parameterValue, "1") == 0)
-                 || (strcmp(val[i].parameterValue, "true") == 0)
-                 || (strcmp(val[i].parameterValue, "TRUE") == 0) ) 
-            {
-                doFactoryReset((ANSC_HANDLE)pPsmSysRegistry);
-            }
+	    if(index == FACTORY_RESET)
+	    {
+		if(getCompareValue(val[i].parameterValue))
+		{
+                    doFactoryReset((ANSC_HANDLE)pPsmSysRegistry);
+		}
+		continue;
+	    }
+	    else if(index == PSM_LOGGING_ENABLE)
+	    {
+                if(getCompareValue(val[i].parameterValue))
+                {
+                    g_bLogEnable = TRUE;
+		}
+		else
+		{
+		    g_bLogEnable = FALSE;
+		}
+		continue;
+	    }
+	    else if(index == PSM_LOG_LEVEL)
+	    {
+		g_iTraceLevel = strtol(val[i].parameterValue, NULL, 10);
 
-            continue;
-        }
-        else if ( strcmp(val[i].parameterName, "com.cisco.spvtg.ccsp.psm.Logging.Enable") == 0 )
-        {
-            if ( (strcmp(val[i].parameterValue, "1") == 0)
-                 || (strcmp(val[i].parameterValue, "true") == 0)
-                 || (strcmp(val[i].parameterValue, "TRUE") == 0) ) 
-            {
-                g_bLogEnable = TRUE;
+                continue;
+	    }
+	    else if(index == PSM_DISABLE_WRITING)
+	    {
+                if(getCompareValue(val[i].parameterValue))
+		{
+                    pPsmSysRegistry->SysRamEnableFileSync((ANSC_HANDLE)pPsmSysRegistry, TRUE);
+                }
+                else
+                {
+                    pPsmSysRegistry->SysRamEnableFileSync((ANSC_HANDLE)pPsmSysRegistry, FALSE);
+                }
+                continue;
+	    }
+	    else if(index == PSM_RELOAD_CONFIG)
+	    {
+                if(getCompareValue(val[i].parameterValue))
+		{
+                    // pSysIraIf->ClearFolder(pSysIraIf->hOwnerContext, hSysRoot);
+                    pPsmSysRegistry->SaveConfigToFlash(pPsmSysRegistry);
+                    pPsmSysRegistry->bNoSave = FALSE;
+                    pRegTimerObj->Start((ANSC_HANDLE)pRegTimerObj);
+		            pPsmFileLoader->LoadRegFile((ANSC_HANDLE)pPsmFileLoader);
+                }
+               continue;
             }
-            else
-            {
-                g_bLogEnable = FALSE;
-            }
+            else if(index == PSM_UPDATE_CONFIG)
+	    {
+		if(getCompareValue(val[i].parameterValue))
+                {
+                    PSM_CFM_INTERFACE   *cfmif = (PSM_CFM_INTERFACE *)pPsmSysRegistry->hPsmCfmIf;
 
-            continue;
-        }
-        else if ( strcmp(val[i].parameterName, "com.cisco.spvtg.ccsp.psm.Logging.LogLevel") == 0 )
-        {
-            g_iTraceLevel = strtol(val[i].parameterValue, NULL, 10);
-
-            continue;
-        }
-        else if ( strcmp(val[i].parameterName, "com.cisco.spvtg.ccsp.psm.DisableWriting") == 0 )
-        {
-            if ( (strcmp(val[i].parameterValue, "1") == 0)
-                 || (strcmp(val[i].parameterValue, "true") == 0)
-                 || (strcmp(val[i].parameterValue, "TRUE") == 0) ) 
-            {
-                pPsmSysRegistry->SysRamEnableFileSync((ANSC_HANDLE)pPsmSysRegistry, TRUE);
-            }
-            else
-            {
-                pPsmSysRegistry->SysRamEnableFileSync((ANSC_HANDLE)pPsmSysRegistry, FALSE);
-            }
-
-            continue;
-        }
-        else if ( strcmp(val[i].parameterName, "com.cisco.spvtg.ccsp.psm.ReloadConfig") == 0 )
-        {
-            if ( (strcmp(val[i].parameterValue, "1") == 0)
-                 || (strcmp(val[i].parameterValue, "true") == 0)
-                 || (strcmp(val[i].parameterValue, "TRUE") == 0) ) 
-            {
-                // pSysIraIf->ClearFolder(pSysIraIf->hOwnerContext, hSysRoot);
-                pPsmSysRegistry->SaveConfigToFlash(pPsmSysRegistry);
-                pPsmSysRegistry->bNoSave = FALSE;
-                pRegTimerObj->Start((ANSC_HANDLE)pRegTimerObj);
-		pPsmFileLoader->LoadRegFile((ANSC_HANDLE)pPsmFileLoader);
-            }
-
-            continue;
-        }
-        else if ( strcmp(val[i].parameterName, "com.cisco.spvtg.ccsp.psm.UpdateConfigs") == 0 )
-        {
-            if ( (strcmp(val[i].parameterValue, "1") == 0)
-                 || (strcmp(val[i].parameterValue, "true") == 0)
-                 || (strcmp(val[i].parameterValue, "TRUE") == 0) )
-            {
-                PSM_CFM_INTERFACE   *cfmif = (PSM_CFM_INTERFACE *)pPsmSysRegistry->hPsmCfmIf;
-
-                if (cfmif && cfmif->UpdateConfigs)
+                    if (cfmif && cfmif->UpdateConfigs)
                     cfmif->UpdateConfigs(pPsmSysRegistry, g_NewConfigPath);
+                }
+                continue;
             }
+	    else if(index == PSM_NEW_CONFIGPATH)
+	    {
+                snprintf(g_NewConfigPath, sizeof(g_NewConfigPath), "%s", val[i].parameterValue);
+               continue;
+            }
+	}
 
-            continue;
-        }
-        else if ( strcmp(val[i].parameterName, "com.cisco.spvtg.ccsp.psm.NewConfigPath") == 0 )
-        {
-            snprintf(g_NewConfigPath, sizeof(g_NewConfigPath), "%s", val[i].parameterValue);
-            continue;
-        }
- 
 	 /*RDKB-24884 : PSM set operation with same value should not update bbhm xml*/
 	 rroRenderAttr.ContentType = val[i].type;
-	 memset(oldValBuf, 0, sizeof(oldValBuf));
+
+         rc =  memset_s(oldValBuf, sizeof(oldValBuf), 0, sizeof(oldValBuf));
+	 ERR_CHK(rc);
 
 	 returnStatus =
 		  pSysIraIf->GetRecord
@@ -960,11 +1268,13 @@ int  setParameterValues(
 
 	if ( returnStatus == ANSC_STATUS_SUCCESS )
 	{
-		if(strcmp(oldValBuf ,val[i].parameterValue) == 0)
-		{
-			CcspTraceWarning(("setParameterValues: +++ Add entry:  is already present-- size:%d, %s: %s \n", size, val[i].parameterName, val[i].parameterValue));
-			continue;
-		}
+	    rc = strcmp_s(oldValBuf, sizeof(oldValBuf), val[i].parameterValue, &ind);
+	    ERR_CHK(rc);
+	    if((rc == EOK) && (ind == 0))
+	    {
+		CcspTraceWarning(("setParameterValues: +++ Add entry:  is already present-- size:%d, %s: %s \n", size, val[i].parameterName, val[i].parameterValue));
+		continue;
+	    }
 	}
 
         rroRenderAttr.ContentType = val[i].type;
@@ -1120,6 +1430,8 @@ int getParameterNames(
     SLIST_HEADER                    ParameterInfoList;
     PSINGLE_LINK_ENTRY              pSLinkEntry         = NULL;
     parameterInfoStruct_t         **val                 = NULL;
+    errno_t                         rc                  = -1;
+    int                             ind                 = -1;
     //CcspTraceInfo(("getParameterNames begins\n"));
     if ( g_psmHealth != CCSP_COMMON_COMPONENT_HEALTH_Green )
     {
@@ -1222,7 +1534,9 @@ int getParameterNames(
 
                 pParameterInfo = ACCESS_CONTAINER(pSLinkEntry, PARAMETER_INFO, Linkage);
 
-                if ( strcmp(recordName, pParameterInfo->val->parameterName) == 0 )
+		rc = strcmp_s(recordName, sizeof(recordName), pParameterInfo->val->parameterName, &ind);
+		ERR_CHK(rc);
+                if((rc == EOK) &&(ind == 0 ))
                 {
                     break;
                 }
@@ -1233,11 +1547,38 @@ int getParameterNames(
                 *val_size = *val_size + 1;
 
                 pParameterInfo = AnscAllocateMemory(sizeof(PARAMETER_INFO));
+                if(pParameterInfo == NULL)
+                {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      return CCSP_FAILURE;
+                }
                 pParameterInfo->val = AnscAllocateMemory(sizeof(parameterInfoStruct_t));
-                memset(pParameterInfo->val, 0, sizeof(parameterInfoStruct_t));
+                if(pParameterInfo->val == NULL)
+                {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free(pParameterInfo);
+                      return CCSP_FAILURE;
+                }
+                rc = memset_s(pParameterInfo->val, sizeof(parameterInfoStruct_t), 0, sizeof(parameterInfoStruct_t));
+		ERR_CHK(rc);
 
                 pParameterInfo->val->parameterName = AnscAllocateMemory(ulNameSize+1);
-                strcpy(pParameterInfo->val->parameterName, recordName);
+                if(pParameterInfo->val->parameterName == NULL)
+                {
+                      CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+                      free(pParameterInfo->val);
+                      free(pParameterInfo);
+                      return CCSP_FAILURE;
+                }
+                rc = strcpy_s(pParameterInfo->val->parameterName,  ulNameSize+1, recordName);
+		if(rc != EOK)
+		{
+		    ERR_CHK(rc);
+                    free(pParameterInfo->val->parameterName);
+                    free(pParameterInfo->val);
+                    free(pParameterInfo);
+		    return CCSP_FAILURE;
+		}
 
                 AnscSListPushEntry(&ParameterInfoList, &pParameterInfo->Linkage);
             }
@@ -1250,7 +1591,13 @@ int getParameterNames(
         i = *val_size;
 
         val = AnscAllocateMemory(*val_size*sizeof(parameterInfoStruct_t *));
-        memset(val, 0, *val_size*sizeof(parameterInfoStruct_t *));
+        if(val == NULL)
+        {
+             CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+             return CCSP_FAILURE;
+        }
+        rc = memset_s(val, *val_size*sizeof(parameterInfoStruct_t *), 0, *val_size*sizeof(parameterInfoStruct_t *));
+	ERR_CHK(rc);
 
         for ( ; i > 0; i-- )
         {
@@ -1337,6 +1684,8 @@ path_message_func (DBusConnection  *conn,
     CCSP_MESSAGE_BUS_INFO *bus_info =(CCSP_MESSAGE_BUS_INFO *) user_data;
     const char *interface = dbus_message_get_interface(message);
     const char *method   = dbus_message_get_member(message);
+    errno_t  rc = -1;
+    int ind  = -1;
     DBusMessage *reply;
     reply = dbus_message_new_method_return (message);
     if (reply == NULL)
@@ -1344,17 +1693,24 @@ path_message_func (DBusConnection  *conn,
         return DBUS_HANDLER_RESULT_HANDLED;
     }
 
-    if(!strcmp("org.freedesktop.DBus.Introspectable", interface)  && !strcmp(method, "Introspect"))
-    {
-        if ( !dbus_message_append_args (reply, DBUS_TYPE_STRING, &PSM_Introspect_msg, DBUS_TYPE_INVALID))
-            printf ("No memory\n");
+	rc = strcmp_s("org.freedesktop.DBus.Introspectable", strlen("org.freedesktop.DBus.Introspectable"), interface, &ind);
+	ERR_CHK(rc);
+	if((rc == EOK) && (!ind))
+        {
+	    rc = strcmp_s("Introspect", strlen("Introspect"), method, &ind);
+	    ERR_CHK(rc);
+	    if((rc == EOK) && (!ind))
+	    {
+	        if ( !dbus_message_append_args (reply, DBUS_TYPE_STRING, &PSM_Introspect_msg, DBUS_TYPE_INVALID))
+                  printf ("No memory\n");
         
-        if (!dbus_connection_send (conn, reply, NULL))
-            printf ("No memory\n");
+                if (!dbus_connection_send (conn, reply, NULL))
+                   printf ("No memory\n");
 
-        dbus_message_unref (reply);
-        return DBUS_HANDLER_RESULT_HANDLED;
-    }
+                dbus_message_unref (reply);
+                return DBUS_HANDLER_RESULT_HANDLED;
+            }
+	}
 
     return CcspBaseIf_base_path_message_func (conn,
             message,
@@ -1370,6 +1726,7 @@ int PsmDbusInit()
     int         ret ;
     char        CName[256];
     char        CrName[256];
+    errno_t     rc = -1;
     CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PsmDBusInit Entry\n"));
     if ( g_Subsystem[0] != 0 )
     {
@@ -1378,8 +1735,19 @@ int PsmDbusInit()
     }
     else
     {
-        AnscCopyString(CName, CCSP_DBUS_PSM);
-        AnscCopyString(CrName, CCSP_DBUS_INTERFACE_CR);
+        rc = strcpy_s(CName, sizeof(CName), CCSP_DBUS_PSM);
+	if(rc != EOK)
+	{
+	     ERR_CHK(rc);
+	     return -1;
+	}
+
+        rc = strcpy_s(CrName, sizeof(CrName), CCSP_DBUS_INTERFACE_CR);
+	if(rc != EOK)
+	{
+	    ERR_CHK(rc);
+	    return -1;
+	}
     }
 
     CCSP_Message_Bus_Init(CName, CCSP_MSG_BUS_CFG, &bus_handle, Ansc_AllocateMemory_Callback, Ansc_FreeMemory_Callback);
@@ -1388,7 +1756,8 @@ int PsmDbusInit()
     waitConditionReady(bus_handle, CrName, CCSP_DBUS_PATH_CR, CName);
     
     CCSP_Base_Func_CB cb;
-    memset(&cb, 0 , sizeof(cb));
+    rc = memset_s(&cb, sizeof(cb), 0 , sizeof(cb));
+    ERR_CHK(rc);
     cb.getParameterValues = getParameterValues;
     cb.setParameterValues = setParameterValues;
     cb.setCommit = setCommit;

@@ -73,6 +73,7 @@
 
 
 #include "psm_flo_global.h"
+#include "safec_lib_common.h"
 
 #define  STR_FOLDER                                 "Folder"
 #define  STR_RECORD                                 "Record"
@@ -784,10 +785,14 @@ ULONG getRecordTypeFromString
     )
 {
     ULONG                           i;
+    errno_t                         rc  = -1;
+    int                             ind = -1;
 
     for( i = 0; i < uTotalRecordType; i ++)
     {
-        if( AnscEqualString(pString, ppRecordType[i], FALSE))
+	rc = strcasecmp_s(ppRecordType[i], sizeof(ppRecordType[i]), pString, &ind);
+	ERR_CHK(rc);
+        if((rc == EOK) && (!ind))
         {
             return i + 1;
         }
@@ -805,10 +810,14 @@ ULONG getRecordContentTypeFromString
     )
 {
     ULONG                           i;
+    errno_t                         rc  = -1;
+    int                             ind = -1;
 
     for( i = 0; i < uTotalRecordContentType; i ++)
     {
-        if( AnscEqualString(pString, ppRecordContentType[i], FALSE))
+	rc =strcasecmp_s(ppRecordContentType[i], sizeof(ppRecordContentType[i]), pString, &ind);
+        ERR_CHK(rc);
+	if((rc == EOK) && (!ind))
         {
             return i + 1;
         }
@@ -816,7 +825,9 @@ ULONG getRecordContentTypeFromString
 
     for( i = 0; i < uTotalRecordContentType; i ++)
     {
-        if( AnscEqualString(pString, ppRecordContentType_old[i], FALSE))
+	rc =strcasecmp_s(ppRecordContentType_old[i], sizeof(ppRecordContentType_old[i]), pString, &ind);
+	ERR_CHK(rc);
+	if((rc == EOK) && (!ind))
         {
             CcspTraceWarning(("Legacy Record ContentType '%s' !!!\n", pString));
             return i + 1;
@@ -835,10 +846,14 @@ ULONG getFolderTypeFromString
     )
 {
     ULONG                           i;
+    errno_t                         rc = -1;
+    int                             ind = -1;
 
     for( i = 0; i < uTotalFolderType; i ++)
     {
-        if( AnscEqualString(pString, ppFolderType[i], FALSE))
+	rc = strcasecmp_s(ppFolderType[i], sizeof(ppFolderType[i]), pString, &ind);
+        ERR_CHK(rc);
+        if((rc == EOK) && (!ind))
         {
             return i + 1;
         }
@@ -856,10 +871,14 @@ ULONG getFolderContentTypeFromString
     )
 {
     ULONG                           i;
+    errno_t                         rc = -1;
+    int                             ind = -1;
 
     for( i = 0; i < uTotalFolderContentType; i ++)
     {
-        if( AnscEqualString(pString, ppFolderContentType[i], FALSE))
+	rc = strcasecmp_s(ppFolderContentType[i], sizeof(ppFolderContentType[i]), pString, &ind);
+        ERR_CHK(rc);
+        if((rc == EOK) && (!ind))
         {
             return i + 1;
         }
@@ -888,7 +907,6 @@ addRecordToXMLHandle
     ULONG                           recType, dataSize;
     ULONG                           access,contentType;
     CHAR                            pName[SYS_MAX_RECORD_NAME_SIZE];
-    
     PUCHAR                          pData;
 
     AnscZeroMemory(pName, SYS_MAX_RECORD_NAME_SIZE);
@@ -2041,6 +2059,8 @@ PsmSysFolderFromXMLHandle
     PANSC_XML_DOM_NODE_OBJECT       pXMLRoot           = (PANSC_XML_DOM_NODE_OBJECT)hXMLHandle;
     PCHAR                           pNodeName          = NULL;
     PANSC_XML_DOM_NODE_OBJECT       pChildNode         = NULL;
+    errno_t                         rc                 = -1;
+    int                             ind                = -1;
 
     if( hSysFolder == NULL || hXMLHandle == NULL)
     {
@@ -2056,7 +2076,9 @@ PsmSysFolderFromXMLHandle
         /* check the node name */
         pNodeName = AnscXmlDomNodeGetName(pChildNode);
 
-        if( AnscEqualString(pNodeName, STR_FOLDER, TRUE))
+        rc = strcmp_s(STR_FOLDER, strlen(STR_FOLDER), pNodeName, &ind);
+	ERR_CHK(rc);
+        if((rc == EOK) && (!ind))
         {
             /* load it as a folder */
             returnStatus =
@@ -2067,8 +2089,12 @@ PsmSysFolderFromXMLHandle
                         (ANSC_HANDLE)pChildNode
                     );
         }
-        else if( AnscEqualString(pNodeName, STR_RECORD, TRUE))
-        {
+	else
+	{
+             rc = strcmp_s(STR_RECORD, strlen(STR_RECORD), pNodeName, &ind);
+             ERR_CHK(rc);
+	     if((rc == EOK) && (!ind))
+             {
             /* load it as a record */
             returnStatus =
                 loadRecordFromXML
@@ -2077,13 +2103,14 @@ PsmSysFolderFromXMLHandle
                         hSysFolder,
                         (ANSC_HANDLE)pChildNode
                     );
-        }
-        else
-        {
-            CcspTraceInfo(("Unknown child node name '%s', ignored.\n", pNodeName));
+             }
+             else
+             {
+                  CcspTraceInfo(("Unknown child node name '%s', ignored.\n", pNodeName));
 
-            continue;
-        }
+                  continue;
+             }
+	}
 
         if( returnStatus != ANSC_STATUS_SUCCESS)
         {

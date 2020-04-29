@@ -76,7 +76,7 @@
 
 
 #include "psm_sysro_global.h"
-
+#include "safec_lib_common.h"
 
 /**********************************************************************
 
@@ -118,7 +118,8 @@ PsmSysroResetToFactoryDefault
     PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE           )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
     ANSC_HANDLE                     hRfoKeyCfg         = (ANSC_HANDLE                  )NULL;
     ANSC_HANDLE                     hRfoKeyCfgSetup    = (ANSC_HANDLE                  )NULL;
-    char                            curCfgFileName[128];
+    char                            curCfgFileName[128] = {0};
+    errno_t                         rc                 = -1;
 
     /*
      * Once the configuration is reversed to the Factory Default, the device will be rebooted auto-
@@ -135,16 +136,33 @@ PsmSysroResetToFactoryDefault
 
     if ( TRUE )
     {
-        AnscZeroMemory(curCfgFileName, 128);
-        AnscCopyString(curCfgFileName, pProperty->SysFilePath);
-        AnscCatString (curCfgFileName, pProperty->CurFileName);
+	rc = strcpy_s(curCfgFileName, sizeof(curCfgFileName), pProperty->SysFilePath);
+	if(rc != EOK)
+	{
+	    ERR_CHK(rc);
+	    return ANSC_STATUS_FAILURE;
+	}
+	rc = strcat_s(curCfgFileName, sizeof(curCfgFileName), pProperty->CurFileName);
+	if(rc != EOK)
+	{
+	    ERR_CHK(rc);
+	    return ANSC_STATUS_FAILURE;
+	}
 
         returnStatus = AnscDeleteFile(curCfgFileName);
 
-        AnscZeroMemory(curCfgFileName, 128);
-        AnscCopyString(curCfgFileName, pProperty->SysFilePath);
-        AnscCatString (curCfgFileName, pProperty->BakFileName);
-
+	rc = strcpy_s(curCfgFileName, sizeof(curCfgFileName), pProperty->SysFilePath);
+	if(rc != EOK)
+	{
+	    ERR_CHK(rc);
+	    return ANSC_STATUS_FAILURE;
+	}
+	rc = strcat_s(curCfgFileName, sizeof(curCfgFileName), pProperty->BakFileName);
+        if(rc != EOK)
+	{
+	    ERR_CHK(rc);
+	    return ANSC_STATUS_FAILURE;
+	}
         returnStatus = AnscDeleteFile(curCfgFileName);
 
     }
@@ -216,7 +234,8 @@ PsmSysroImportConfig
     char*                           pCfgDataString     = (char*                        )pCfgBuffer;
     ANSC_CRYPTO_KEY                 desDecryptKey;
     ANSC_CRYPTO_IV                  desDecryptIv;
-    char                            tmpCfgFileName[128];
+    char                            tmpCfgFileName[128] = {0};
+    errno_t                         rc                 = -1;
 //    CcspTraceInfo(("\n##PsmSysroImportConfig() begins##\n"));
     if ( pDecryptKey && (ulKeySize >= (ANSC_DES_KEY_SIZE + ANSC_DES_IV_SIZE)) )
     {
@@ -268,10 +287,20 @@ PsmSysroImportConfig
          * We now save the compressed buffer into a temporary file, then load this into a buffer to
          * verify the file contents and also to save this to the current configuration.
          */
-        AnscZeroMemory(tmpCfgFileName, 128);
-        AnscCopyString(tmpCfgFileName, pProperty->SysFilePath);
-        AnscCatString (tmpCfgFileName, pProperty->TmpFileName);
 
+        rc = strcpy_s(tmpCfgFileName, sizeof(tmpCfgFileName), pProperty->SysFilePath);
+	if(rc != EOK)
+	{
+            ERR_CHK(rc);
+	    return ANSC_STATUS_FAILURE;
+	}
+
+        rc = strcat_s(tmpCfgFileName, sizeof(tmpCfgFileName), pProperty->TmpFileName);
+        if(rc != EOK)
+        {
+	    ERR_CHK(rc);
+	    return ANSC_STATUS_FAILURE;
+	}
         hTmpCfgFile =
             AnscOpenFile
                 (
@@ -458,11 +487,21 @@ PsmSysroExportConfig
     ULONG                           ulOrgBufferSize    = (ULONG                      )*pulCfgSize;
     ANSC_CRYPTO_KEY                 desEncryptKey;
     ANSC_CRYPTO_IV                  desEncryptIv;
-    char                            curCfgFileName[128];
+    char                            curCfgFileName[128] = {0};
+    errno_t                         rc                  = -1;
 
-    AnscZeroMemory(curCfgFileName, 128);
-    AnscCopyString(curCfgFileName, pProperty->SysFilePath);
-    AnscCatString (curCfgFileName, pProperty->CurFileName);
+    rc = strcpy_s(curCfgFileName, sizeof(curCfgFileName), pProperty->SysFilePath);
+    if(rc != EOK)
+    {
+	ERR_CHK(rc);
+	return ANSC_STATUS_FAILURE;
+    }
+    rc = strcat_s(curCfgFileName, sizeof(curCfgFileName), pProperty->CurFileName);
+    if(rc != EOK)
+    {
+	ERR_CHK(rc);
+	return ANSC_STATUS_FAILURE;
+    }
 
     hCurCfgFile =
         AnscOpenFile
@@ -583,11 +622,21 @@ PsmSysroGetConfigSize
     PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
     ANSC_HANDLE                     hCurCfgFile        = (ANSC_HANDLE                )NULL;
     ULONG                           ulFileSize         = (ULONG                      )0;
-    char                            curCfgFileName[128];
+    char                            curCfgFileName[128] = {0};
+    errno_t                         rc                  = -1;
 
-    AnscZeroMemory(curCfgFileName, 128);
-    AnscCopyString(curCfgFileName, pProperty->SysFilePath);
-    AnscCatString (curCfgFileName, pProperty->CurFileName);
+    rc =strcpy_s(curCfgFileName, sizeof(curCfgFileName), pProperty->SysFilePath);
+    if(rc != EOK)
+    {
+	ERR_CHK(rc);
+	return ANSC_STATUS_FAILURE;
+    }
+    rc = strcat_s(curCfgFileName, sizeof(curCfgFileName), pProperty->CurFileName);
+    if(rc != EOK)
+    {
+	ERR_CHK(rc);
+	return ANSC_STATUS_FAILURE;
+    }
 
     hCurCfgFile =
         AnscOpenFile

@@ -74,6 +74,7 @@
 
 
 #include "psm_sysro_global.h"
+#include "safec_lib_common.h"
 
 
 /**********************************************************************
@@ -129,9 +130,10 @@ PsmSysroCfmReadCurConfig
     ULONG                           ulFileSize         = (ULONG                      )0;
     void*                           pCfgBuffer         = (void*                      )NULL;
     ULONG                           i                  = 0;
-    char                            defCfgFileName[128];
-    char                            curCfgFileName[128];
-    char                            bakCfgFileName[128];
+    char                            defCfgFileName[128] = {0};
+    char                            curCfgFileName[128] = {0};
+    char                            bakCfgFileName[128] = {0};
+    errno_t                         rc                 = -1;
 
     *ppCfgBuffer = 0;
     *pulCfgSize  = 0;
@@ -154,17 +156,35 @@ PsmSysroCfmReadCurConfig
         {
             case    0 :
 
-                    AnscZeroMemory(curCfgFileName, 128);
-                    AnscCopyString(curCfgFileName, pProperty->SysFilePath);
-                    AnscCatString (curCfgFileName, pProperty->CurFileName);
+		    rc = strcpy_s(curCfgFileName, sizeof(curCfgFileName), pProperty->SysFilePath);
+		    if(rc != EOK)
+	            {
+                         ERR_CHK(rc);
+			 return ANSC_STATUS_FAILURE;
+	            }
+		    rc = strcat_s(curCfgFileName, sizeof(curCfgFileName), pProperty->CurFileName);
+                    if(rc != EOK)
+                    {
+                         ERR_CHK(rc);
+                         return ANSC_STATUS_FAILURE;
+                    }
 
                     break;
 
             case    1 :
 
-                    AnscZeroMemory(bakCfgFileName, 128);
-                    AnscCopyString(bakCfgFileName, pProperty->SysFilePath);
-                    AnscCatString (bakCfgFileName, pProperty->BakFileName);
+		    rc = strcpy_s(bakCfgFileName, sizeof(bakCfgFileName), pProperty->SysFilePath);
+                    if(rc != EOK)
+                    {
+                         ERR_CHK(rc);
+                         return ANSC_STATUS_FAILURE;
+                    }
+                    rc = strcat_s(bakCfgFileName, sizeof(bakCfgFileName), pProperty->BakFileName);
+                    if(rc != EOK)
+                    {
+                         ERR_CHK(rc);
+                         return ANSC_STATUS_FAILURE;
+                    }
 
                     hBakCfgFile =
                         AnscOpenFile
@@ -198,13 +218,31 @@ PsmSysroCfmReadCurConfig
                     /*returnStatus = pMyObject->ResetToFactoryDefault((ANSC_HANDLE)pMyObject);*/
                     if ( TRUE )
                     {
-                        AnscZeroMemory(defCfgFileName, 128);
-                        AnscCopyString(defCfgFileName, pProperty->SysFilePath);
-                        AnscCatString (defCfgFileName, pProperty->DefFileName);
+                        rc = strcpy_s(defCfgFileName, sizeof(defCfgFileName), pProperty->SysFilePath);
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            return ANSC_STATUS_FAILURE;
+                        }
+                        rc = strcat_s(defCfgFileName, sizeof(defCfgFileName),  pProperty->DefFileName);
+                        if(rc != EOK)
+                        {
+                            ERR_CHK(rc);
+                            return ANSC_STATUS_FAILURE;
+                        }
 
-                        AnscZeroMemory(curCfgFileName, 128);
-                        AnscCopyString(curCfgFileName, pProperty->SysFilePath);
-                        AnscCatString (curCfgFileName, pProperty->CurFileName);
+                        rc = strcpy_s(curCfgFileName, sizeof(curCfgFileName), pProperty->SysFilePath);
+                        if(rc != EOK)
+                        {
+                          ERR_CHK(rc);
+                          return ANSC_STATUS_FAILURE;
+                        }
+                        rc = strcat_s(curCfgFileName, sizeof(curCfgFileName), pProperty->CurFileName);
+                        if(rc != EOK)
+                        {
+                           ERR_CHK(rc);
+                           return ANSC_STATUS_FAILURE;
+                        }
 
                         returnStatus =
                             AnscCopyFile
@@ -390,11 +428,21 @@ PsmSysroCfmReadDefConfig
     ANSC_HANDLE                     hDefCfgFile        = (ANSC_HANDLE                )NULL;
     ULONG                           ulFileSize         = (ULONG                      )0;
     void*                           pCfgBuffer         = (void*                      )NULL;
-    char                            defCfgFileName[128];
+    char                            defCfgFileName[128] = {0};
+    errno_t                         rc                 = -1;
 
-    AnscZeroMemory(defCfgFileName, 128);
-    AnscCopyString(defCfgFileName, pProperty->SysFilePath);
-    AnscCatString (defCfgFileName, pProperty->DefFileName);
+    rc = strcpy_s(defCfgFileName, sizeof(defCfgFileName), pProperty->SysFilePath);
+    if(rc != EOK)
+    {
+         ERR_CHK(rc);
+	 return ANSC_STATUS_FAILURE;
+    }
+    rc = strcat_s(defCfgFileName, sizeof(defCfgFileName), pProperty->DefFileName);
+    if(rc != EOK)
+    {
+         ERR_CHK(rc);
+         return ANSC_STATUS_FAILURE;
+    }
 
 #ifdef  _PSM_FILE_COMPRESSION_ENABLE
 
@@ -538,8 +586,9 @@ PsmSysroCfmSaveCurConfig
     PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
 //    CcspTraceInfo(("\n##PsmSysroCfmSaveCurConfig() begins##\n"));
     ANSC_HANDLE                     hCurCfgFile        = (ANSC_HANDLE                )NULL;
-    char                            curCfgFileName[128];
-    char                            bakCfgFileName[128];
+    char                            curCfgFileName[128] = {0};
+    char                            bakCfgFileName[128] = {0};
+    errno_t                         rc                 = -1;
 
     /*
      * To prevent the System Configuration File from becoming corrupted or lost when the device is
@@ -550,13 +599,31 @@ PsmSysroCfmSaveCurConfig
      */
     if ( TRUE )
     {
-        AnscZeroMemory(curCfgFileName, 128);
-        AnscCopyString(curCfgFileName, pProperty->SysFilePath);
-        AnscCatString (curCfgFileName, pProperty->CurFileName);
+	rc = strcpy_s(curCfgFileName, sizeof(curCfgFileName), pProperty->SysFilePath);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
+        rc = strcat_s(curCfgFileName, sizeof(curCfgFileName), pProperty->CurFileName);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
 
-        AnscZeroMemory(bakCfgFileName, 128);
-        AnscCopyString(bakCfgFileName, pProperty->SysFilePath);
-        AnscCatString (bakCfgFileName, pProperty->BakFileName);
+        rc = strcpy_s(bakCfgFileName, sizeof(bakCfgFileName), pProperty->SysFilePath);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
+        rc = strcat_s(bakCfgFileName, sizeof(bakCfgFileName), pProperty->BakFileName);
+        if(rc != EOK)
+        {
+            ERR_CHK(rc);
+            return ANSC_STATUS_FAILURE;
+        }
 
         returnStatus =
             AnscCopyFile
