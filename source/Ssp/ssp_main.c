@@ -53,6 +53,7 @@
 #endif
 
 #include "ssp_global.h"
+#include "safec_lib_common.h"
 
 #ifdef ENABLE_SD_NOTIFY
 #include <systemd/sd-daemon.h>
@@ -264,10 +265,7 @@ static int is_core_dump_opened(void)
 
         fclose(fp);
 
-        if (strcmp(tok, "0") == 0)
-            return 0;
-        else
-            return 1;
+       return (tok[0] == '0' && tok[1] == '\0') ? 0 : 1;
     }
 
     fclose(fp);
@@ -284,6 +282,9 @@ int main(int argc, char* argv[])
     int                             idx                = 0;
     FILE                           *fd                 = NULL;
     char                            cmd[64]            = {0};
+    errno_t                         rc                 = -1;
+    int                             ind                = -1;
+    int                             ret                = 0;
 
     pComponentName = CCSP_DBUS_PSM;
 #ifdef FEATURE_SUPPORT_RDKLOG
@@ -300,27 +301,50 @@ int main(int argc, char* argv[])
 
     gather_info();
 
-    cmd_dispatch('e');
+    ret = cmd_dispatch('e');
+    if(ret != 0)
+        return 1;
 
     while ( cmdChar != 'q' )
     {
         cmdChar = getchar();
 
-        cmd_dispatch(cmdChar);
+        ret = cmd_dispatch(cmdChar);
+        if(ret != 0)
+           return 1;
     }
 #elif defined(_ANSC_LINUX)
 
     for (idx = 1; idx < argc; idx++)
     {
-        if ( (strcmp(argv[idx], "-subsys") == 0) )
-        {
-            AnscCopyString(g_Subsystem, argv[idx+1]);
-        }
-        else if ( strcmp(argv[idx], "-c" ) == 0 )
-        {
-            bRunAsDaemon = FALSE;
-        }
-    }
+	rc = strcmp_s("-subsys", strlen("-subsys"), argv[idx], &ind);
+        ERR_CHK(rc);
+	if((rc == EOK) && (ind == 0))
+	{
+	    if ((idx+1) < argc)
+            {
+                rc = strcpy_s(g_Subsystem, sizeof(g_Subsystem), argv[idx+1]);
+	        if(rc != EOK)
+	        {
+		    ERR_CHK(rc);
+		    return 1;
+	        }
+            }
+            else
+            {
+               CcspTraceInfo(("Argument missing after -subsys\n"));
+            }
+	}
+	else
+	{
+	    rc = strcmp_s("-c", strlen("-c"), argv[idx], &ind);
+            ERR_CHK(rc);
+	    if((rc == EOK) && (ind == 0))
+	    {
+		 bRunAsDaemon = FALSE;
+            }
+	}
+     }
 
     if ( bRunAsDaemon )
     	daemonize();
@@ -371,7 +395,9 @@ int main(int argc, char* argv[])
 #endif
     gather_info();
 
-    cmd_dispatch('e');
+    ret = cmd_dispatch('e');
+    if(ret != 0)
+        return 1;
 	
 	system("touch /tmp/psm_initialized");
 
@@ -398,7 +424,9 @@ int main(int argc, char* argv[])
             }
             else 
             {
-                cmd_dispatch(cmdChar);
+                ret = cmd_dispatch(cmdChar);
+                if(ret != 0)
+                    return 1;
             }
         }
     }
@@ -421,7 +449,9 @@ int main(int argc, char* argv[])
 
 int  cmd_dispatch(int  command)
 {
-    	   CcspTraceInfo((" inside cmd_dispatch\n"));
+    errno_t rc = -1;
+    int ret = 0;
+    CcspTraceInfo((" inside cmd_dispatch\n"));
     switch ( command )
     {
         case    'e' :
@@ -438,12 +468,36 @@ int  cmd_dispatch(int  command)
 
                         AnscZeroMemory(&psmSysroProperty, sizeof(PSM_SYS_REGISTRY_PROPERTY));
                         
-                        AnscCopyString(psmSysroProperty.SysFilePath, PSM_DEF_XML_CONFIG_FILE_PATH);
-                        AnscCopyString(psmSysroProperty.DefFileName, PSM_DEF_XML_CONFIG_FILE_NAME);
-                        AnscCopyString(psmSysroProperty.CurFileName, PSM_CUR_XML_CONFIG_FILE_NAME);
-                        AnscCopyString(psmSysroProperty.BakFileName, PSM_BAK_XML_CONFIG_FILE_NAME);
-                        AnscCopyString(psmSysroProperty.TmpFileName, PSM_TMP_XML_CONFIG_FILE_NAME);
-                            
+                        rc = strcpy_s(psmSysroProperty.SysFilePath, sizeof(psmSysroProperty.SysFilePath), PSM_DEF_XML_CONFIG_FILE_PATH);
+			if(rc != EOK)
+			{
+                            ERR_CHK(rc);
+			    return -1;
+			}
+                        rc = strcpy_s(psmSysroProperty.DefFileName, sizeof(psmSysroProperty.DefFileName), PSM_DEF_XML_CONFIG_FILE_NAME);
+			if(rc != EOK)
+			{
+			    ERR_CHK(rc);
+			    return -1;
+			}
+			rc = strcpy_s(psmSysroProperty.CurFileName, sizeof(psmSysroProperty.CurFileName), PSM_CUR_XML_CONFIG_FILE_NAME);
+			if(rc != EOK)
+			{
+			    ERR_CHK(rc);
+			    return -1;
+			}
+			rc = strcpy_s(psmSysroProperty.BakFileName, sizeof(psmSysroProperty.BakFileName), PSM_BAK_XML_CONFIG_FILE_NAME);
+			if(rc != EOK)
+			{
+			    ERR_CHK(rc);
+			    return -1;
+			}
+			rc = strcpy_s(psmSysroProperty.TmpFileName, sizeof(psmSysroProperty.TmpFileName), PSM_TMP_XML_CONFIG_FILE_NAME);
+                        if(rc != EOK)
+			{
+			    ERR_CHK(rc);
+			    return -1;
+			}
                         pPsmSysRegistry->SetProperty((ANSC_HANDLE)pPsmSysRegistry, (ANSC_HANDLE)&psmSysroProperty);
 
 #ifdef USE_PLATFORM_SPECIFIC_HAL
@@ -466,7 +520,9 @@ int  cmd_dispatch(int  command)
 
                         pPsmSysRegistry->Engage     ((ANSC_HANDLE)pPsmSysRegistry);
 
-                        PsmDbusInit();
+                        ret = PsmDbusInit();
+                        if(ret != 0)
+                           return -1;
 
                         bEngaged = TRUE;
 

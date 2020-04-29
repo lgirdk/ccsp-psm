@@ -84,6 +84,7 @@
 #include "cJSON.h"
 #include "psm_hal_apis.h"
 #include "ssp_global.h"
+#include "safec_lib_common.h"
 #include <unistd.h>
 #include "pthread.h"
 
@@ -441,6 +442,8 @@ static int insert_record(struct psm_record *new, int overwrite)
 {
     int h_idx;
     struct psm_record *rec, *prev;
+    errno_t rc = -1;
+    int ind = -1;
 
     h_idx = record_hash(new->name);
 
@@ -453,7 +456,9 @@ static int insert_record(struct psm_record *new, int overwrite)
     }
 
     for (prev = NULL, rec = rec_hash[h_idx]; rec; prev = rec, rec = rec->next) {
-        if (strcmp(rec->name, new->name) != 0)
+        rc = strcmp_s(rec->name, strlen(rec->name), new->name, &ind);
+        ERR_CHK(rc);
+	if((rc == EOK) && (ind != 0))
             continue;
 
         if (!overwrite) {
@@ -542,6 +547,7 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 {
 	int isNeedtoProceedfurther = 0;
 	int isNeedToApplyPartnersDefault_PSM = 0;
+	errno_t rc = -1;
 	
 	if ( ( access( PSM_CUR_CONFIG_FILE_NAME , F_OK ) != 0 ) && \
 		 ( access( PSM_BAK_CONFIG_FILE_NAME , F_OK ) != 0 )
@@ -618,7 +624,8 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
             /* dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation */
 
             //Get the syscfg.db value of PSM Param
-            memset( value_buf, 0 , sizeof( value_buf ) );
+            rc = memset_s( value_buf,  sizeof(value_buf), 0 , sizeof( value_buf ) );
+	    ERR_CHK(rc);
             ret = syscfg_get( NULL, "TR69CertLocation", value_buf, sizeof( value_buf ) );
 
             if( ( ret == 0 ) && \
@@ -640,7 +647,8 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
             /* Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix */
 			
             //Get the syscfg.db value of PSM Param
-            memset( value_buf, 0 , sizeof( value_buf ) );
+            rc = memset_s( value_buf, sizeof( value_buf ),  0 , sizeof( value_buf ) );
+	    ERR_CHK(rc);
             ret = syscfg_get( NULL, "XHS_SSIDprefix", value_buf, sizeof( value_buf ) );
 
             if( ( ret == 0 ) && \
@@ -659,7 +667,8 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 				localCount++;
             }
             //Get the syscfg.db value of DefaultAdminIP PSM Param
-            memset( value_buf, 0 , sizeof( value_buf ) );
+            rc = memset_s( value_buf,  sizeof( value_buf ), 0 , sizeof( value_buf ) );
+	    ERR_CHK(rc);
             ret = syscfg_get( NULL, "lan_ipaddr", value_buf, sizeof( value_buf ) );
 
             if( ( ret == 0 ) && \
@@ -675,7 +684,8 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 				localCount++;
             }
             //Get the syscfg.db value of DefaultLocalIPv4SubnetRange PSM Param
-            memset( value_buf, 0 , sizeof( value_buf ) );
+            rc = memset_s( value_buf,  sizeof( value_buf ), 0 , sizeof( value_buf ) );
+	    ERR_CHK(rc);
             ret = syscfg_get( NULL, "lan_netmask", value_buf, sizeof( value_buf ) );
 
             if( ( ret == 0 ) && \
@@ -735,7 +745,14 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 				}
 
 				//Copy all current data to passed param
-				memcpy( *params, &localparamArray, ( sizeof( PsmHalParam_t ) * ( *cnt ) ) );
+                                rc = memcpy_s( *params, sizeof( PsmHalParam_t ) * ( *cnt ), &localparamArray, sizeof( PsmHalParam_t ) * ( *cnt ) );
+				if(rc != EOK)
+				{
+				       ERR_CHK(rc);
+                                       AnscFreeMemory( *params );
+                                       *params = NULL;
+				       return -1;
+				}
 
 				return	0;
 			}
@@ -1254,9 +1271,13 @@ NodeGetRecord(PANSC_XML_DOM_NODE_OBJECT node, PsmRecord_t *rec)
 {
     ULONG size;
     char buf[MAX_NAME_SZ];
+    errno_t rc = -1;
+    int ind = -1;
 
-    if (!AnscEqualString(node->GetName(node), ELEM_RECORD, TRUE))
-        return ANSC_STATUS_FAILURE;
+    rc = strcmp_s(ELEM_RECORD, strlen(ELEM_RECORD), node->GetName(node), &ind);
+    ERR_CHK(rc);
+    if((rc != EOK) || (ind ))
+         return ANSC_STATUS_FAILURE;
     
     AnscZeroMemory(rec, sizeof(PsmRecord_t));
 
@@ -1281,12 +1302,31 @@ NodeGetRecord(PANSC_XML_DOM_NODE_OBJECT node, PsmRecord_t *rec)
     if (node->GetAttrString(node, ATTR_CTYPE, buf, &size) == ANSC_STATUS_SUCCESS)
     {
         buf[size] = '\0';
-        if (AnscEqualString(buf, ATTRV_MACADDR, TRUE))
-            rec->ctype = PSM_REC_CTYPE_MACADDR;
-        else if (AnscEqualString(buf, ATTRV_IPV4ADDR, TRUE))
-            rec->ctype = PSM_REC_CTYPE_IPV4ADDR;
-        else if (AnscEqualString(buf, ATTRV_IPV6ADDR, TRUE))
-            rec->ctype = PSM_REC_CTYPE_IPV6ADDR;
+
+	rc = strcmp_s(buf, sizeof(buf), ATTRV_MACADDR, &ind);
+	ERR_CHK(rc);
+	if((rc == EOK) && (!ind))
+	{
+	    rec->ctype = PSM_REC_CTYPE_MACADDR;
+	}
+	else
+	{
+	    rc = strcmp_s(buf, sizeof(buf), ATTRV_IPV4ADDR, &ind);
+	    ERR_CHK(rc);
+	    if((rc == EOK) && (!ind))
+	    {
+	        rec->ctype = PSM_REC_CTYPE_IPV4ADDR;
+	    }
+	    else
+	    {
+                rc = strcmp_s(buf, sizeof(buf), ATTRV_IPV6ADDR, &ind);
+		ERR_CHK(rc);
+		if((rc == EOK) && (!ind))
+		{
+	            rec->ctype = PSM_REC_CTYPE_IPV6ADDR;
+		}
+	     }
+	}
     }
 
     /* overwrite */
@@ -1295,12 +1335,31 @@ NodeGetRecord(PANSC_XML_DOM_NODE_OBJECT node, PsmRecord_t *rec)
     if (node->GetAttrString(node, ATTR_OVERWRITE, buf, &size) == ANSC_STATUS_SUCCESS)
     {
         buf[size] = '\0';
-        if (AnscEqualString(buf, ATTRV_ALWAYS, TRUE))
-            rec->overwrite = PSM_OVERWRITE_ALWAYS;
-        else if (AnscEqualString(buf, ATTRV_COND, TRUE))
-            rec->overwrite = PSM_OVERWRITE_COND;
-        else if (AnscEqualString(buf, ATTRV_NEVER, TRUE))
-            rec->overwrite = PSM_OVERWRITE_NEVER;
+
+	rc = strcmp_s(buf, sizeof(buf), ATTRV_ALWAYS, &ind);
+	ERR_CHK(rc);
+	if((rc == EOK) && (!ind))
+	{
+	    rec->overwrite = PSM_OVERWRITE_ALWAYS;
+	}
+	else
+	{
+            rc = strcmp_s(buf, sizeof(buf), ATTRV_COND, &ind);
+	    ERR_CHK(rc);
+	    if((rc == EOK) && (!ind))
+	    {
+	        rec->overwrite = PSM_OVERWRITE_COND;
+	    }
+            else
+	    {
+	        rc = strcmp_s(buf, sizeof(buf), ATTRV_NEVER, &ind);
+		ERR_CHK(rc);
+		if((rc == EOK) && (!ind))
+		{
+		    rec->overwrite = PSM_OVERWRITE_NEVER;
+		}
+	    }
+	}
     }
 
     /* value */
@@ -1392,19 +1451,24 @@ IsRecChangedFromXml(const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT xml)
 {
     PANSC_XML_DOM_NODE_OBJECT node;
     PsmRecord_t cur;
+    errno_t rc = -1;
+    int ind = -1;
 //    CcspTraceInfo(("IsRecChangedFromXml begins\n"));    
     xml_for_each_child(node, xml)
     {
         if (NodeGetRecord(node, &cur) != ANSC_STATUS_SUCCESS)
             continue;
 
-        if (!AnscEqualString(cur.name, (char *)rec->name, TRUE))
-            continue;
+	rc = strcmp_s(cur.name, sizeof(cur.name), (char *)rec->name, &ind);
+	ERR_CHK(rc);
+	if((rc == EOK) && (ind))
+	    continue;
 
-        if (AnscEqualString(cur.value, (char *)rec->value, TRUE))
-            return FALSE;
-        else
-            return TRUE;
+	rc = strcmp_s(cur.value, sizeof(cur.value), (char *)rec->value, &ind);
+	if((rc == EOK) && (!ind))
+	    return FALSE;
+	else
+	    return TRUE;
     }
 
     /* if no correspand record in xml, means "not changed" ? */
@@ -1429,6 +1493,8 @@ ReadCfgXmlWithCustom(const char *path, int overwrite)
     int                         success = 0;
     int                         missing;
     ULONG                       size;
+    errno_t                     rc = -1;
+    int                         ind = -1;
 //    CcspTraceInfo(("ReadCfgXmlWithCustom begins\n"));    
     if (PsmHal_GetCustomParams(&cusParams, &cusCnt) != 0)
         cusParams = NULL, cusCnt = 0;
@@ -1447,8 +1513,10 @@ ReadCfgXmlWithCustom(const char *path, int overwrite)
             if (NodeGetRecord(node, &rec) != ANSC_STATUS_SUCCESS)
                 continue;
 
-            if (!AnscEqualString(rec.name, cusParams[i].name, TRUE))
-                continue;
+	    rc = strcmp_s(rec.name, sizeof(rec.name), cusParams[i].name, &ind);
+	    ERR_CHK(rc);
+	    if((rc == EOK) && (ind))
+	        continue;
 
             missing = 0;
             if (overwrite)
@@ -1583,6 +1651,8 @@ ssp_CfmUpdateConfigs(ANSC_HANDLE hThisObject, const char *newConfPath)
     PsmRecord_t                     newRec, curRec;
     int                             missing;
     ANSC_STATUS                     err = ANSC_STATUS_FAILURE;
+    errno_t                         rc = -1;
+    int                             ind = -1;
     CcspTraceInfo(("ssp_CfmUpdateConfigs begins\n"));    
     if (!newConfPath || AnscSizeOfString(newConfPath) <= 0)
     {
@@ -1633,8 +1703,10 @@ ssp_CfmUpdateConfigs(ANSC_HANDLE hThisObject, const char *newConfPath)
             if (NodeGetRecord(curNode, &curRec) != ANSC_STATUS_SUCCESS)
                 continue;
 
-            if (!AnscEqualString(newRec.name, curRec.name, TRUE))
-                continue;
+	    rc = strcmp_s(newRec.name, sizeof(newRec.name), curRec.name, &ind);
+	    ERR_CHK(rc);
+	    if((rc == EOK) && (ind))
+	        continue;
 
             PsmHalDbg(("  -- Exist in cur cec ...\n"));
             DumpRecord(&curRec);

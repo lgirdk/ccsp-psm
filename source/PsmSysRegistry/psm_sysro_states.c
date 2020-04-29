@@ -79,6 +79,7 @@
 
 
 #include "psm_sysro_global.h"
+#include "safec_lib_common.h"
 
 
 /**********************************************************************
@@ -329,15 +330,26 @@ PsmSysroSetProperty
     PPSM_SYS_REGISTRY_PROPERTY     pProperty    = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
 //    CcspTraceInfo(("\n##PsmSysroSetProperty() begins##\n"));
     *pProperty = *(PPSM_SYS_REGISTRY_PROPERTY)hProperty;
+	errno_t rc = -1;
 
     if ( AnscSizeOfString(pProperty->BakFileName) == 0 )
     {
-        AnscCopyString(pProperty->BakFileName, PSM_DEF_BAK_FILE_NAME);
+	rc = strcpy_s(pProperty->BakFileName, sizeof(pProperty->BakFileName), PSM_DEF_BAK_FILE_NAME);
+	if(rc != EOK)
+	{
+	    ERR_CHK(rc);
+	    return ANSC_STATUS_FAILURE;
+	}
     }
 
     if ( AnscSizeOfString(pProperty->TmpFileName) == 0 )
     {
-        AnscCopyString(pProperty->TmpFileName, PSM_DEF_TMP_FILE_NAME);
+	rc = strcpy_s(pProperty->TmpFileName, sizeof(pProperty->TmpFileName), PSM_DEF_TMP_FILE_NAME);
+	if(rc != EOK)
+	{
+	    ERR_CHK(rc);
+	    return ANSC_STATUS_FAILURE;
+	}
     }
 //    CcspTraceInfo(("\n##PsmSysroSetProperty() ends##\n"));
     return  ANSC_STATUS_SUCCESS;
@@ -377,14 +389,40 @@ PsmSysroResetProperty
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject    = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
     PPSM_SYS_REGISTRY_PROPERTY     pProperty    = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
+	errno_t                        rc = -1;
 //    CcspTraceInfo(("\n##PsmSysroResetProperty() begins##\n"));
     AnscZeroMemory(pProperty, sizeof(PSM_SYS_REGISTRY_PROPERTY));
 
-    AnscCopyString(pProperty->SysFilePath, PSM_DEF_SYS_FILE_PATH);
-    AnscCopyString(pProperty->DefFileName, PSM_DEF_DEF_FILE_NAME);
-    AnscCopyString(pProperty->CurFileName, PSM_DEF_CUR_FILE_NAME);
-    AnscCopyString(pProperty->BakFileName, PSM_DEF_BAK_FILE_NAME);
-    AnscCopyString(pProperty->TmpFileName, PSM_DEF_TMP_FILE_NAME);
+	rc = strcpy_s(pProperty->SysFilePath, sizeof(pProperty->SysFilePath), PSM_DEF_SYS_FILE_PATH);
+	if(rc != EOK)
+	{
+		ERR_CHK(rc);
+		return ANSC_STATUS_FAILURE;
+	}
+	rc = strcpy_s(pProperty->DefFileName, sizeof(pProperty->DefFileName), PSM_DEF_DEF_FILE_NAME);
+	if(rc != EOK)
+	{
+		ERR_CHK(rc);
+		return ANSC_STATUS_FAILURE;
+	}
+	rc = strcpy_s(pProperty->CurFileName, sizeof(pProperty->CurFileName), PSM_DEF_CUR_FILE_NAME);
+	if(rc != EOK)
+	{
+		ERR_CHK(rc);
+		return ANSC_STATUS_FAILURE;
+	}
+	rc = strcpy_s(pProperty->BakFileName, sizeof(pProperty->BakFileName), PSM_DEF_BAK_FILE_NAME);
+	if(rc != EOK)
+	{
+		ERR_CHK(rc);
+		return ANSC_STATUS_FAILURE;
+	}
+	rc = strcpy_s(pProperty->TmpFileName, sizeof(pProperty->TmpFileName), PSM_DEF_TMP_FILE_NAME);
+	if(rc != EOK)
+	{
+		ERR_CHK(rc);
+		return ANSC_STATUS_FAILURE;
+	}
 //    CcspTraceInfo(("\n##PsmSysroResetProperty() ends##\n"));
     return  ANSC_STATUS_SUCCESS;
 }
