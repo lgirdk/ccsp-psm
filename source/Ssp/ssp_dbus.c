@@ -465,7 +465,7 @@ ANSC_STATUS getCommParam(
     enum dataType_e type;
     enum psmIndex_e index;
     errno_t rc = -1;
-    CcspTraceInfo((" inside getCommParam\n"));
+   /* CcspTraceInfo((" inside getCommParam\n")); */
     pParameterValue = AnscAllocateMemory(sizeof(PARAMETER_VALUE));
     if(pParameterValue == NULL)
     {
@@ -786,7 +786,7 @@ ANSC_STATUS getCommParam(
      }
 
     *ppParameterValue = pParameterValue;
-    CcspTraceInfo((" getCommParam exit\n"));
+   /* CcspTraceInfo((" getCommParam exit\n"));  */
     return ANSC_STATUS_SUCCESS;
 }
 
