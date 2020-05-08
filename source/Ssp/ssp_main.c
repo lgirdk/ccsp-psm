@@ -286,6 +286,10 @@ int main(int argc, char* argv[])
     int                             ind                = -1;
     int                             ret                = 0;
 
+    // Buffer characters till newline for stdout and stderr
+    setlinebuf(stdout);
+    setlinebuf(stderr);
+
     pComponentName = CCSP_DBUS_PSM;
 #ifdef FEATURE_SUPPORT_RDKLOG
     RDK_LOGGER_INIT();
