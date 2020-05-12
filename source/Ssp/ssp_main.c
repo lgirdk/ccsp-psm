@@ -225,6 +225,14 @@ void sig_handler(int sig)
 		PSM_RDKLogEnable = (char)GetLogInfo(bus_handle,"eRT.","Device.LogAgent.X_RDKCENTRAL-COM_PSM_LoggerEnable");
 		#endif
 	}
+    else if (sig == SIGTERM ) {
+        /* When PSM is terminated, make sure to save the config to flash before exiting so settings aren't lost */
+        if ( pPsmSysRegistry )
+        {
+            pPsmSysRegistry->SaveConfigToFlash(pPsmSysRegistry);
+        }
+	exit(0);
+    }
     else {
     	/* get stack trace first */
     	_print_stack_backtrace();
@@ -330,6 +338,9 @@ int main(int argc, char* argv[])
         fclose(fd);
     }
 
+    /* Regardless of whether using breakpad, core dumps, etc, we always need to perform cleanup when the process it terminated */
+    signal(SIGTERM, sig_handler);
+
 #ifdef INCLUDE_BREAKPAD
     breakpad_ExceptionHandler();
 #else
@@ -341,7 +352,6 @@ int main(int argc, char* argv[])
     else
     {
         CcspTraceWarning(("Core dump is NOT opened, backtrace if possible\n"));
-        signal(SIGTERM, sig_handler);
         signal(SIGINT, sig_handler);
         /*signal(SIGCHLD, sig_handler);*/
         signal(SIGUSR1, sig_handler);
