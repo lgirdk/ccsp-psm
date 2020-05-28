@@ -81,7 +81,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <syscfg/syscfg.h>
-#include "cJSON.h"
+#include "cjson/cJSON.h"
 #include "psm_hal_apis.h"
 #include "ssp_global.h"
 #include <unistd.h>
