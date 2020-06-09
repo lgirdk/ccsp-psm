@@ -499,7 +499,10 @@ PsmSysroInitialize
     pMyObject->FileSyncRefCount      = 0;
     pMyObject->bNoSave               = TRUE;           /* do NOT allow save until being notified  */
     pMyObject->bNeedFlush            = FALSE;          /* indicate whether save is required       */
+    /*Coverity Fix CID:135586 */
+    AnscAcquireLock(&pMyObject->AccessLock);
     pMyObject->bSaveInProgress       = FALSE;          /* indicate whether save is in progress    */
+    AnscReleaseLock(&pMyObject->AccessLock);
     pMyObject->bProcSeparation       = TRUE;           /* whether registry is in separate process */
     pMyObject->bActive               = FALSE;
 

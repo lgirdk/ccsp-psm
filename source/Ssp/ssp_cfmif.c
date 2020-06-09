@@ -306,6 +306,8 @@ static int load_records(const char *file)
                   	CcspTraceError(("%s-%d:Coverity Error occured as Forward NULL in last\n",__FUNCTION__,__LINE__));
                   	pthread_mutex_unlock(&rec_hash_lock);
                   	fclose(fp);
+                       /*Coverity Fix CID:128923 RESOURCE_LEAK */
+                        AnscFreeMemory(rec);
                 	return -1;
        	        }
 		last->next = rec;
@@ -610,8 +612,10 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 			   )
 			{
 				//Copy the PSM Paramater name
-				sprintf( localparamArray[ localCount ].name , "%s", "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" );
-				sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+                                /*Coverity Fix CID:62397 DC.STRING_BUFFER */
+				snprintf( localparamArray[ localCount ].name ,sizeof(localparamArray[ localCount ].name), "%s", "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" );
+                                /*Coverity Fix CID:62397 DC.STRING_BUFFER */
+				snprintf( localparamArray[ localCount ].value,sizeof(localparamArray[ localCount ].value), "%s", value_buf );
 				CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
 				
 				// Remove DB variable. It won't use
@@ -1416,13 +1420,17 @@ XmlToBuffer(PANSC_XML_DOM_NODE_OBJECT xml, char **buf, ULONG *size)
 static ANSC_STATUS
 XmlToFile(PANSC_XML_DOM_NODE_OBJECT xml, const char *file)
 {
-    char *buf;
+    char *buf = NULL;
     ULONG size;
     ANSC_HANDLE pFile;
 //    CcspTraceInfo(("XmlToFile begins\n"));    
-    if (XmlToBuffer(xml, &buf, &size) != ANSC_STATUS_SUCCESS)
-     	CcspTraceInfo(("XmlToFile -> XmlToBuffer(xml, &buf, &size) != ANSC_STATUS_SUCCESS\n"));       
+    if (XmlToBuffer(xml, &buf, &size) != ANSC_STATUS_SUCCESS) 
+     	CcspTraceInfo(("XmlToFile -> XmlToBuffer(xml, &buf, &size) != ANSC_STATUS_SUCCESS\n"));
+        /*Coverity Fix CID:67400 RESOURCE_LEAK */
+        if( buf != NULL)
+           AnscFreeMemory(buf);
         return ANSC_STATUS_FAILURE;
+    
 
     if ((pFile = AnscOpenFile((char *)file, 
                     ANSC_FILE_TYPE_RDWR, ANSC_FILE_TYPE_RDWR)) == NULL)

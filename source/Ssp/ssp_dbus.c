@@ -985,6 +985,8 @@ int  getParameterValues(
                 //CcspTraceWarning(("getParameterValues- returnStatus %d\n",returnStatus));
                 //CcspTraceInfo(("Release Thread Lock %d\n"));
                 pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
+                /*Coverity Fix CID:57874 RESOURCE_LEAK */
+                AnscFreeMemory(pParameterValue);
                 return CCSP_FAILURE;
             }
         }
@@ -1749,7 +1751,6 @@ int PsmDbusInit()
 	    return -1;
 	}
     }
-
     CCSP_Message_Bus_Init(CName, CCSP_MSG_BUS_CFG, &bus_handle, Ansc_AllocateMemory_Callback, Ansc_FreeMemory_Callback);
     g_psmHealth = CCSP_COMMON_COMPONENT_HEALTH_Yellow;
     /* Wait for CR ready */
@@ -1777,8 +1778,11 @@ int PsmDbusInit()
         bus_handle,
         &cb
     );
-
-    CCSP_Message_Bus_Register_Path(bus_handle, CCSP_DBUS_PATH_PSM, path_message_func, bus_handle);
+  
+    /*Coverity Fix CID:61898  CHECKED_RETURN */
+    if(CCSP_Message_Bus_Register_Path(bus_handle, CCSP_DBUS_PATH_PSM, path_message_func, bus_handle)!= CCSP_Message_Bus_OK) {
+       CcspTraceError((" !!! CCSP_Message_Bus_Register_Path ERROR!!!\n"));
+    }
 
     do
     {

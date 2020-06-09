@@ -624,7 +624,6 @@ PsmSysroCfmSaveCurConfig
             ERR_CHK(rc);
             return ANSC_STATUS_FAILURE;
         }
-
         returnStatus =
             AnscCopyFile
                 (
