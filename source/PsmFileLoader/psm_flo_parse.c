@@ -1060,7 +1060,9 @@ addRecordToXMLHandle
             if( writeIntList(pRecordNode, pData, dataSize) != ANSC_STATUS_SUCCESS)
             {
                 CcspTraceWarning(("Invalid int list data.\n"));
-
+              /*Coverity Fix CID: 55479 RESOURCE_LEAK */  
+                if(pData != NULL)
+                   AnscFreeMemory(pData);
                 return ANSC_STATUS_FAILURE;
             }
         }
@@ -1069,8 +1071,10 @@ addRecordToXMLHandle
             if( writeIP4AddrList(pRecordNode, pData, dataSize) != ANSC_STATUS_SUCCESS)
             {
                 CcspTraceWarning(("Invalid ip4 address list.\n"));
-
-                return ANSC_STATUS_FAILURE;
+              /*Coverity Fix CID: 55479 RESOURCE_LEAK */  
+                if(pData != NULL)
+                   AnscFreeMemory(pData);
+               return ANSC_STATUS_FAILURE;
             }
         }
         else
@@ -1314,7 +1318,10 @@ loadRecordFromXML
     }
 
     /* get the permission */
-    AnscXmlDomNodeGetAttrUlong(pChildNode, STR_ACCESS, &permission);
+    /*Coverity Fix CID:75138 CHECKED_RETURN */
+    if(AnscXmlDomNodeGetAttrUlong(pChildNode, STR_ACCESS, &permission) != ANSC_STATUS_SUCCESS)
+        CcspTraceWarning(("AnscXmlDomNodeGetAttrUlong is not success \n"));
+
 
     /* get the value */
     if( recordType == SYS_REP_RECORD_TYPE_SINT || recordType == SYS_REP_RECORD_TYPE_UINT ||
@@ -2008,7 +2015,8 @@ PsmSysFolderToXMLHandle
             CcspTraceWarning(("Failed to EnumSubFolder - %d\n", i));
         }
     }
-    //CcspTraceInfo(("PsmSysFolderToXMLHandle ends '\n"));  
+    //CcspTraceInfo(("PsmSysFolderToXMLHandle ends '\n"));
+
     return  returnStatus;
 }
 
