@@ -112,7 +112,7 @@ int Psm_ApplyCustomPartnersParams( PsmHalParam_t **params, int *cnt2 );
 #define PSM_REC_TEMP            "  <Record name=\"%s\" type=\"%s\" contentType=\"%s\">%s</Record>\n"
 #define PSM_REC_TEMP_NOCTYPE    "  <Record name=\"%s\" type=\"%s\">%s</Record>\n"
 #define PARTNER_DEFAULT_APPLY_FILE  	"/nvram/.apply_partner_defaults"
-#define PSM_CUR_CONFIG_FILE_NAME        "/tmp/bbhm_cur_cfg.xml"
+#define PSM_CUR_CONFIG_FILE_NAME        "/nvram/bbhm_cur_cfg.xml"
 #define PSM_BAK_CONFIG_FILE_NAME        "/nvram/bbhm_bak_cfg.xml"
 #define PARTNER_DEFAULT_MIGRATE_PSM  	"/tmp/.apply_partner_defaults_psm"
 #define PARTNER_DEFAULT_MIGRATE_FOR_NEW_PSM_MEMBER  	"/tmp/.apply_partner_defaults_new_psm_member"
@@ -1613,7 +1613,8 @@ ssp_CfmSaveCurConfig
     snprintf(curPath, sizeof(curPath), "%s%s", pProp->SysFilePath, pProp->CurFileName);
     snprintf(bakPath, sizeof(bakPath), "%s%s", pProp->SysFilePath, pProp->BakFileName);
     //CcspTraceInfo(("ssp_CfmSaveCurConfig begins\n"));    
-
+    if (AnscCopyFile(curPath, bakPath, TRUE) != ANSC_STATUS_SUCCESS)
+        PsmHalDbg(("%s: fail to backup current config\n", __FUNCTION__));
 
     if ((pFile = AnscOpenFile(curPath, ANSC_FILE_MODE_CREATE | ANSC_FILE_MODE_WRITE | ANSC_FILE_MODE_TRUNC,
             ANSC_FILE_TYPE_RDWR)) == NULL)
@@ -1631,8 +1632,6 @@ ssp_CfmSaveCurConfig
     }
 
     AnscCloseFile(pFile);
-    if (AnscCopyFile(curPath, bakPath, TRUE) != ANSC_STATUS_SUCCESS)
-    	PsmHalDbg(("%s: fail to backup current config\n", __FUNCTION__));
     //CcspTraceInfo(("ssp_CfmSaveCurConfig ends\n"));    
     return ANSC_STATUS_SUCCESS;
 }
