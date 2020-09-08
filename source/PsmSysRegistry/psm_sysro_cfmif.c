@@ -122,8 +122,6 @@ PsmSysroCfmReadCurConfig
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
     PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
     PPSM_FILE_LOADER_OBJECT        pPsmFileLoader    = (PPSM_FILE_LOADER_OBJECT   )pMyObject->hPsmFileLoader;
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT)pMyObject->hSysInfoRepository;
-    PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
 //     CcspTraceInfo(("\n##PsmSysroCfmReadCurConfig() beginss##\n"));
     ANSC_HANDLE                     hCurCfgFile        = (ANSC_HANDLE                )NULL;
     ANSC_HANDLE                     hBakCfgFile        = (ANSC_HANDLE                )NULL;
@@ -292,7 +290,7 @@ PsmSysroCfmReadCurConfig
         }
 	
 	/* Coverity Issue Fix - CID:71497 : Negative Returns */
-	if ( ulFileSize < 0 )
+	if ( (int)ulFileSize < 0 )
 	{
 	    returnStatus =  ANSC_STATUS_FAILURE;
 	    goto EXIT2;
@@ -421,9 +419,6 @@ PsmSysroCfmReadDefConfig
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
     PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
-    PPSM_FILE_LOADER_OBJECT        pPsmFileLoader    = (PPSM_FILE_LOADER_OBJECT   )pMyObject->hPsmFileLoader;
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT)pMyObject->hSysInfoRepository;
-    PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
 //     CcspTraceInfo(("\n##PsmSysroCfmReadDefConfig() beginss##\n"));
     ANSC_HANDLE                     hDefCfgFile        = (ANSC_HANDLE                )NULL;
     ULONG                           ulFileSize         = (ULONG                      )0;
@@ -478,7 +473,7 @@ PsmSysroCfmReadDefConfig
     }
 
     /* Coverity Issue Fix - CID:67758 : Negative Returns*/
-    if ( ulFileSize < 0 )
+    if ((int)ulFileSize < 0 )
     {
 	    returnStatus =  ANSC_STATUS_FAILURE;
 	    goto EXIT2;
@@ -581,9 +576,6 @@ PsmSysroCfmSaveCurConfig
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
     PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
-    PPSM_FILE_LOADER_OBJECT        pPsmFileLoader    = (PPSM_FILE_LOADER_OBJECT   )pMyObject->hPsmFileLoader;
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT)pMyObject->hSysInfoRepository;
-    PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
 //    CcspTraceInfo(("\n##PsmSysroCfmSaveCurConfig() begins##\n"));
     ANSC_HANDLE                     hCurCfgFile        = (ANSC_HANDLE                )NULL;
     char                            curCfgFileName[128] = {0};

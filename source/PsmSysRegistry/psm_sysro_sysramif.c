@@ -110,12 +110,7 @@ PsmSysroSysRamEnableFileSync
         BOOL                        bEnabled
     )
 {
-    ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT)pMyObject->hSysInfoRepository;
-    PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
-
     AnscAcquireLock(&pMyObject->AccessLock);
 //CcspTraceInfo(("\n##PsmSysroSysRamEnableFileSync() begins##\n"));
     if ( bEnabled )
@@ -173,11 +168,10 @@ PsmSysroSysRamNotify
         ULONG                       ulEvent
     )
 {
+    UNREFERENCED_PARAMETER(hSysRepFolder);
     ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject       = (PPSM_SYS_REGISTRY_OBJECT    )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty       = (PPSM_SYS_REGISTRY_PROPERTY  )&pMyObject->Property;
-    PPSM_FILE_LOADER_OBJECT        pPsmFileLoader = (PPSM_FILE_LOADER_OBJECT     )pMyObject->hPsmFileLoader;
-    PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj    = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
+   // PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj    = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
 //CcspTraceInfo(("\n##PsmSysroSysRamNotify() begins##\n"));
     if ( pMyObject->bNoSave || pMyObject->bSaveInProgress )
     {

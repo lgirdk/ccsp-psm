@@ -97,6 +97,8 @@
 #endif
 
 #include <sys/time.h>
+//unused function
+#if 0
 static void print_time(const char *msg)
 {
     struct timeval tv;
@@ -104,6 +106,7 @@ static void print_time(const char *msg)
     gettimeofday(&tv, NULL);
     fprintf(stderr, "[PSM-CFM] %-20s: %6d.%06d\n", msg ? msg : "", tv.tv_sec, tv.tv_usec);
 }
+#endif
 int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt1 );
 int Psm_ApplyCustomPartnersParams( PsmHalParam_t **params, int *cnt2 );
 
@@ -395,7 +398,7 @@ static int flush_records(char **buf, size_t *size)
 
             /* need to expend the buffer ? 
              * the space calculated below is little bigger than needed */
-            if (left < strlen(PSM_REC_TEMP) + \
+            if ((unsigned int)left < strlen(PSM_REC_TEMP) + \
                     strlen(cur->name) + strlen(cur->type) \
                     + (cur->ctype ? strlen(cur->ctype) : 0) \
                     + (cur->value ? strlen(cur->value) : 0) \
@@ -594,7 +597,7 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 			( isNeedToApplyPartnersDefault_PSM == 1 )
 		  )
 		{
-			PsmHalParam_t  localparamArray[ 128 ]	= { 0 }; //Just given max size as 128 if more than 128 then dev should change it			
+			PsmHalParam_t  localparamArray[ 128 ]	= {}; //Just given max size as 128 if more than 128 then dev should change it			
 			char		   value_buf[ 128 ] = {0};
 			int 		   ret 						= -1,
 						   localCount		 		= 0;
@@ -747,9 +750,9 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 					CcspTraceInfo(("-- %s - Failed to allocate memory\n", __FUNCTION__ ));
 					return	-1;					
 				}
-
+				PsmHalParam_t  *pLocalparamArray = localparamArray;
 				//Copy all current data to passed param
-                                rc = memcpy_s( *params, sizeof( PsmHalParam_t ) * ( *cnt ), &localparamArray, sizeof( PsmHalParam_t ) * ( *cnt ) );
+                                rc = memcpy_s( *params, sizeof( PsmHalParam_t ) * ( *cnt ), pLocalparamArray, sizeof( PsmHalParam_t ) * ( *cnt ) );
 				if(rc != EOK)
 				{
 				       ERR_CHK(rc);
@@ -765,7 +768,8 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 
 	return	-1;
 }
-
+//unused function
+#if 0
 static int applyPsm_custom_partners_params(int overwrite)
 {
     struct psm_record   *rec;
@@ -803,7 +807,7 @@ out:
         free(cus_params);
     return err;
 }
-
+#endif
 static int import_custom_partners_params(int overwrite)
 {
     struct psm_record   *rec;
@@ -951,7 +955,7 @@ again:
         CcspTraceInfo(("%s: Fail to import custom partners params\n", __FUNCTION__));
 
     /* flush merged records to buffer */
-    if (flush_records((char **)ppCfgBuffer, pulCfgSize) != 0) {
+    if (flush_records((char **)ppCfgBuffer,(size_t *) pulCfgSize) != 0) {
         free_records();
         CcspTraceInfo((" ssp_CfmReadCurConfig-flush_records((char **)ppCfgBuffer, pulCfgSize) != 0\n"));    
         return ANSC_STATUS_FAILURE;
@@ -1022,7 +1026,7 @@ ssp_CfmReadDefConfig
     }
 
     /* flush merged records to buffer */
-    if (flush_records((char **)ppCfgBuffer, pulCfgSize) != 0) {
+    if (flush_records((char **)ppCfgBuffer,(size_t *) pulCfgSize) != 0) {
         free_records();
         CcspTraceInfo((" ssp_CfmReadDefConfig-flush_records((char **)ppCfgBuffer, pulCfgSize) != 0\n"));            
         return ANSC_STATUS_FAILURE;
@@ -1132,7 +1136,7 @@ FileReadToBuffer(const char *file, char **buf, ULONG *size)
     if ((pFile = AnscOpenFile((char *)file, ANSC_FILE_MODE_READ, ANSC_FILE_TYPE_RDWR)) == NULL)
         return ANSC_STATUS_FAILURE;
 
-    if ((*size = AnscGetFileSize(pFile)) < 0)
+    if ((int)(*size = AnscGetFileSize(pFile)) < 0)
     {
         AnscCloseFile(pFile);
     	CcspTraceInfo(("FileReadToBuffer-> *size = AnscGetFileSize(pFile)) < 0\n"));            

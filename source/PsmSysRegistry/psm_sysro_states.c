@@ -113,9 +113,7 @@ PsmSysroGetPsmSseIf
     )
 {
 //  CcspTraceInfo(("\n##PsmSysroGetPsmSseIf() BEGINs##\n"));
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject    = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty    = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
 //    CcspTraceInfo(("\n##PsmSysroGetPsmSseIf() ends##\n"));
     return  pMyObject->hPsmSseIf;
 }
@@ -157,9 +155,7 @@ PsmSysroSetPsmSseIf
     )
 {
 //    CcspTraceInfo(("\n##PsmSysroSetPsmSseIf() begins##\n"));
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject    = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty    = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
 
     pMyObject->hPsmSseIf = hInterface;
 //    CcspTraceInfo(("\n##PsmSysroSetPsmSseIf() ends##\n"));
@@ -197,9 +193,7 @@ PsmSysroGetPsmFileLoader
         ANSC_HANDLE                 hThisObject
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject    = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty    = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
 //    CcspTraceInfo(("\n##PsmSysroGetPsmFileLoader() ends##\n"));
     return  pMyObject->hPsmFileLoader;
 }
@@ -236,9 +230,7 @@ PsmSysroGetSysInfoRepository
     )
 {
 //	    CcspTraceInfo(("\n##PsmSysroGetSysInfoRepository() begins##\n"));
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject    = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty    = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
 //    CcspTraceInfo(("\n##PsmSysroGetSysInfoRepository() ends##\n"));
     return  pMyObject->hSysInfoRepository;
 }
@@ -280,7 +272,6 @@ PsmSysroGetProperty
     )
 {
 //    CcspTraceInfo(("\n##PsmSysroGetProperty() begins##\n"));
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject    = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
     PPSM_SYS_REGISTRY_PROPERTY     pProperty    = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
 
@@ -325,7 +316,6 @@ PsmSysroSetProperty
         ANSC_HANDLE                 hProperty
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject    = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
     PPSM_SYS_REGISTRY_PROPERTY     pProperty    = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
 //    CcspTraceInfo(("\n##PsmSysroSetProperty() begins##\n"));
@@ -386,7 +376,6 @@ PsmSysroResetProperty
         ANSC_HANDLE                 hThisObject
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject    = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
     PPSM_SYS_REGISTRY_PROPERTY     pProperty    = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
 	errno_t                        rc = -1;
@@ -458,10 +447,8 @@ PsmSysroReset
         ANSC_HANDLE                 hThisObject
     )
 {
+    UNREFERENCED_PARAMETER(hThisObject);
 //   CcspTraceInfo(("\n##PsmSysroReset() begins##\n"));
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-    PPSM_SYS_REGISTRY_OBJECT       pMyObject    = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty    = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
 //    CcspTraceInfo(("\n##PsmSysroReset() ends##\n"));
     return  ANSC_STATUS_SUCCESS;
 }

@@ -226,6 +226,7 @@ void writeCalendar
         ULONG                           dataSize
     )
 {
+    UNREFERENCED_PARAMETER(dataSize);
     PANSC_UNIVERSAL_TIME                pTime       = (PANSC_UNIVERSAL_TIME)pData;
     CHAR                                pTemp[64]   = { 0 };
 
@@ -349,6 +350,8 @@ void writeMacAddress
     AnscXmlDomNodeSetDataString(pRecordNode, NULL, pTemp, AnscSizeOfString(pTemp));
 }
 
+//unused function
+#if 0
 static
 BOOL
 isValidBinaryChar
@@ -358,6 +361,7 @@ isValidBinaryChar
 {
     return (c >= '0' && c <= '9') || ( c >= 'A' && c <= 'F' );
 }
+#endif
 
 static
 ANSC_STATUS
@@ -374,8 +378,6 @@ decodeMacAddress
     /*
      * status of operation
      */
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
-
     /*
      * temporary counters
      */
@@ -582,7 +584,7 @@ writeIntList
             _ansc_sprintf
                 (
                     pString,
-                    "%d",
+                    "%lu",
                     uTemp
                 );
         }
@@ -591,7 +593,7 @@ writeIntList
             _ansc_sprintf
                 (
                     pString,
-                    "%s,%d",
+                    "%s,%lu",
                     pString,
                     uTemp
                 );
@@ -889,7 +891,9 @@ ULONG getFolderContentTypeFromString
     return 0;
 }
 
-static
+//unused function
+#if 0
+static 
 ANSC_STATUS
 addRecordToXMLHandle
     (
@@ -1039,7 +1043,7 @@ addRecordToXMLHandle
     }
     else if( recType == SYS_REP_RECORD_TYPE_ASTR)
     {
-        AnscXmlDomNodeSetDataString(pRecordNode, NULL, pData, dataSize);
+        AnscXmlDomNodeSetDataString(pRecordNode, NULL,(PCHAR) pData, dataSize);
     }
     else  if( recType == SYS_REP_RECORD_TYPE_BSTR)
     {
@@ -1079,7 +1083,7 @@ addRecordToXMLHandle
         }
         else
         {
-            AnscXmlDomNodeSetDataBinary(pRecordNode, NULL, pData, dataSize);
+            AnscXmlDomNodeSetDataBinary(pRecordNode, NULL,(PCHAR) pData, dataSize);
         }
     }
     else
@@ -1095,6 +1099,7 @@ addRecordToXMLHandle
 
     return ANSC_STATUS_SUCCESS;
 }
+#endif
 
 static
 ANSC_STATUS
@@ -1197,7 +1202,7 @@ addRecordToXMLHandle2
     }
     else if( recType == SYS_REP_RECORD_TYPE_ASTR)
     {
-        AnscXmlDomNodeSetDataString(pRecordNode, NULL, pData, dataSize);
+        AnscXmlDomNodeSetDataString(pRecordNode, NULL,(PCHAR) pData, dataSize);
     }
     else  if( recType == SYS_REP_RECORD_TYPE_BSTR)
     {
@@ -1239,7 +1244,7 @@ addRecordToXMLHandle2
         }
         else
         {
-            AnscXmlDomNodeSetDataBinary(pRecordNode, NULL, pData, dataSize);
+            AnscXmlDomNodeSetDataBinary(pRecordNode, NULL,(PCHAR) pData, dataSize);
         }
     }
     else
@@ -1267,7 +1272,6 @@ loadRecordFromXML
 {
     PSYS_IRA_INTERFACE              pSysIraIf          = (PSYS_IRA_INTERFACE       )hSysIraIf;
     PANSC_XML_DOM_NODE_OBJECT       pChildNode         = (PANSC_XML_DOM_NODE_OBJECT)hXMLRecord;
-    ANSC_HANDLE                     hChildFolder       = NULL;
     CHAR                            pName[SYS_MAX_RECORD_NAME_SIZE] = { 0 };
     CHAR                            pValue[160]        = { 0 };
     ULONG                           length             = SYS_MAX_RECORD_NAME_SIZE;
@@ -1432,7 +1436,7 @@ loadRecordFromXML
                 return ANSC_STATUS_RESOURCES;
             }
 
-            returnStatus = AnscXmlDomNodeGetDataString(pChildNode, NULL, pRecordValue, &length);
+            returnStatus = AnscXmlDomNodeGetDataString(pChildNode, NULL,(PCHAR) pRecordValue, &length);
 
             if( returnStatus != ANSC_STATUS_SUCCESS)
             {
@@ -1526,7 +1530,8 @@ loadRecordFromXML
             {
                 ANSC_UNIVERSAL_TIME         time          = { 0 };
 
-                decodeCalendar( pValue, &time);
+
+                decodeCalendar((PUCHAR) pValue, &time);
 
                 /* add the record */
                 return
@@ -1706,7 +1711,7 @@ loadRecordFromXML
                     return ANSC_STATUS_RESOURCES;
                 }
 
-                returnStatus = AnscXmlDomNodeGetDataBinary(pChildNode, NULL, pRecordValue, &length);
+                returnStatus = AnscXmlDomNodeGetDataBinary(pChildNode, NULL, (PCHAR)pRecordValue, &length);
 
                 if( returnStatus != ANSC_STATUS_SUCCESS)
                 {
@@ -2063,7 +2068,6 @@ PsmSysFolderFromXMLHandle
 {
     //CcspTraceInfo(("PsmSysFolderFromXMLHandle begins '\n"));  
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
-    PSYS_IRA_INTERFACE              pSysIraIf          = (PSYS_IRA_INTERFACE       )hSysIraIf;
     PANSC_XML_DOM_NODE_OBJECT       pXMLRoot           = (PANSC_XML_DOM_NODE_OBJECT)hXMLHandle;
     PCHAR                           pNodeName          = NULL;
     PANSC_XML_DOM_NODE_OBJECT       pChildNode         = NULL;

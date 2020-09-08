@@ -107,7 +107,6 @@ PsmFloEngage
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT  )hThisObject;
-    PPSM_FILE_LOADER_PROPERTY       pProperty    = (PPSM_FILE_LOADER_PROPERTY)&pMyObject->Property;
     //CcspTraceInfo(("PsmFloEngage begins \n"));
     if ( pMyObject->bActive )
     {
@@ -161,7 +160,6 @@ PsmFloCancel
 {
     ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT  )hThisObject;
-    PPSM_FILE_LOADER_PROPERTY       pProperty    = (PPSM_FILE_LOADER_PROPERTY)&pMyObject->Property;
     //CcspTraceInfo(("PsmFloCancel begins '\n"));
     if ( !pMyObject->bActive )
     {

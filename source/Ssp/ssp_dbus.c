@@ -46,7 +46,6 @@
 #include "ssp_global.h"
 #include "safec_lib_common.h"
 #include "ansc_tso_interface.h"
-
 extern  void *bus_handle;
 extern  PPSM_SYS_REGISTRY_OBJECT  pPsmSysRegistry;
 extern  char  g_Subsystem[32];
@@ -64,6 +63,13 @@ extern  BOOL  g_bLogEnable;
 
 #define  COMPVALUES_SET                                3
 
+BOOLEAN waitConditionReady
+    (
+        void*                           hMBusHandle,
+        const char*                     dst_component_id,
+        char*                           dbus_path,
+        char*                           src_component_id
+    );
 int     g_psmHealth = CCSP_COMMON_COMPONENT_HEALTH_Red;
 PDSLH_CPE_CONTROLLER_OBJECT     pDslhCpeController        = NULL;
 
@@ -393,7 +399,7 @@ int get_psm_type_from_name(char *name, enum dataType_e *type_ptr, enum psmIndex_
 {
   int rc = -1;
   int ind = -1;
-  int i = 0;
+  unsigned int i = 0;
   if((name == NULL) || (type_ptr == NULL) || (index == NULL))
      return 0;
   for (i = 0 ; i < sizeof(NamespacePsm)/sizeof(name_spaceType_t) ; ++i)
@@ -774,8 +780,8 @@ ANSC_STATUS getCommParam(
                       free_commParam_pointers(pParameterValue);
                       return ANSC_STATUS_FAILURE;
                   }
-
-		  rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_TWO_FIFTY_SIX_BYTES, g_NewConfigPath);
+		  char *pNewConfigPath = g_NewConfigPath;
+		  rc = strcpy_s(pParameterValue->val->parameterValue, MALLOC_TWO_FIFTY_SIX_BYTES, pNewConfigPath);
 		  if(rc != EOK)
 		  {
 		      ERR_CHK(rc);
@@ -881,6 +887,8 @@ int  getParameterValues(
     void * user_data
 )
 {
+    UNREFERENCED_PARAMETER(writeID);
+    UNREFERENCED_PARAMETER(user_data);
     parameterValStruct_t          **val                 = NULL;
     PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository  = (PSYS_INFO_REPOSITORY_OBJECT)NULL;
     PSYS_IRA_INTERFACE              pSysIraIf           = (PSYS_IRA_INTERFACE         )NULL;
@@ -939,7 +947,8 @@ int  getParameterValues(
 
     for ( i = 0; i < size; i++ )
     {
-        int k, bComm = 0;
+        int bComm = 0;
+        unsigned int k= 0;
 
         for ( k = 1; k < sizeof(NamespacePsm)/sizeof(name_spaceType_t); k++ )
         {
@@ -995,13 +1004,13 @@ int  getParameterValues(
             *val_size = *val_size + 1;
             returnStatus = ANSC_STATUS_FAILURE;
 
-            if(pParameterValue = AnscAllocateMemory(sizeof(PARAMETER_VALUE)))
+            if((pParameterValue = AnscAllocateMemory(sizeof(PARAMETER_VALUE))))
             {
-                if(pParameterValue->val = AnscAllocateMemory(sizeof(parameterValStruct_t)))
+                if((pParameterValue->val = AnscAllocateMemory(sizeof(parameterValStruct_t))))
                 {
                     rc = memset_s(pParameterValue->val, sizeof(parameterValStruct_t), 0, sizeof(parameterValStruct_t));
 		    ERR_CHK(rc);
-                    if(pParameterValue->val->parameterName = AnscAllocateMemory(strlen(parameterNames[i])+1))
+                    if((pParameterValue->val->parameterName = AnscAllocateMemory(strlen(parameterNames[i])+1)))
                     {
                         rc = strcpy_s(pParameterValue->val->parameterName, strlen(parameterNames[i])+1, parameterNames[i]);
 			if(rc != EOK)
@@ -1010,7 +1019,7 @@ int  getParameterValues(
                             free_commParam_pointers(pParameterValue);
 			    return CCSP_FAILURE;
 			}
-                        if(pParameterValue->val->parameterValue = AnscAllocateMemory(ulRecordSize+1))
+                        if((pParameterValue->val->parameterValue = AnscAllocateMemory(ulRecordSize+1)))
                         {
                             returnStatus =
                                 pSysIraIf->GetRecord
@@ -1120,6 +1129,11 @@ int  setParameterValues(
     void            *user_data
 )
 {
+    UNREFERENCED_PARAMETER(sessionId);
+    UNREFERENCED_PARAMETER(writeID);
+    UNREFERENCED_PARAMETER(commit);
+    UNREFERENCED_PARAMETER(str);
+    UNREFERENCED_PARAMETER(user_data);
     PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository  = (PSYS_INFO_REPOSITORY_OBJECT)NULL;
     PSYS_IRA_INTERFACE              pSysIraIf           = (PSYS_IRA_INTERFACE         )NULL;
     ANSC_HANDLE                     hSysRoot            = NULL;
@@ -1176,7 +1190,8 @@ int  setParameterValues(
     SysInitRroRenderAttr((&rroRenderAttr));
 
     enum dataType_e type;
-    int index = 0;
+    //int index = 0;
+    enum psmIndex_e index;
 
     for ( i = 0; i < size; i++ )
     {
@@ -1319,6 +1334,10 @@ int setCommit(
     void            *user_data
 )
 {
+    UNREFERENCED_PARAMETER(sessionId);
+    UNREFERENCED_PARAMETER(writeID);
+    UNREFERENCED_PARAMETER(commit);
+    UNREFERENCED_PARAMETER(user_data);
        CcspTraceInfo((" setCommit!!\n"));
     return CCSP_ERR_NOT_SUPPORT;
 }
@@ -1330,6 +1349,8 @@ int  setParameterAttributes(
     void            *user_data
 )
 {
+    UNREFERENCED_PARAMETER(sessionId);
+    UNREFERENCED_PARAMETER(user_data);
     PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository  = (PSYS_INFO_REPOSITORY_OBJECT)NULL;
     PSYS_IRA_INTERFACE              pSysIraIf           = (PSYS_IRA_INTERFACE         )NULL;
     ANSC_HANDLE                     hSysRoot            = NULL;
@@ -1408,6 +1429,11 @@ int  getParameterAttributes(
     void            *user_data
 )
 {
+    UNREFERENCED_PARAMETER(parameterNames);
+    UNREFERENCED_PARAMETER(size);
+    UNREFERENCED_PARAMETER(val_size);
+    UNREFERENCED_PARAMETER(param_val);
+    UNREFERENCED_PARAMETER(user_data);
     CcspTraceInfo(("!!getParameterAttributes!!!!!\n"));
     return CCSP_ERR_NOT_SUPPORT;
 }
@@ -1420,10 +1446,10 @@ int getParameterNames(
     void            *user_data
 )
 {
+    UNREFERENCED_PARAMETER(user_data);
     PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository  = (PSYS_INFO_REPOSITORY_OBJECT)NULL;
     PSYS_IRA_INTERFACE              pSysIraIf           = (PSYS_IRA_INTERFACE         )NULL;
     ANSC_HANDLE                     hSysRoot            = NULL;
-    ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
     ULONG                           ulRecordCount;
     ULONG                           i, j;
     char                            recordName[SYS_MAX_RECORD_NAME_SIZE + 1];
@@ -1491,7 +1517,7 @@ int getParameterNames(
     {
         ulNameSize = SYS_MAX_RECORD_NAME_SIZE;
 
-        returnStatus = pSysIraIf->EnumRecord
+         pSysIraIf->EnumRecord
                 (
                     pSysIraIf->hOwnerContext,
                     hSysRoot,
@@ -1501,7 +1527,6 @@ int getParameterNames(
                     NULL,
                     NULL
                 );
-
         if ( strstr(recordName, parameterName) == recordName )
         {
             if ( nextLevel )
@@ -1572,7 +1597,8 @@ int getParameterNames(
                       free(pParameterInfo);
                       return CCSP_FAILURE;
                 }
-                rc = strcpy_s(pParameterInfo->val->parameterName,  ulNameSize+1, recordName);
+                char *pRecordName = recordName;
+                rc = strcpy_s(pParameterInfo->val->parameterName,  ulNameSize+1, pRecordName);
 		if(rc != EOK)
 		{
 		    ERR_CHK(rc);
@@ -1631,6 +1657,10 @@ int  AddTblRow(
     void            *user_data
 )
 {
+    UNREFERENCED_PARAMETER(sessionId);
+    UNREFERENCED_PARAMETER(objectName);
+    UNREFERENCED_PARAMETER(instanceNumber);
+    UNREFERENCED_PARAMETER(user_data);
     return CCSP_ERR_NOT_SUPPORT;
 }
 
@@ -1640,6 +1670,9 @@ int  DeleteTblRow(
     void            *user_data
 )
 {
+    UNREFERENCED_PARAMETER(user_data);
+    UNREFERENCED_PARAMETER(objectName);
+    UNREFERENCED_PARAMETER(sessionId);
     return CCSP_ERR_NOT_SUPPORT;
 }
 
@@ -1648,6 +1681,8 @@ int freeResources(
     void            *user_data
 )
 {
+    UNREFERENCED_PARAMETER(user_data);
+    UNREFERENCED_PARAMETER(priority);
     return CCSP_ERR_NOT_SUPPORT;
 }
 
@@ -1656,6 +1691,7 @@ int busCheck(
     void            *user_data
 )
 {
+    UNREFERENCED_PARAMETER(user_data);
     return CCSP_SUCCESS;
 }
 
@@ -1663,6 +1699,7 @@ int initialize(
     void            *user_data
 )
 {
+    UNREFERENCED_PARAMETER(user_data);
     return CCSP_SUCCESS;
 }
 
@@ -1670,6 +1707,7 @@ int finalize(
     void            *user_data
 )
 {
+    UNREFERENCED_PARAMETER(user_data);
     return CCSP_SUCCESS;
 }
 
@@ -1751,7 +1789,8 @@ int PsmDbusInit()
 	    return -1;
 	}
     }
-    CCSP_Message_Bus_Init(CName, CCSP_MSG_BUS_CFG, &bus_handle, Ansc_AllocateMemory_Callback, Ansc_FreeMemory_Callback);
+
+    CCSP_Message_Bus_Init(CName, CCSP_MSG_BUS_CFG, &bus_handle,(CCSP_MESSAGE_BUS_MALLOC) Ansc_AllocateMemory_Callback, Ansc_FreeMemory_Callback);
     g_psmHealth = CCSP_COMMON_COMPONENT_HEALTH_Yellow;
     /* Wait for CR ready */
     waitConditionReady(bus_handle, CrName, CCSP_DBUS_PATH_CR, CName);

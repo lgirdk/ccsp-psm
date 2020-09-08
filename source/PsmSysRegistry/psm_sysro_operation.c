@@ -108,8 +108,6 @@ PsmSysroEngage
 {
     ANSC_STATUS                     returnStatus           = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject              = (PPSM_SYS_REGISTRY_OBJECT    )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty              = (PPSM_SYS_REGISTRY_PROPERTY  )&pMyObject->Property;
-    PPSM_CFM_INTERFACE             pPsmCfmIf             = (PPSM_CFM_INTERFACE          )pMyObject->hPsmCfmIf;
     PPSM_FILE_LOADER_OBJECT        pPsmFileLoader        = (PPSM_FILE_LOADER_OBJECT     )pMyObject->hPsmFileLoader;
     PSYS_RAM_INTERFACE              pSysRamIf              = (PSYS_RAM_INTERFACE           )pMyObject->hSysRamIf;
     PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository     = (PSYS_INFO_REPOSITORY_OBJECT  )pMyObject->hSysInfoRepository;
@@ -205,10 +203,7 @@ PsmSysroCancel
 {
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT    )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY  )&pMyObject->Property;
-    PPSM_CFM_INTERFACE             pPsmCfmIf         = (PPSM_CFM_INTERFACE          )pMyObject->hPsmCfmIf;
     PPSM_FILE_LOADER_OBJECT        pPsmFileLoader    = (PPSM_FILE_LOADER_OBJECT     )pMyObject->hPsmFileLoader;
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT  )pMyObject->hSysInfoRepository;
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj       = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
 
     if ( !pMyObject->bActive )
@@ -275,10 +270,7 @@ PsmSysroRegTimerInvoke
 {
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
-    PPSM_CFM_INTERFACE             pPsmCfmIf         = (PPSM_CFM_INTERFACE        )pMyObject->hPsmCfmIf;
     PPSM_FILE_LOADER_OBJECT        pPsmFileLoader    = (PPSM_FILE_LOADER_OBJECT   )pMyObject->hPsmFileLoader;
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT)pMyObject->hSysInfoRepository;
     PSYS_IRA_INTERFACE              pSysIraIf          = (PSYS_IRA_INTERFACE         )pPsmFileLoader->hSysIraIf;
 
     if ( !pMyObject->bNeedFlush )

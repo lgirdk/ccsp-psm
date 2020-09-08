@@ -119,7 +119,7 @@ PsmFloCreate
         ANSC_HANDLE                 hAnscReserved
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hAnscReserved);
     PANSC_COMPONENT_OBJECT          pBaseObject  = NULL;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = NULL;
 
@@ -147,7 +147,7 @@ PsmFloCreate
     pBaseObject->hContainerContext = hContainerContext;
     pBaseObject->hOwnerContext     = hOwnerContext;
     pBaseObject->Oid               = PSM_FILE_LOADER_OID;
-    pBaseObject->Create            = PsmFloCreate;
+    pBaseObject->Create            = (ANSC_HANDLE)PsmFloCreate;
     pBaseObject->Remove            = PsmFloRemove;
     pBaseObject->EnrollObjects     = PsmFloEnrollObjects;
     pBaseObject->Initialize        = PsmFloInitialize;
@@ -192,7 +192,6 @@ PsmFloRemove
     )
 {
 	//CcspTraceInfo(("PsmFloRemove begins \n"));
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
 
     pMyObject->Cancel((ANSC_HANDLE)pMyObject);
@@ -236,7 +235,6 @@ PsmFloEnrollObjects
     )
 {
 	//CcspTraceInfo(("PsmFloEnrollObjects begins '\n"));
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
 
     AnscCoEnrollObjects((ANSC_HANDLE)pMyObject);
@@ -279,7 +277,6 @@ PsmFloInitialize
         ANSC_HANDLE                 hThisObject
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_FILE_LOADER_OBJECT         pMyObject    = (PPSM_FILE_LOADER_OBJECT)hThisObject;
 
     /*
@@ -301,7 +298,7 @@ PsmFloInitialize
      * time soon), this is the way things gonna be.
      */
     pMyObject->Oid           = PSM_FILE_LOADER_OID;
-    pMyObject->Create        = PsmFloCreate;
+    pMyObject->Create        = (ANSC_HANDLE)PsmFloCreate;
     pMyObject->Remove        = PsmFloRemove;
     pMyObject->EnrollObjects = PsmFloEnrollObjects;
     pMyObject->Initialize    = PsmFloInitialize;
