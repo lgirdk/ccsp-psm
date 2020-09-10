@@ -682,7 +682,7 @@
 
   <Record name="dmsb.l3net.4.EthLink" type="astr" contentType="uint">1</Record>
   <Record name="dmsb.l3net.4.Enable" type="astr" contentType="bool">true</Record>
-  <Record name="dmsb.l3net.4.V4Addr" type="astr">10.0.0.1</Record>
+  <Record name="dmsb.l3net.4.V4Addr" type="astr">192.168.1.1</Record>
   <Record name="dmsb.l3net.4.V4SubnetMask" type="astr">255.255.255.0</Record>
 
   <Record name="dmsb.l3net.4.Alias" type="astr">Primary LAN</Record>
@@ -699,7 +699,7 @@
   <Record name="dmsb.l3net.4.V6ValidLifetime" type="astr" contentType="datetime">9999-12-31T23:59:59Z</Record>
   <Record name="dmsb.l3net.4.V6Anycast" type="astr" contentType="bool">false</Record>
 
-  <Record name="dmsb.atom.l3net.4.V4Addr" type="astr">10.0.0.254</Record>
+  <Record name="dmsb.atom.l3net.4.V4Addr" type="astr">192.168.1.254</Record>
   <Record name="dmsb.atom.l3net.4.V4SubnetMask" type="astr">255.255.255.0</Record>
   <Record name="dmsb.atom.l2net.1.l3net" type="astr">4</Record>
 
