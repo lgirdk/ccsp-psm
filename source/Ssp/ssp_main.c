@@ -403,6 +403,7 @@ int main(int argc, char* argv[])
     if(ret != 0){
         return 1;
 	}
+        system("print_uptime \"boot_to_psm_uptime\"");
         creat("/tmp/psm_initialized", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);        
     CcspTraceInfo(("PSM_DBG:-------Read Log Info\n"));
     char buffer[5] = {0};
