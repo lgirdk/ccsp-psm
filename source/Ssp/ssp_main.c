@@ -423,6 +423,7 @@ int main(int argc, char* argv[])
     if(ret != 0)
         return 1;
 	
+	system("print_uptime \"boot_to_psm_uptime\"");
 	system("touch /tmp/psm_initialized");
 	syscfg_init();
     CcspTraceInfo(("PSM_DBG:-------Read Log Info\n"));
