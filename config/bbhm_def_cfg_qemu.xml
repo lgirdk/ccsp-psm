@@ -1000,7 +1000,7 @@
   <Record name="dmsb.ManagementServer.ACSChangedURL" type="astr">0</Record>
   <Record name="dmsb.ManagementServer.PeriodicInformEnable" type="astr">1</Record>
   <Record name="dmsb.ManagementServer.PeriodicInformInterval" type="astr">150</Record>
-  <Record name="dmsb.ManagementServer.DefaultActiveNotificationThrottle" type="astr">30</Record>
+  <Record name="dmsb.ManagementServer.DefaultActiveNotificationThrottle" type="astr">10</Record>
   <Record name="dmsb.ManagementServer.CWMPRetryMinimumWaitInterval" type="astr">5</Record>
   <Record name="dmsb.ManagementServer.CWMPRetryIntervalMultiplier" type="astr">2000</Record>
 
