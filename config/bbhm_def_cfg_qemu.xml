@@ -961,24 +961,28 @@
   <Record name="dmsb.hotspot.tunnel.1.interface.1.VLANID" type="astr">102</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.1.AssociatedBridges" type="astr">Device.Bridging.Bridge.3.</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.1.AssociatedBridgesWiFiPort" type="astr">Device.Bridging.Bridge.3.Port.2.</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.1.X_LGI_SSID" type="astr"></Record>
 
   <Record name="dmsb.hotspot.tunnel.1.interface.2.Enable" type="astr">0</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.2.LocalInterfaces" type="astr">Device.WiFi.SSID.6.</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.2.VLANID" type="astr">103</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.2.AssociatedBridges" type="astr">Device.Bridging.Bridge.4.</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.2.AssociatedBridgesWiFiPort" type="astr">Device.Bridging.Bridge.4.Port.2.</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.2.X_LGI_SSID" type="astr"></Record>
 
   <Record name="dmsb.hotspot.tunnel.1.interface.3.Enable" type="astr">0</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.3.LocalInterfaces" type="astr">Device.WiFi.SSID.9.</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.3.VLANID" type="astr">104</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.3.AssociatedBridges" type="astr">Device.Bridging.Bridge.7.</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.3.AssociatedBridgesWiFiPort" type="astr">Device.Bridging.Bridge.7.Port.2.</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.3.X_LGI_SSID" type="astr"></Record>
 
   <Record name="dmsb.hotspot.tunnel.1.interface.4.Enable" type="astr">0</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.4.LocalInterfaces" type="astr">Device.WiFi.SSID.10.</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.4.VLANID" type="astr">105</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.4.AssociatedBridges" type="astr">Device.Bridging.Bridge.8.</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.4.AssociatedBridgesWiFiPort" type="astr">Device.Bridging.Bridge.8.Port.2.</Record>
+  <Record name="dmsb.hotspot.tunnel.1.interface.4.X_LGI_SSID" type="astr"></Record>
 
   <Record name="dmsb.cisco.gre.1.enable" type="astr">0</Record>
   <Record name="dmsb.cisco.gre.1.alias" type="astr">cpe-cgreif-1</Record>
