@@ -683,7 +683,7 @@
 
   <Record name="dmsb.l3net.4.EthLink" type="astr" contentType="uint">1</Record>
   <Record name="dmsb.l3net.4.Enable" type="astr" contentType="bool">true</Record>
-  <Record name="dmsb.l3net.4.V4Addr" type="astr">10.0.0.1</Record>
+  <Record name="dmsb.l3net.4.V4Addr" type="astr">192.168.0.1</Record>
   <Record name="dmsb.l3net.4.V4SubnetMask" type="astr">255.255.255.0</Record>
 
   <Record name="dmsb.l3net.4.Alias" type="astr">Primary LAN</Record>
@@ -807,7 +807,7 @@
 
   <Record name="dmsb.l3net.6.EthLink" type="astr" contentType="uint">4</Record>
   <Record name="dmsb.l3net.6.Enable" type="astr" contentType="bool">false</Record>
-  <Record name="dmsb.l3net.6.V4Addr" type="astr">192.168.0.1</Record>
+  <Record name="dmsb.l3net.6.V4Addr" type="astr">192.168.1.1</Record>
   <Record name="dmsb.l3net.6.V4SubnetMask" type="astr">255.255.255.0</Record>
 
   <Record name="dmsb.l3net.6.Alias" type="astr">Guest Network</Record>
@@ -830,11 +830,11 @@
   <Record name="dmsb.dhcpv4.server.Enable" type="astr">TRUE</Record>
   <Record name="dmsb.dhcpv4.server.pool.3.AllowDelete" type="astr">FALSE</Record>
   <Record name="dmsb.dhcpv4.server.pool.3.Enable" type="astr">FALSE</Record>
-  <Record name="dmsb.dhcpv4.server.pool.3.MinAddress" type="astr">192.168.0.100</Record>
-  <Record name="dmsb.dhcpv4.server.pool.3.MaxAddress" type="astr">192.168.0.150</Record>
+  <Record name="dmsb.dhcpv4.server.pool.3.MinAddress" type="astr">192.168.1.100</Record>
+  <Record name="dmsb.dhcpv4.server.pool.3.MaxAddress" type="astr">192.168.1.150</Record>
   <Record name="dmsb.dhcpv4.server.pool.3.SubnetMask" type="astr">255.255.255.0</Record>
-  <Record name="dmsb.dhcpv4.server.pool.3.DNSServers" type="astr">192.168.0.1</Record>
-  <Record name="dmsb.dhcpv4.server.pool.3.IPRouters" type="astr">192.168.0.1</Record>
+  <Record name="dmsb.dhcpv4.server.pool.3.DNSServers" type="astr">192.168.1.1</Record>
+  <Record name="dmsb.dhcpv4.server.pool.3.IPRouters" type="astr">192.168.1.1</Record>
   <Record name="dmsb.dhcpv4.server.pool.3.LeaseTime" type="astr">86400</Record>
   <Record name="dmsb.dhcpv4.server.pool.3.IPInterface" type="astr">6</Record>
   <!-- guest network end -->
