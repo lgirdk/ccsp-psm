@@ -916,6 +916,9 @@
 
   <Record name="dmsb.hotspot.max_num_sta_set" type="astr">0</Record>
 
+  <Record name="dmsb.hotspot.RemoteEndpointHealthCheckPingInterval" type="astr">0</Record>
+  <Record name="dmsb.hotspot.RemoteEndpointHealthCheckPingIntervalInFailure" type="astr">0</Record>
+
   <Record name="dmsb.hotspot.gre.1.Enable" type="astr">0</Record>
   <Record name="dmsb.hotspot.gre.1.LocalInterfaces" type="astr">Device.WiFi.SSID.5.,Device.WiFi.SSID.6.,Device.WiFi.SSID.9.,Device.WiFi.SSID.10.</Record>
   <Record name="dmsb.hotspot.gre.1.Endpoints" type="astr">0.0.0.0,0.0.0.0</Record>
