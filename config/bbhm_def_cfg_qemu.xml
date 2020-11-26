@@ -956,6 +956,7 @@
   <Record name="dmsb.hotspot.tunnel.1.EnableRemoteID" type="astr">1</Record>
   <Record name="dmsb.hotspot.tunnel.1.GRENetworkTunnel" type="astr">Device.X_CISCO_COM_GRE.Interface.1.</Record>
   <Record name="dmsb.hotspot.tunnel.1.GreTransportInterface" type="astr">0</Record>
+  <Record name="dmsb.hotspot.tunnel.1.Endpoints" type="astr"></Record>
 
   <Record name="dmsb.hotspot.tunnel.1.interface.1.Enable" type="astr">0</Record>
   <Record name="dmsb.hotspot.tunnel.1.interface.1.LocalInterfaces" type="astr">Device.WiFi.SSID.5.</Record>
