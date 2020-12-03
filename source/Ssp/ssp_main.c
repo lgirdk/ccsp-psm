@@ -420,13 +420,29 @@ int main(int argc, char* argv[])
         return 1;
 	
 	system("touch /tmp/psm_initialized");
-
-	#ifndef DISABLE_LOGAGENT
-	RDKLogEnable = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LoggerEnable");
-	RDKLogLevel = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_LogLevel");
-	PSM_RDKLogLevel = GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PSM_LogLevel");
-	PSM_RDKLogEnable = (char)GetLogInfo(bus_handle,g_Subsystem,"Device.LogAgent.X_RDKCENTRAL-COM_PSM_LoggerEnable");
-	#endif
+	syscfg_init();
+    CcspTraceInfo(("PSM_DBG:-------Read Log Info\n"));
+    char buffer[5] = {0};
+    if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_LoggerEnable" , buffer, sizeof( buffer ) ) &&  ( buffer[0] != '\0' ) )
+    {
+        RDKLogEnable = (BOOL)atoi(buffer);
+    }
+    memset(buffer, 0, sizeof(buffer));
+    if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_LogLevel" , buffer, sizeof( buffer ) ) &&  ( buffer[0] != '\0' ) )
+    {
+        RDKLogLevel = (ULONG )atoi(buffer);
+    }
+    memset(buffer, 0, sizeof(buffer));
+    if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_PSM_LogLevel" , buffer, sizeof( buffer ) ) &&  ( buffer[0] != '\0' ) )
+    {
+        PSM_RDKLogLevel = (ULONG)atoi(buffer);
+    }
+    memset(buffer, 0, sizeof(buffer));
+    if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_PSM_LoggerEnable" , buffer, sizeof( buffer ) ) &&  ( buffer[0] != '\0' ) )
+    {
+        PSM_RDKLogEnable = (BOOL)atoi(buffer);
+    }
+    CcspTraceInfo(("PSM_DBG:-------Log Info values RDKLogEnable:%d,RDKLogLevel:%u,PSM_RDKLogLevel:%u,PSM_RDKLogEnable:%d\n",RDKLogEnable,RDKLogLevel,PSM_RDKLogLevel, PSM_RDKLogEnable ));
 
     if ( bRunAsDaemon ) {
 		sem_post (sem);
