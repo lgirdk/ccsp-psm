@@ -213,6 +213,7 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.1.FactoryResetSSID" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.2.FactoryResetSSID" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.SsidUpgradeRequired" type="astr">1</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.X_LGI-COM_Radius.TransportInterface" type="astr">0</Record>
 
   <Record name="dmsb.BridgeNamePrefix" type="astr">brlan</Record>
   <Record name="dmsb.bridgeVlanRange" type="astr">164...512</Record>
