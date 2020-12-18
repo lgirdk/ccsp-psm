@@ -958,6 +958,8 @@
   <Record name="dmsb.hotspot.tunnel.1.RemoteEndpointHealthCheckPingIntervalInFailure" type="astr">300</Record>
   <Record name="dmsb.hotspot.tunnel.1.EnableCircuitID" type="astr">1</Record>
   <Record name="dmsb.hotspot.tunnel.1.EnableRemoteID" type="astr">1</Record>
+  <Record name="dmsb.hotspot.tunnel.1.EnableVendorClassID" type="astr">1</Record>
+
   <Record name="dmsb.hotspot.tunnel.1.GRENetworkTunnel" type="astr">Device.X_CISCO_COM_GRE.Interface.1.</Record>
   <Record name="dmsb.hotspot.tunnel.1.GreTransportInterface" type="astr">0</Record>
   <Record name="dmsb.hotspot.tunnel.1.Endpoints" type="astr"></Record>
