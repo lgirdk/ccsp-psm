@@ -215,6 +215,8 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.SsidUpgradeRequired" type="astr">1</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.X_LGI-COM_Radius.TransportInterface" type="astr">0</Record>
 
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.5.Security.X_COMCAST-COM_RadiusSettings.ReAuthInterval" type="astr">3600</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.6.Security.X_COMCAST-COM_RadiusSettings.ReAuthInterval" type="astr">3600</Record>
   <Record name="dmsb.BridgeNamePrefix" type="astr">brlan</Record>
   <Record name="dmsb.bridgeVlanRange" type="astr">164...512</Record>
 
