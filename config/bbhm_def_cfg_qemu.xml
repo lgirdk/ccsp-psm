@@ -955,7 +955,7 @@
   <Record name="dmsb.hotspot.tunnel.1.ReconnectToPrimaryRemoteEndpoint" type="astr">43200</Record>
   <Record name="dmsb.hotspot.tunnel.1.KeepAlivePolicy" type="astr">1</Record>
   <Record name="dmsb.hotspot.tunnel.1.RemoteEndpointHealthCheckPingInterval" type="astr">60</Record>
-  <Record name="dmsb.hotspot.tunnel.1.RemoteEndpointHealthCheckPingFailThreshold" type="astr">3</Record>
+  <Record name="dmsb.hotspot.tunnel.1.RemoteEndpointHealthCheckPingFailThreshold" type="astr">1</Record>
   <Record name="dmsb.hotspot.tunnel.1.RemoteEndpointHealthCheckPingCount" type="astr">3</Record>
   <Record name="dmsb.hotspot.tunnel.1.RemoteEndpointHealthCheckPingIntervalInFailure" type="astr">300</Record>
   <Record name="dmsb.hotspot.tunnel.1.EnableCircuitID" type="astr">1</Record>
