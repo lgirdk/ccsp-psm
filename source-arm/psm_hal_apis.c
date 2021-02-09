@@ -69,6 +69,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ssp_global.h"
 #include "psm_hal_apis.h"
 
 /**********************************************************************
@@ -100,6 +101,8 @@
  */
 int PsmHal_GetCustomParams( PsmHalParam_t **params, int *cnt)
 {
+    UNREFERENCED_PARAMETER(params);
+    UNREFERENCED_PARAMETER(cnt);
     return  -1;
 }
 
