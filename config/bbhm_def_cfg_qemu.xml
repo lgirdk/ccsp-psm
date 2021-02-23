@@ -214,7 +214,22 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.2.FactoryResetSSID" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.SsidUpgradeRequired" type="astr">1</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.X_LGI-COM_Radius.TransportInterface" type="astr">0</Record>
-
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.1.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.2.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.3.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.4.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.5.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">1</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.6.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">1</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.7.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.8.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.9.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.10.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.11.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.12.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.13.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.14.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.15.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.16.Security.X_COMCAST-COM_RadiusSettings.PMKCaching" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.5.Security.X_COMCAST-COM_RadiusSettings.ReAuthInterval" type="astr">3600</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.6.Security.X_COMCAST-COM_RadiusSettings.ReAuthInterval" type="astr">3600</Record>
   <Record name="dmsb.BridgeNamePrefix" type="astr">brlan</Record>
