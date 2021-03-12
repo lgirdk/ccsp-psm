@@ -22,10 +22,11 @@
 #bbhm patch for 2.1s11
 
 . /etc/device.properties
-if [ "$BOX_TYPE" = "XB3" ] || [ "$BOX_TYPE" = "HUB4" ] || [ "$MODEL_NUM" = "TG4482A" ]; then
+
+SECURE_SYSCFG=`syscfg get UpdateNvram`
 SYSCFG_DB_FILE="/nvram/syscfg.db"
-else
-SYSCFG_DB_FILE="/opt/secure/data/syscfg.db"
+if [ "$SECURE_SYSCFG" = "false" ]; then
+	SYSCFG_DB_FILE="/opt/secure/data/syscfg.db"
 fi
 
 usage() 
