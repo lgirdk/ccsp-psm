@@ -66,7 +66,7 @@
 #include "cap.h"
 
 #define DEBUG_INI_NAME "/etc/debug.ini"
-
+int GetLogInfo(ANSC_HANDLE bus_handle, char *Subsytem, char *pParameterName);
 BOOL                                bEngaged          = FALSE;
 PPSM_SYS_REGISTRY_OBJECT            pPsmSysRegistry   = (PPSM_SYS_REGISTRY_OBJECT)NULL;
 void                               *bus_handle        = NULL;
@@ -245,6 +245,7 @@ void sig_handler(int sig)
 	CcspTraceInfo((" sig_handler exit\n"));
 }
 
+#ifndef INCLUDE_BREAKPAD
 static int is_core_dump_opened(void)
 {
     FILE *fp;
@@ -273,6 +274,7 @@ static int is_core_dump_opened(void)
     fclose(fp);
     return 0;
 }
+#endif
 #endif
 
 void drop_root()
@@ -416,9 +418,9 @@ int main(int argc, char* argv[])
     gather_info();
 
     ret = cmd_dispatch('e');
-    if(ret != 0)
+    if(ret != 0){
         return 1;
-	
+	}
 	system("touch /tmp/psm_initialized");
 	syscfg_init();
     CcspTraceInfo(("PSM_DBG:-------Read Log Info\n"));

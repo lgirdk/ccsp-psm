@@ -119,6 +119,7 @@ PsmFloTestRegFile
     )
 {
     //CcspTraceInfo(("PsmFloTestRegFile begins '\n"));
+    UNREFERENCED_PARAMETER(hThisObject);
     PANSC_XML_DOM_NODE_OBJECT       pRootNode = NULL;
     PUCHAR                          pBack     = (PUCHAR)pCfgBuffer;
     ULONG                           uLength   = ulCfgSize;
@@ -179,7 +180,6 @@ PsmFloLoadRegFile
     PUCHAR                          pBackData    = NULL;
     ULONG                           dataLength   = 0;
     ANSC_HANDLE                     hSysRoot     = NULL;
-    int                             i;
 
     if ( !pMyObject->bActive )
     {

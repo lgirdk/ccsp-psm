@@ -107,7 +107,6 @@ PsmSysroSetupEnv
 {
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
     PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT)pMyObject->hSysInfoRepository;
     PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
     ANSC_HANDLE                     hRfoKeyCfg         = (ANSC_HANDLE                )NULL;
@@ -198,11 +197,6 @@ PsmSysroCloseEnv
 {
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT)pMyObject->hSysInfoRepository;
-    PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
-    ANSC_HANDLE                     hRfoKeySys         = (ANSC_HANDLE                )NULL;
-    ANSC_HANDLE                     hRfoKeyAcModules   = (ANSC_HANDLE                )NULL;
 //CcspTraceInfo(("\n##PsmSysroCloseEnv() begins##\n"));
     if ( !pMyObject->bActive )
     {

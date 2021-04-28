@@ -120,7 +120,7 @@ PsmSysroCreate
         ANSC_HANDLE                 hAnscReserved
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
+    UNREFERENCED_PARAMETER(hAnscReserved);
     PANSC_COMPONENT_OBJECT          pBaseObject  = NULL;
     PPSM_SYS_REGISTRY_OBJECT        pMyObject    = NULL;
    // CcspTraceInfo(("\n##PsmSysRoCreate() begins##\n"));
@@ -190,7 +190,6 @@ PsmSysroRemove
         ANSC_HANDLE                 hThisObject
     )
 {
-    ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT        pMyObject          = (PPSM_SYS_REGISTRY_OBJECT    )hThisObject;
     PPSM_CFM_INTERFACE              pPsmCfmIf          = (PPSM_CFM_INTERFACE          )pMyObject->hPsmCfmIf;
     PPSM_FILE_LOADER_OBJECT         pPsmFileLoader     = (PPSM_FILE_LOADER_OBJECT     )pMyObject->hPsmFileLoader;
@@ -277,7 +276,6 @@ PsmSysroEnrollObjects
         ANSC_HANDLE                 hThisObject
     )
 {
-    ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT        pMyObject          = (PPSM_SYS_REGISTRY_OBJECT    )hThisObject;
     PPSM_CFM_INTERFACE              pPsmCfmIf          = (PPSM_CFM_INTERFACE          )pMyObject->hPsmCfmIf;
     PPSM_FILE_LOADER_OBJECT         pPsmFileLoader     = (PPSM_FILE_LOADER_OBJECT     )pMyObject->hPsmFileLoader;
@@ -286,7 +284,6 @@ PsmSysroEnrollObjects
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj       = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
     PANSC_TDO_CLIENT_OBJECT         pRegTimerIf        = (PANSC_TDO_CLIENT_OBJECT      )pMyObject->hRegTimerIf;
     errno_t                         rc                 = -1;
-    int                             ind                = -1;
 
 //CcspTraceInfo(("\n##PsmSysroEnrollObjects() beginss##\n"));
     if ( !pPsmCfmIf )
@@ -470,7 +467,6 @@ PsmSysroInitialize
         ANSC_HANDLE                 hThisObject
     )
 {
-    ANSC_STATUS                     returnStatus = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject    = (PPSM_SYS_REGISTRY_OBJECT)hThisObject;
 
     /*

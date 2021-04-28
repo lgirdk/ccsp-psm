@@ -78,6 +78,16 @@
 #include "psm_sysro_global.h"
 #include "safec_lib_common.h"
 
+ULONG
+AnscCryptoDesDecrypt
+    (
+        PVOID                       cipher,
+        ULONG                       size,
+        PVOID                       plain,
+        PANSC_CRYPTO_KEY            key,
+        PANSC_CRYPTO_IV             iv
+    );
+
 /**********************************************************************
 
     caller:     owner of this object
@@ -113,11 +123,6 @@ PsmSysroResetToFactoryDefault
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT    )hThisObject;
     PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY  )&pMyObject->Property;
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj       = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
-    PPSM_FILE_LOADER_OBJECT        pPsmFileLoader    = (PPSM_FILE_LOADER_OBJECT     )pMyObject->hPsmFileLoader;
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT  )pMyObject->hSysInfoRepository;
-    PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE           )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
-    ANSC_HANDLE                     hRfoKeyCfg         = (ANSC_HANDLE                  )NULL;
-    ANSC_HANDLE                     hRfoKeyCfgSetup    = (ANSC_HANDLE                  )NULL;
     char                            curCfgFileName[128] = {0};
     errno_t                         rc                 = -1;
 
@@ -224,10 +229,7 @@ PsmSysroImportConfig
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT    )hThisObject;
     PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY  )&pMyObject->Property;
-    PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj       = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
     PPSM_FILE_LOADER_OBJECT        pPsmFileLoader    = (PPSM_FILE_LOADER_OBJECT     )pMyObject->hPsmFileLoader;
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT  )pMyObject->hSysInfoRepository;
-    PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE           )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
     ULONG                           ulFileSize         = (ULONG                        )0;
     void*                           pTmpCfgBuffer      = (void*                        )NULL;
     ANSC_HANDLE                     hTmpCfgFile        = (ANSC_HANDLE                  )NULL;
@@ -480,9 +482,6 @@ PsmSysroExportConfig
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
     PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
-    PPSM_FILE_LOADER_OBJECT        pPsmFileLoader    = (PPSM_FILE_LOADER_OBJECT   )pMyObject->hPsmFileLoader;
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT)pMyObject->hSysInfoRepository;
-    PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
     ANSC_HANDLE                     hCurCfgFile        = (ANSC_HANDLE                )NULL;
     ULONG                           ulOrgBufferSize    = (ULONG                      )*pulCfgSize;
     ANSC_CRYPTO_KEY                 desEncryptKey;
@@ -614,12 +613,8 @@ PsmSysroGetConfigSize
         ANSC_HANDLE                 hThisObject
     )
 {
-    ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT  )hThisObject;
     PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY)&pMyObject->Property;
-    PPSM_FILE_LOADER_OBJECT        pPsmFileLoader    = (PPSM_FILE_LOADER_OBJECT   )pMyObject->hPsmFileLoader;
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository = (PSYS_INFO_REPOSITORY_OBJECT)pMyObject->hSysInfoRepository;
-    PSYS_IRA_INTERFACE              pIraIf             = (PSYS_IRA_INTERFACE         )pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
     ANSC_HANDLE                     hCurCfgFile        = (ANSC_HANDLE                )NULL;
     ULONG                           ulFileSize         = (ULONG                      )0;
     char                            curCfgFileName[128] = {0};
@@ -693,7 +688,6 @@ PsmSysroSaveConfigToFlash
 {
     ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     PPSM_SYS_REGISTRY_OBJECT       pMyObject       = (PPSM_SYS_REGISTRY_OBJECT    )hThisObject;
-    PPSM_SYS_REGISTRY_PROPERTY     pProperty       = (PPSM_SYS_REGISTRY_PROPERTY  )&pMyObject->Property;
     PPSM_FILE_LOADER_OBJECT        pPsmFileLoader = (PPSM_FILE_LOADER_OBJECT     )pMyObject->hPsmFileLoader;
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj    = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
 
