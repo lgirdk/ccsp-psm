@@ -1324,7 +1324,7 @@ loadRecordFromXML
     /* get the permission */
     /*Coverity Fix CID:75138 CHECKED_RETURN */
     if(AnscXmlDomNodeGetAttrUlong(pChildNode, STR_ACCESS, &permission) != ANSC_STATUS_SUCCESS)
-        CcspTraceWarning(("AnscXmlDomNodeGetAttrUlong is not success \n"));
+        CcspTraceDebug(("AnscXmlDomNodeGetAttrUlong is not success \n"));
 
 
     /* get the value */
