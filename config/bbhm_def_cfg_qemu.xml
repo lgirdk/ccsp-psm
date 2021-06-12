@@ -1175,4 +1175,8 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.14.vAPStatsEnable" type="astr">false</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.15.vAPStatsEnable" type="astr">false</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.16.vAPStatsEnable" type="astr">false</Record>
+  <Record name="Device.Ethernet.Interface.1.EEEEnable" type="astr">true</Record>
+  <Record name="Device.Ethernet.Interface.2.EEEEnable" type="astr">true</Record>
+  <Record name="Device.Ethernet.Interface.3.EEEEnable" type="astr">true</Record>
+  <Record name="Device.Ethernet.Interface.4.EEEEnable" type="astr">true</Record>
 </Provision>
