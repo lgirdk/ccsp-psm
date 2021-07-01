@@ -210,7 +210,6 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.1.AdminControl" type="astr">254</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.2.AdminControl" type="astr">254</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.FactoryReset" type="astr">1</Record>
-  <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.ReservedSSIDNames" type="astr">Liberty Global,Telenet,Virgin Media,Ziggo,Horizon Wi-Free,TELENETHOMESPOT,TelenetWiFree,TelenetSecure,UPC WiFiSpots,UPC Wi-Free,Unitymedia WiFiSpot,Unitymedia Public WiFiSpot,VTR,LibertyPR</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.1.FactoryResetSSID" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.2.FactoryResetSSID" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.SsidUpgradeRequired" type="astr">1</Record>
