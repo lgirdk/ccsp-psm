@@ -54,7 +54,7 @@
 
 #include "ssp_global.h"
 #include "safec_lib_common.h"
-
+#include "secure_wrapper.h"
 #ifdef ENABLE_SD_NOTIFY
 #include <systemd/sd-daemon.h>
 #endif
@@ -424,7 +424,7 @@ int main(int argc, char* argv[])
     if(ret != 0){
         return 1;
 	}
-	system("touch /tmp/psm_initialized");
+        creat("/tmp/psm_initialized", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);        
 	syscfg_init();
     CcspTraceInfo(("PSM_DBG:-------Read Log Info\n"));
     char buffer[5] = {0};
@@ -570,7 +570,7 @@ int  cmd_dispatch(int  command)
 
                         CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PSM started ...\n"));
 #if !defined(INTEL_PUMA7) && !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_)
-                        system("sysevent set bring-lan up");
+                        v_secure_system("sysevent set bring-lan up");
 #endif                      
                     }
                     else

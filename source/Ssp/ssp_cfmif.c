@@ -89,6 +89,7 @@
 #include "pthread.h"
 #include "psm_ifo_cfm.h"
 #include <sys/mman.h>
+#include <sys/stat.h>
 #ifdef _COSA_SIM_
 #define cfm_log_dbg(x)          printf x
 #define cfm_log_err(x)          printf x
@@ -729,7 +730,7 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 		isNeedToApplyPartnersDefault_PSM = 1;
 		isNeedtoProceedfurther = 1;
 		CcspTraceInfo(("-- %s - Deleting this file :%s\n", __FUNCTION__, PARTNER_DEFAULT_MIGRATE_PSM ));
-		system( "rm -rf /tmp/.apply_partner_defaults_psm" );
+		unlink("/tmp/.apply_partner_defaults_psm");        
 	}
 
 	if ( access( PARTNER_DEFAULT_MIGRATE_FOR_NEW_PSM_MEMBER , F_OK ) == 0 )  
@@ -737,7 +738,7 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 		isNeedToApplyPartnersDefault_PSM = 1;
 		isNeedtoProceedfurther = 1;
 		CcspTraceInfo(("-- %s - Deleting this file :%s\n", __FUNCTION__, PARTNER_DEFAULT_MIGRATE_FOR_NEW_PSM_MEMBER ));
-		system( "rm -rf /tmp/.apply_partner_defaults_new_psm_member" );
+                unlink("/tmp/.apply_partner_defaults_new_psm_member");
 	}
 
 	CcspTraceInfo(("-- %s - isNeedtoProceedfurther:%d \n", __FUNCTION__, isNeedtoProceedfurther ));
@@ -753,7 +754,7 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 		else
 		{
 			CcspTraceInfo(("-- %s - Deleting this file :%s\n", __FUNCTION__, PARTNER_DEFAULT_APPLY_FILE ));
-			system( "rm -rf /nvram/.apply_partner_defaults" );
+                        unlink("/nvram/.apply_partner_defaults");                        
 		}
 		
 		if( ( isNeedToApplyPartnersDefault == 1 ) || \
@@ -950,7 +951,6 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 			}
 		}
 	}
-
 	return	-1;
 }
 //unused function
