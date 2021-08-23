@@ -79,6 +79,7 @@ int  cmd_dispatch(int  command);
 int  gather_info ();
 
 int  PsmDbusInit ();
+int  PsmRbusInit ();
 
 ANSC_STATUS
 ssp_CfmReadCurConfig

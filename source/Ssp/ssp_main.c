@@ -557,10 +557,11 @@ int  cmd_dispatch(int  command)
 #endif
 
                         pPsmSysRegistry->Engage     ((ANSC_HANDLE)pPsmSysRegistry);
-
                         ret = PsmDbusInit();
                         if(ret != 0)
                            return -1;
+                        if(CCSP_Msg_IsRbus_enabled())
+                            PsmRbusInit();
 
                         bEngaged = TRUE;
 
