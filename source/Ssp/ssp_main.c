@@ -281,10 +281,20 @@ void drop_root()
 {
     appcaps.caps = NULL;
     appcaps.user_name = NULL;
-    init_capability();
-    drop_root_caps(&appcaps);
-    update_process_caps(&appcaps);
-    read_capability(&appcaps);
+    bool ret = false;
+    ret = isBlocklisted();
+    if(ret)
+    {
+          AnscTrace("NonRoot feature is disabled\n");
+    }
+    else
+    {
+          AnscTrace("NonRoot feature is enabled, dropping root privileges for CcspPsm process\n");
+          init_capability();
+          drop_root_caps(&appcaps);
+          update_process_caps(&appcaps);
+          read_capability(&appcaps);
+    }
 }
 
 int main(int argc, char* argv[])
@@ -297,7 +307,6 @@ int main(int argc, char* argv[])
     errno_t                         rc                 = -1;
     int                             ind                = -1;
     int                             ret                = 0;
-    char                            buf[8]             = {'\0'};
 
     pComponentName = CCSP_DBUS_PSM;
 #ifdef FEATURE_SUPPORT_RDKLOG
@@ -359,13 +368,7 @@ int main(int argc, char* argv[])
 	}
      }
   
-    syscfg_init();
-    syscfg_get( NULL, "NonRootSupport", buf, sizeof(buf));
-    if( buf != NULL ) {
-        if (strncmp(buf, "true", strlen("true")) == 0) {
-            drop_root();
-        }
-    }
+    drop_root();
 
     if ( bRunAsDaemon )
     	daemonize();
