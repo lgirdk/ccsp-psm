@@ -21,7 +21,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <rbus.h>
+#include <rbus/rbus.h>
 #include <libgen.h>
 #include "ssp_global.h"
 #include "safec_lib_common.h"
