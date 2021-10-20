@@ -75,6 +75,7 @@
 
 #include "psm_sysro_global.h"
 #include "safec_lib_common.h"
+#include "psm_ifo_cfm.h"
 
 
 /**********************************************************************
@@ -616,14 +617,18 @@ PsmSysroCfmSaveCurConfig
             ERR_CHK(rc);
             return ANSC_STATUS_FAILURE;
         }
-        returnStatus =
+ /*       returnStatus =
             AnscCopyFile
                 (
                     curCfgFileName,
                     bakCfgFileName,
                     TRUE
-                );
-    }
+                ); */
+
+            returnStatus = backup_file(bakCfgFileName,curCfgFileName);
+             if ( returnStatus != 0)
+                CcspTraceError(("%s: fail to backup current config\n", __FUNCTION__)); 
+             }
 
 #ifdef  _PSM_FILE_COMPRESSION_ENABLE
 

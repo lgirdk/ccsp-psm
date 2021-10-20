@@ -87,7 +87,8 @@
 #include "safec_lib_common.h"
 #include <unistd.h>
 #include "pthread.h"
-
+#include "psm_ifo_cfm.h"
+#include <sys/mman.h>
 #ifdef _COSA_SIM_
 #define cfm_log_dbg(x)          printf x
 #define cfm_log_err(x)          printf x
@@ -1595,6 +1596,78 @@ done:
     return root;
 }
 
+/* Taking backup of file */
+int backup_file (const char *bkupFile, const char *localFile)
+{
+   int fd_from = open(localFile, O_RDONLY);
+   int rc=0;
+  if(fd_from < 0)
+  {
+    CcspTraceError(("%s : opening localfile %s failed during db backup\n",__FUNCTION__,localFile));
+    return -1;
+  }
+  struct stat Stat;
+  if(fstat(fd_from, &Stat)<0)
+  {
+    CcspTraceError(("fstat call failed during db backup\n"));
+
+    close(fd_from);
+    return -1;
+  }
+  void *mem = mmap(NULL, Stat.st_size, PROT_READ, MAP_SHARED, fd_from, 0);
+  if(mem == MAP_FAILED)
+  {
+        CcspTraceError(("%s : mmap failed during db backup , line %d",__FUNCTION__,__LINE__));
+        close(fd_from);
+        return -1;
+  }
+
+  int fd_to = creat(bkupFile, 0666);
+  if(fd_to < 0)
+  {
+        CcspTraceError(("%s : creat sys call failed during db backup\n",__FUNCTION__));
+    rc = munmap(mem,Stat.st_size);
+    if ( rc != 0 ){
+        
+            CcspTraceError(("%s : munmap failed\n",__FUNCTION__));
+    }
+        close(fd_from);
+        return -1;
+  }
+  ssize_t nwritten = write(fd_to, mem, Stat.st_size);
+  if(nwritten < Stat.st_size)
+  {
+        CcspTraceError(("write system call failed during db backup\n"));
+
+    rc = munmap(mem,Stat.st_size);
+        if ( rc != 0 ){
+
+        CcspTraceError(("%s : munmap failed %d \n",__FUNCTION__,__LINE__));
+
+        }
+
+    close(fd_from);
+        close(fd_to);
+        return -1;
+  }
+
+  rc = munmap(mem,Stat.st_size);
+  if ( rc != 0 ){
+        CcspTraceError(("%s : munmap failed %d \n",__FUNCTION__,__LINE__));
+  }
+
+  if(close(fd_to) < 0) {
+        fd_to = -1;
+                CcspTraceError(("%s : closing file descriptor failed during db backup %d \n",__FUNCTION__,__LINE__));
+
+    close(fd_from);
+        return -1;
+  }
+  close(fd_from);
+
+  /* Success! */
+  return 0;
+}
 /**********************************************************************
 
     caller:     owner of this object
@@ -1665,8 +1738,11 @@ ssp_CfmSaveCurConfig
     }
 
     AnscCloseFile(pFile);
-    if (AnscCopyFile(curPath, bakPath, TRUE) != ANSC_STATUS_SUCCESS)
-    	PsmHalDbg(("%s: fail to backup current config\n", __FUNCTION__));
+  /*  if (AnscCopyFile(curPath, bakPath, TRUE) != ANSC_STATUS_SUCCESS)
+    	PsmHalDbg(("%s: fail to backup current config\n", __FUNCTION__)); */
+
+    if ( backup_file(bakPath,curPath) != 0)
+        CcspTraceError(("%s: fail to backup current config\n", __FUNCTION__)); 
     //CcspTraceInfo(("ssp_CfmSaveCurConfig ends\n"));    
     return ANSC_STATUS_SUCCESS;
 }

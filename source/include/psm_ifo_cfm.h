@@ -138,4 +138,5 @@ PSM_CFM_INTERFACE,  *PPSM_CFM_INTERFACE;
          ACCESS_CONTAINER(p, PSM_CFM_INTERFACE, Linkage)
 
 
+int backup_file (const char *bkupFile, const char *localFile);
 #endif
