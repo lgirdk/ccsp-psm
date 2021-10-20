@@ -51,4 +51,4 @@ PsmSsp_SOURCES = \
     PsmSysRegistry/psm_sysro_operation.c \
     PsmSysRegistry/psm_sysro_control.c
 
-PsmSsp_LDFLAGS = -lccsp_common $(SYSTEMD_LDFLAGS) -lsyscfg -lutapi -lutctx -lprivilege
+PsmSsp_LDFLAGS = -lccsp_common $(SYSTEMD_LDFLAGS) -lsyscfg -lutapi -lutctx -lprivilege -lrbus -lrbus-core
