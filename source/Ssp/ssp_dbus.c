@@ -1311,7 +1311,7 @@ int  setParameterValues(
                 );
 
 
-        //CcspTraceWarning(("setParameterValues -- size:%d, %s: %s\n", size, val[i].parameterName, val[i].parameterValue));
+        CcspTraceWarning(("setParameterValues -- size:%d, %s: %s\n", size, val[i].parameterName, val[i].parameterValue));
 
 
         if ( returnStatus != ANSC_STATUS_SUCCESS )
