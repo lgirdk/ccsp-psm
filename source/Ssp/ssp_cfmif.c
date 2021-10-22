@@ -344,6 +344,233 @@ static void free_records(void)
     pthread_mutex_unlock(&rec_hash_lock);
     return;
 }
+static int insert_record(struct psm_record *new, int overwrite)
+{
+    int h_idx;
+    struct psm_record *rec, *prev;
+    errno_t rc = -1;
+    int ind = -1;
+
+    h_idx = record_hash(new->name);
+
+    pthread_mutex_lock(&rec_hash_lock);
+    if (rec_hash[h_idx] == NULL) {
+        rec_hash[h_idx] = new;
+        cfm_log_dbg(("[INSERT-F] %s %s\n", new->name, new->value));
+        pthread_mutex_unlock(&rec_hash_lock);
+        return 0;
+    }
+
+    for (prev = NULL, rec = rec_hash[h_idx]; rec; prev = rec, rec = rec->next) {
+        rc = strcmp_s(rec->name, strlen(rec->name), new->name, &ind);
+        ERR_CHK(rc);
+	if((rc == EOK) && (ind != 0))
+            continue;
+
+        if (!overwrite) {
+            //cfm_log_dbg(("[IMPORTED-E] %s %s\n", new->name, new->value ? new->value : ""));
+            record_free(new);
+        } else {
+            /* do not support change type/contentType */
+
+            new->next = rec->next;
+            /* May be I can use hlist in list.h someday.
+             * things will be easier. */
+            if (rec == rec_hash[h_idx]) {
+                rec_hash[h_idx] = new;
+            } else {
+                if (prev) {
+                    prev->next = new;
+                } else {
+                    CcspTraceError(("%s: Why got here ? it not possible.\n", __FUNCTION__));
+                    pthread_mutex_unlock(&rec_hash_lock);
+                    return -1;
+                }
+            }
+
+            record_free(rec);
+            cfm_log_dbg(("[IMPORTED-O] %s %s\n", new->name, new->value ? new->value : ""));
+        }
+        break;
+    }
+    if (!rec) {
+        new->next = rec_hash[h_idx];
+        rec_hash[h_idx] = new;
+
+       /* Security Requiremnt: Log messages must not disclose any confidential data
+           like cryptographic keys and password. So don't save Passphrase on log message.
+        */
+        if ( NULL == strstr(new->name, "Passphrase" ) ) {
+            CcspTraceInfo(("%s : [IMPORTED-NEW] %s %s\n",__FUNCTION__, new->name, new->value ? new->value : ""));
+       }
+       else {
+           CcspTraceInfo(("%s : [IMPORTED-NEW] Not storing the value for parameter %s due to security restriction. \n",__FUNCTION__, new->name));
+       }
+    }
+
+    pthread_mutex_unlock(&rec_hash_lock);
+    return 0;
+}
+
+#define PSM_PARAM_TOTAL (sizeof(parm_present_table)/sizeof(parm_present_table[0]))
+
+typedef struct Param_Present
+{
+    char *name;
+    char *partner_name;
+    BOOL value;
+    /* for extensions if need, e.g., type */
+} Param_Present_t;
+
+  Param_Present_t parm_present_table[] = {
+  { "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation",
+  "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation", false },
+  { "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code",
+    "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code", false},
+  { "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix",
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix",false},
+  { "Device.X_RDK_WebConfig.URL",
+    "Device.X_RDK_WebConfig.URL",false},
+  { "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry",
+    "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry",false},
+  { "dmsb.l3net.4.V4Addr",
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP",false},
+  { "dmsb.l3net.4.V4SubnetMask",
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange",false}
+};
+
+void insert(char *Name, char*value)
+{
+    //CcspTraceInfo(("%s: insert missed param %s with value %s\n", __FUNCTION__, Name, value));
+     struct psm_record   *rec;
+    rec = record_create(Name, "astr", NULL, value);
+        if (rec == NULL) {
+            CcspTraceInfo(("%s: insert fail\n", __FUNCTION__));
+            return;
+        }
+
+        if (insert_record(rec, 0) != 0) {
+            CcspTraceInfo(("%s: insert() fail\n", __FUNCTION__));
+            record_free(rec);
+            //goto out;
+        }
+}
+BOOL IsParameterMissed()
+{
+    BOOL bMissed = false;
+    unsigned int k =0;
+    for( k= 0; k <PSM_PARAM_TOTAL; k++)
+    {
+        int h_idx = record_hash(parm_present_table[k].name);
+        pthread_mutex_lock(&rec_hash_lock);
+        if(rec_hash[h_idx] != NULL)
+        {
+            CcspTraceInfo(("IsParameterMissed param present %s\n", parm_present_table[k].name));
+            struct psm_record *rec, *prev;
+            errno_t rc = -1;
+            int ind = -1;
+            for (prev = NULL, rec = rec_hash[h_idx]; rec; prev = rec, rec = rec->next)
+            {
+                if(prev !=NULL)
+                CcspTraceInfo(("IsParameterMissed prev %s rec %s\n", prev->name, rec->name ));
+                rc = strcmp_s(rec->name, strlen(rec->name), parm_present_table[k].name, &ind);
+                ERR_CHK(rc);
+                if((rc == EOK) && (ind != 0))
+                {
+                    bMissed = true;
+                    continue; 
+                } 
+                //bMissed = false;
+                parm_present_table[k].value = true;
+                break;
+            }
+        }
+        else
+        {
+          bMissed = true;
+         CcspTraceInfo(("IsParameterMissed param need to merge %s\n", parm_present_table[k].name));
+
+        }        
+        pthread_mutex_unlock(&rec_hash_lock);
+    }
+    return bMissed;
+}
+ 
+int merge_missing_Partner_params()
+{
+    if( IsParameterMissed())
+    {
+        #define BOOTSTRAP_INFO_FILE             "/nvram/bootstrap.json"
+        cJSON* buf = NULL;
+        FILE* fp=NULL;
+        int len =0;
+        char* data = NULL;
+
+        fp=fopen(BOOTSTRAP_INFO_FILE,"r");
+        if(fp!=NULL)
+        {
+            fseek(fp,0, SEEK_END );
+            len=ftell(fp);
+            fseek(fp,0, SEEK_SET );
+        }
+        else
+        {
+            CcspTraceInfo(("Failed to open %s file\n", BOOTSTRAP_INFO_FILE));
+            return -1;
+        }
+        
+
+        if( len > 0 )
+        {
+            data = ( char* )malloc( sizeof(char) * (len + 1) );
+            if ( data != NULL )
+            {
+                CcspTraceInfo(("data is not NULL %d\n",len));
+                memset( data, 0, ( sizeof(char) * (len + 1) ));
+                fread( data, 1, len, fp );
+                fclose(fp);
+            }
+            else
+            {
+                CcspTraceInfo(("data pointer is NULL \n"));
+                fclose(fp);
+                return -1;
+            }
+            
+        }
+        buf=cJSON_Parse(data);
+        char PartnerID[ 64 ] = { 0 };
+        syscfg_get( NULL, "PartnerID", PartnerID, sizeof( PartnerID ));
+        //CcspTraceInfo(("IsEntryMissed PartnerID  %s \n", PartnerID));
+        cJSON* wc_url=NULL;
+        unsigned int m;
+        for(m=0; m< PSM_PARAM_TOTAL; m++ )
+        {
+            if( parm_present_table[m].value == false )
+            {
+                cJSON 	*partnerObj 	= NULL;
+                partnerObj = cJSON_GetObjectItem( buf, PartnerID );
+                    if( NULL != partnerObj )
+                    {
+                       CcspTraceInfo(("missing data value %s botstrapname :%s\n",parm_present_table[m].name, parm_present_table[m].partner_name ));
+                        wc_url = cJSON_GetObjectItem(partnerObj,parm_present_table[m].partner_name );
+                        cJSON* wc_active = NULL;
+                        if( NULL != wc_url )
+                        wc_active = cJSON_GetObjectItem(wc_url, "ActiveValue");
+                        if( NULL != wc_active)
+                        {
+                        char* val = wc_active->valuestring;
+                        if(NULL != val)
+                        insert(parm_present_table[m].name, val);
+                        }
+                    }
+                }
+        }
+        free(data);
+        data=NULL;
+    }
+return 0;
+}
 
 #define PSM_BUF_BASE_SIZE       (128 * 1024)
 #define PSM_BUF_OFFSET_SIZE     (PSM_BUF_BASE_SIZE / 4)
@@ -372,6 +599,7 @@ static int flush_records(char **buf, size_t *size)
      * load/insert/free records, so that we can allocate the buffer once.
      * But that idea make code not clear.
      */
+
     *size = PSM_BUF_BASE_SIZE;
     if ((*buf = AnscAllocateMemory(PSM_BUF_BASE_SIZE)) == NULL) {
         CcspTraceError(("%s: no memory\n", __FUNCTION__));
@@ -444,73 +672,7 @@ out:
     return err;
 }
 
-static int insert_record(struct psm_record *new, int overwrite)
-{
-    int h_idx;
-    struct psm_record *rec, *prev;
-    errno_t rc = -1;
-    int ind = -1;
 
-    h_idx = record_hash(new->name);
-
-    pthread_mutex_lock(&rec_hash_lock);
-    if (rec_hash[h_idx] == NULL) {
-        rec_hash[h_idx] = new;
-        cfm_log_dbg(("[INSERT-F] %s %s\n", new->name, new->value));
-        pthread_mutex_unlock(&rec_hash_lock);
-        return 0;
-    }
-
-    for (prev = NULL, rec = rec_hash[h_idx]; rec; prev = rec, rec = rec->next) {
-        rc = strcmp_s(rec->name, strlen(rec->name), new->name, &ind);
-        ERR_CHK(rc);
-	if((rc == EOK) && (ind != 0))
-            continue;
-
-        if (!overwrite) {
-            //cfm_log_dbg(("[IMPORTED-E] %s %s\n", new->name, new->value ? new->value : ""));
-            record_free(new);
-        } else {
-            /* do not support change type/contentType */
-
-            new->next = rec->next;
-            /* May be I can use hlist in list.h someday.
-             * things will be easier. */
-            if (rec == rec_hash[h_idx]) {
-                rec_hash[h_idx] = new;
-            } else {
-                if (prev) {
-                    prev->next = new;
-                } else {
-                    CcspTraceError(("%s: Why got here ? it not possible.\n", __FUNCTION__));
-                    pthread_mutex_unlock(&rec_hash_lock);
-                    return -1;
-                }
-            }
-
-            record_free(rec);
-            cfm_log_dbg(("[IMPORTED-O] %s %s\n", new->name, new->value ? new->value : ""));
-        }
-        break;
-    }
-    if (!rec) {
-        new->next = rec_hash[h_idx];
-        rec_hash[h_idx] = new;
-
-       /* Security Requiremnt: Log messages must not disclose any confidential data
-           like cryptographic keys and password. So don't save Passphrase on log message.
-        */
-        if ( NULL == strstr(new->name, "Passphrase" ) ) {
-            CcspTraceInfo(("%s : [IMPORTED-NEW] %s %s\n",__FUNCTION__, new->name, new->value ? new->value : ""));
-       }
-       else {
-           CcspTraceInfo(("%s : [IMPORTED-NEW] Not storing the value for parameter %s due to security restriction. \n",__FUNCTION__, new->name));
-       }
-    }
-
-    pthread_mutex_unlock(&rec_hash_lock);
-    return 0;
-}
 
 static int import_custom_params(int overwrite)
 {
@@ -976,6 +1138,11 @@ again:
     /* import customer params with overwrite */
     if (import_custom_partners_params(1) != 0)
         CcspTraceInfo(("%s: Fail to import custom partners params\n", __FUNCTION__));
+    
+     if( merge_missing_Partner_params() !=0)
+     {
+         CcspTraceInfo(("%s: merge_missing_Partner_params failed\n", __FUNCTION__));
+     }
 
     /* flush merged records to buffer */
     if (flush_records((char **)ppCfgBuffer,(size_t *) pulCfgSize) != 0) {

@@ -35,4 +35,4 @@ PsmSsp_CPPFLAGS = -I$(top_srcdir)/source/DslhManagementServer -I$(top_srcdir)/..
 PsmSsp_CFLAGS = $(SYSTEMD_CFLAGS)
 PsmSsp_SOURCES = Ssp/ssp_main.c Ssp/ssp_rbus.c Ssp/ssp_dbus.c Ssp/ssp_cfmif.c PsmFileLoader/psm_flo_interface.c PsmFileLoader/psm_flo_control.c PsmFileLoader/psm_flo_parse.c PsmFileLoader/psm_flo_operation.c PsmFileLoader/psm_flo_states.c PsmFileLoader/psm_flo_base.c PsmSysRegistry/psm_sysro_states.c PsmSysRegistry/psm_sysro_interface.c PsmSysRegistry/psm_sysro_storage.c PsmSysRegistry/psm_sysro_sysramif.c PsmSysRegistry/psm_sysro_base.c PsmSysRegistry/psm_sysro_cfmif.c PsmSysRegistry/psm_sysro_operation.c PsmSysRegistry/psm_sysro_control.c Ssp/psm_hal_apis.c
 
-PsmSsp_LDFLAGS =  -lccsp_common $(SYSTEMD_LDFLAGS) -lsyscfg -lutapi -lutctx
+PsmSsp_LDFLAGS =  -lccsp_common $(SYSTEMD_LDFLAGS) -lsyscfg -lutapi -lutctx  -lcjson
