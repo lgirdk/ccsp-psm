@@ -399,7 +399,7 @@ decodeMacAddress
      */
     if ( (*pulSize % 3) != 2 )
     {
-        CcspTraceWarning(("Invalid Mac Address String '%s'\n", pCharData));
+        CcspTraceWarning(("Invalid Mac Address String '%p'\n", pCharData));
 
         return  ANSC_STATUS_FAILURE;
     }
@@ -417,7 +417,7 @@ decodeMacAddress
         {
             if( tempChar != ':')
             {
-                CcspTraceWarning(("Invalid Mac Address String '%s'\n", pCharData));
+                CcspTraceWarning(("Invalid Mac Address String '%p'\n", pCharData));
                 AnscFreeMemory(pBinaryData); /*10-May-2016 RDKB-5568 CID-32890, free the pBinaryData in case of invalid Address String*/
                 return  ANSC_STATUS_FAILURE;
             }
@@ -1246,7 +1246,7 @@ addRecordToXMLHandle2
     }
     else
     {
-        CcspTraceInfo(("Unsurpported record type: %d\n", recType));
+        CcspTraceInfo(("Unsurpported record type: %lu\n", recType));
     }
 
     /* free the allocated memory */
@@ -1337,7 +1337,7 @@ loadRecordFromXML
 
             if( returnStatus != ANSC_STATUS_SUCCESS || length == 0)
             {
-                CcspTraceWarning(("Failed to read string value '%s'\n", pChildNode->StringData));
+                CcspTraceWarning(("Failed to read string value '%p'\n", pChildNode->StringData));
 
                 return returnStatus;
             }
@@ -1348,7 +1348,7 @@ loadRecordFromXML
 
                 if( decodeIpAddr( pValue, AnscSizeOfString(pValue), pIPAddress) != ANSC_STATUS_SUCCESS)
                 {
-                    CcspTraceWarning(("Invalid ip address string '%d'\n", pValue));
+                    CcspTraceWarning(("Invalid ip address string '%s'\n", pValue));
 
                     return ANSC_STATUS_FAILURE;
                 }
@@ -1374,7 +1374,7 @@ loadRecordFromXML
 
             if( returnStatus != ANSC_STATUS_SUCCESS)
             {
-                CcspTraceWarning(("Invalid ULONG value '%s'\n", pChildNode->StringData));
+                CcspTraceWarning(("Invalid ULONG value '%p'\n", pChildNode->StringData));
 
                 return returnStatus;
             }
@@ -1400,7 +1400,7 @@ loadRecordFromXML
 
         if( returnStatus != ANSC_STATUS_SUCCESS)
         {
-            CcspTraceWarning(("Invalid BOOL value '%s'\n", pChildNode->StringData));
+            CcspTraceWarning(("Invalid BOOL value '%p'\n", pChildNode->StringData));
 
             return returnStatus;
         }
@@ -1437,7 +1437,7 @@ loadRecordFromXML
 
             if( returnStatus != ANSC_STATUS_SUCCESS)
             {
-                CcspTraceWarning(("Failed to read string text value '%s'\n", pChildNode->StringData));
+                CcspTraceWarning(("Failed to read string text value '%p'\n", pChildNode->StringData));
 
                 return returnStatus;
             }
@@ -1481,7 +1481,7 @@ loadRecordFromXML
 
             if( returnStatus != ANSC_STATUS_SUCCESS || length == 0)
             {
-                CcspTraceWarning(("Failed to read string value '%s'\n", pChildNode->StringData));
+                CcspTraceWarning(("Failed to read string value '%p'\n", pChildNode->StringData));
 
                 return returnStatus;
             }
@@ -1492,7 +1492,7 @@ loadRecordFromXML
 
                 if( decodeIpAddr( pValue, AnscSizeOfString(pValue), pIPAddress) != ANSC_STATUS_SUCCESS)
                 {
-                    CcspTraceWarning(("Invalid ip address string '%d'\n", pValue));
+                    CcspTraceWarning(("Invalid ip address string '%s'\n", pValue));
 
                     return ANSC_STATUS_FAILURE;
                 }
@@ -1518,7 +1518,7 @@ loadRecordFromXML
 
             if( returnStatus != ANSC_STATUS_SUCCESS || length == 0)
             {
-                CcspTraceWarning(("Failed to read calendar value '%s'\n", pChildNode->StringData));
+                CcspTraceWarning(("Failed to read calendar value '%p'\n", pChildNode->StringData));
 
                 return returnStatus;
             }
@@ -1714,7 +1714,7 @@ loadRecordFromXML
                 {
                     AnscXmlDomNodeGetDataBinary(pChildNode, NULL, NULL, &length);
 
-                    CcspTraceWarning(("Failed to read binary text value '%s'\n", pChildNode->StringData));
+                    CcspTraceWarning(("Failed to read binary text value '%p'\n", pChildNode->StringData));
                     AnscFreeMemory(pRecordValue); /*10-May-2016 RDKB-5568 CID-33233, free pRecordValue before returning*/					
 
                     return returnStatus;
@@ -2014,7 +2014,7 @@ PsmSysFolderToXMLHandle
         }
         else
         {
-            CcspTraceWarning(("Failed to EnumSubFolder - %d\n", i));
+            CcspTraceWarning(("Failed to EnumSubFolder - %lu\n", i));
         }
     }
     //CcspTraceInfo(("PsmSysFolderToXMLHandle ends '\n"));

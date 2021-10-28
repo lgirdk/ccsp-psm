@@ -399,7 +399,7 @@ PsmFloSaveRegFile
 
     if( (LONG)dataLength != 0)
     {
-        CcspTraceWarning(("****Warning!******\n Write XML node size not matched: %l\n", (LONG)dataLength));
+        CcspTraceWarning(("****Warning!******\n Write XML node size not matched: %lu\n", (LONG)dataLength));
     }
 
     /* write to config */

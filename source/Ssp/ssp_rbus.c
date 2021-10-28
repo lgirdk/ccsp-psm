@@ -203,7 +203,7 @@ static int setParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
         {
             if( pRroRenderAttr->ContentType != legacyType)
             {
-                CcspTraceWarning(("%s %s is already set with type %lu. Invalid type %lu is set.\n",
+                CcspTraceWarning(("%s %s is already set with type %lu. Invalid type %u is set.\n",
                             __func__, parameterName, pRroRenderAttr->ContentType, legacyType ));
                 free(parameterValue);
                 continue;
@@ -233,7 +233,7 @@ static int setParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
              (PVOID)parameterValue,
              strlen(parameterValue)
             );
-        CcspTraceInfo(("%s Add entry:  param : %s , val : %s %s , return %d +++\n",
+        CcspTraceInfo(("%s Add entry:  param : %s , val : %s %s , return %lu +++\n",
                     __func__,((returnStatus != ANSC_STATUS_SUCCESS)? "failed" : "success"),
                     parameterName, parameterValue, returnStatus));
         if(ANSC_STATUS_SUCCESS == returnStatus)
@@ -314,7 +314,7 @@ static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
                 (returnStatus != ANSC_STATUS_CANT_FIND))
         {
             CcspTraceError(("%s failed to get record for the parameter %s . \
-                        ReturnStatus %d\n",__func__,parameterName, returnStatus));
+                        ReturnStatus %lu\n",__func__,parameterName, returnStatus));
             pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
             /*Coverity Fix CID:57874 RESOURCE_LEAK */
             return rc;
@@ -345,7 +345,7 @@ static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
             );
         if(returnStatus != ANSC_STATUS_SUCCESS)
         {
-            CcspTraceError(("%s failed to get record for %s . ReturnStatus %d\n",__func__, parameterName, returnStatus));
+            CcspTraceError(("%s failed to get record for %s . ReturnStatus %lu\n",__func__, parameterName, returnStatus));
             pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
             free(parameterValue);
             return rc;
@@ -367,7 +367,7 @@ static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
         }
         else
         {
-            CcspTraceError(("%s Unable to set the value %s of type %d",__func__,parameterValue,pRroRenderAttr->ContentType));
+            CcspTraceError(("%s Unable to set the value %s of type %lu",__func__,parameterValue,pRroRenderAttr->ContentType));
         }
         rbusValue_Release(value);
     }
@@ -442,7 +442,7 @@ static int delParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
         }
         else
         {
-            CcspTraceError(("%s Failed to delete entry: %s ret %d\n", __func__,parameterName,returnStatus));
+            CcspTraceError(("%s Failed to delete entry: %s ret %lu\n", __func__,parameterName,returnStatus));
             setOutparams(outParams,parameterName,false);
         }
     }
@@ -458,7 +458,7 @@ static rbusError_t psmDel(rbusHandle_t handle, char const* methodName, rbusObjec
     (void)handle;
     (void)asyncHandle;
 
-    CcspTraceInfo(("psmGet called: %s\n",__func__,methodName));
+    CcspTraceInfo(("psmGet called: %s %s\n",__func__,methodName));
     return delParameterValues_rbus(inParams,outParams);
 }
 
@@ -467,7 +467,7 @@ static rbusError_t psmGet(rbusHandle_t handle, char const* methodName, rbusObjec
     (void)handle;
     (void)asyncHandle;
 
-    CcspTraceInfo(("psmGet called: %s\n",__func__,methodName));
+    CcspTraceInfo(("psmGet called: %s %s\n",__func__,methodName));
     return getParameterValues_rbus(inParams, outParams);
 }
 
@@ -476,7 +476,7 @@ static rbusError_t psmSet(rbusHandle_t handle, char const* methodName, rbusObjec
     (void)handle;
     (void)asyncHandle;
 
-    CcspTraceInfo(("psmGet called: %s\n",__func__,methodName));
+    CcspTraceInfo(("psmGet called: %s %s\n",__func__,methodName));
     return setParameterValues_rbus(inParams, outParams);
 }
 

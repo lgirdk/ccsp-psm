@@ -990,7 +990,7 @@ int  getParameterValues(
             
             if(returnStatus != ANSC_STATUS_SUCCESS)
             {
-                CcspTraceWarning(("++++ getParameterValues Failed for %s , returnStatus %d +++\n", parameterNames[i], returnStatus));
+                CcspTraceWarning(("++++ getParameterValues Failed for %s , returnStatus %lu +++\n", parameterNames[i], returnStatus));
                 //CcspTraceWarning(("getParameterValues- returnStatus %d\n",returnStatus));
                 //CcspTraceInfo(("Release Thread Lock %d\n"));
                 pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
@@ -1035,7 +1035,7 @@ int  getParameterValues(
                             if(returnStatus != ANSC_STATUS_SUCCESS)
                             {
                                 //CcspTraceWarning(("++++ Failed for %s +++\n", parameterNames[i]));
-                                CcspTraceInfo(("getParameterValues- returnStatus %d\n",returnStatus));
+                                CcspTraceInfo(("getParameterValues- returnStatus %lu\n",returnStatus));
                                // CcspTraceInfo(("Release Thread Lock %d\n"));
 
                                 /* RDKB-6908, CID-33005, free unused resource before exit, 
@@ -1316,7 +1316,7 @@ int  setParameterValues(
 
         if ( returnStatus != ANSC_STATUS_SUCCESS )
         {
-            CcspTraceError(("+++ Add entry: size:%d , param : %s , val : %s failed! , return %d +++\n", size, val[i].parameterName, val[i].parameterValue, returnStatus));
+            CcspTraceError(("+++ Add entry: size:%d , param : %s , val : %s failed! , return %lu +++\n", size, val[i].parameterName, val[i].parameterValue, returnStatus));
         }
     }
 
