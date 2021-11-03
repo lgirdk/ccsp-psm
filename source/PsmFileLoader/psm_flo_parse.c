@@ -339,9 +339,8 @@ void writeMacAddress
         {
             _ansc_sprintf
                 (
-                    pTemp,
-                    "%s:%.2X",
-                    pTemp,
+                    pTemp + strlen(pTemp),
+                    ":%.2X",
                     pData[i]
                 );
         }
@@ -592,9 +591,8 @@ writeIntList
         {
             _ansc_sprintf
                 (
-                    pString,
-                    "%s,%lu",
-                    pString,
+                    pString + strlen(pString),
+                    ",%lu",
                     uTemp
                 );
         }
@@ -765,9 +763,8 @@ writeIP4AddrList
         {
             _ansc_sprintf
                 (
-                    pString,
-                    "%s,%s",
-                    pString,
+                    pString + strlen(pString),
+                    ",%s",
                     pTemp
                 );
         }
