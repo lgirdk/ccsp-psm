@@ -400,7 +400,6 @@ int main(int argc, char* argv[])
         return 1;
 	}
         creat("/tmp/psm_initialized", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);        
-	syscfg_init();
     CcspTraceInfo(("PSM_DBG:-------Read Log Info\n"));
     char buffer[5] = {0};
     if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_LoggerEnable" , buffer, sizeof( buffer ) ) &&  ( buffer[0] != '\0' ) )
