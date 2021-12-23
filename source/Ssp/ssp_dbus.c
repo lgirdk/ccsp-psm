@@ -1828,7 +1828,7 @@ int PsmDbusInit()
         ULONG uWait = 10; /* 10 seconds */
 
         CcspTraceWarning(("PsmSsp register capabilities of %s to %s: \n", CName, CrName));
-        CcspTraceWarning(("PsmSsp registering %d items like %s with prefix='%s' ... \n", 
+        CcspTraceWarning(("PsmSsp registering %zu items like %s with prefix='%s' ... \n", 
                           sizeof(NamespacePsm)/sizeof(name_spaceType_t), NamespacePsm[0].name_space, g_Subsystem));
 
         ret =
