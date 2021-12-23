@@ -431,7 +431,6 @@ int main(int argc, char* argv[])
 	
 	system("print_uptime \"boot_to_psm_uptime\"");
 	system("touch /tmp/psm_initialized");
-	syscfg_init();
     CcspTraceInfo(("PSM_DBG:-------Read Log Info\n"));
     char buffer[5] = {0};
     if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_LoggerEnable" , buffer, sizeof( buffer ) ) &&  ( buffer[0] != '\0' ) )

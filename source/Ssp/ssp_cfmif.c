@@ -765,8 +765,6 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 			int 		   ret 						= -1,
 						   localCount		 		= 0;
 		
-			// Init syscfg
-			syscfg_init( );
 						
 			/* eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code */
 
