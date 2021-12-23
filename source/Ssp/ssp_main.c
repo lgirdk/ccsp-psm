@@ -380,9 +380,8 @@ int main(int argc, char* argv[])
     ret = cmd_dispatch('e');
     if(ret != 0){
         return 1;
-	}
-        creat("/tmp/psm_initialized", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);        
-	syscfg_init();
+    }
+    creat("/tmp/psm_initialized", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
     if(!blocklist_ret){
         update_process_caps(&appcaps);
         read_capability(&appcaps);
