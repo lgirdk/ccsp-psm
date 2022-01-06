@@ -76,6 +76,11 @@
         08/28/12    adding "Update Configs" and some internal functions.
 
 **********************************************************************/
+/*
+   Define USE_PARTNER_ID to use partner ID to access some parameters
+*/
+//#define USE_PARTNER_ID
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -424,6 +429,7 @@ typedef struct Param_Present
 } Param_Present_t;
 
   Param_Present_t parm_present_table[] = {
+#ifdef USE_PARTNER_ID
   { "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation",
   "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation", false },
   { "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code",
@@ -444,6 +450,21 @@ typedef struct Param_Present
     "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL",false},
   { "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL",
      "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL",false}
+#else
+  { "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation",                      "TR69CertLocation",   false },
+  { "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code", "WiFiRegionCode",     false },
+  { "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix",                         "XHS_SSIDprefix",     false },
+  { "Device.X_RDK_WebConfig.URL",                                                                "WEBCONFIG_INIT_URL", false },
+  { "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry",                                 "TELEMETRY_INIT_URL", false },
+  { "dmsb.l3net.4.V4Addr",                                                                       "lan_ipaddr",         false },
+  { "dmsb.l3net.4.V4SubnetMask",                                                                 "lan_netmask",        false },
+#if 0
+  /* These were added later to upstream RDKB and are currently not hangled when USE_PARTNER_ID is disabled */
+  { "Device.X_RDKCENTRAL-COM_Webpa.Server.URL",                                                  "xxx",                false },
+  { "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL",                                             "xxx",                false },
+  { "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL",                                                 "xxx",                false },
+#endif
+#endif
 };
 
 static void insert (char *Name, char *value)
@@ -505,6 +526,8 @@ static BOOL IsParameterMissed (void)
     return bMissed;
 }
  
+#ifdef USE_PARTNER_ID 
+
 int merge_missing_Partner_params()
 {
     if( IsParameterMissed())
@@ -580,6 +603,49 @@ int merge_missing_Partner_params()
     }
 return 0;
 }
+
+#else
+
+/*
+   Use syscfg or hardcoded values instead of partner specific parameters.
+*/
+int merge_missing_Partner_params (void)
+{
+    if (IsParameterMissed())
+    {
+        int m;
+
+        for (m = 0; m < PSM_PARAM_TOTAL; m++)
+        {
+            if (parm_present_table[m].value == false)
+            {
+                char value_buf[128];
+
+                if (strcmp (parm_present_table[m].partner_name, "TR69CertLocation") == 0)
+                {
+                    insert (parm_present_table[m].name, "/etc/cacert.pem");
+                }
+                else if (strcmp (parm_present_table[m].partner_name, "XHS_SSIDprefix") == 0)
+                {
+                    insert (parm_present_table[m].name, "XHS");
+                }
+                else
+                {
+                    syscfg_get (NULL, parm_present_table[m].partner_name, value_buf, sizeof(value_buf));
+
+                    if (value_buf[0] != 0)
+                    {
+                        insert (parm_present_table[m].name, value_buf);
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+#endif // #ifdef USE_PARTNER_ID
 
 #define PSM_BUF_BASE_SIZE       (128 * 1024)
 #define PSM_BUF_OFFSET_SIZE     (PSM_BUF_BASE_SIZE / 4)
@@ -717,6 +783,8 @@ out:
         free(cus_params);
     return err;
 }
+
+#ifdef USE_PARTNER_ID
 
 int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 {
@@ -1022,6 +1090,144 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 	}
 	return	-1;
 }
+
+#else
+
+int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
+{
+	PsmHalParam_t localparamArray[32];
+	char value_buf[128];
+	int localCount = 0;
+	int ret;
+
+	/*
+	   If Partner ID support is disabled, use hardcoded values or values from syscfg.
+	   Fixme: needs review and further cleanup - a lot of these values could be dropped completely?
+	*/
+
+	// TR69CertLocation=/etc/cacert.pem
+	// Syndication_TR69ACSConnectURL=
+	// WiFiRegionCode=USI
+	// XHS_SSIDprefix=XHS
+
+	/* eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code */
+
+        ret = syscfg_get( NULL, "WiFiRegionCode", value_buf, sizeof( value_buf ) );
+        if ((ret == 0) && (value_buf[0] != 0))
+        {
+		snprintf( localparamArray[ localCount ].name, sizeof(localparamArray[ localCount ].name), "%s", "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code" );
+		snprintf( localparamArray[ localCount ].value, sizeof(localparamArray[ localCount ].value), "%s", value_buf);
+		CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+		localCount++;
+	}
+
+	/* dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation */
+
+        sprintf( localparamArray[ localCount ].name, "%s", "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_Syndication.TR69CertLocation" );
+        sprintf( localparamArray[ localCount ].value, "%s", "/etc/cacert.pem" );
+        CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+        localCount++;
+
+	/* Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix */
+
+	sprintf( localparamArray[ localCount ].name , "%s", "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HomeSec.SSIDprefix" );
+	sprintf( localparamArray[ localCount ].value, "%s", "XHS" );
+	CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+	localCount++;
+
+        //Get the syscfg.db value of DefaultAdminIP PSM Param
+
+        ret = syscfg_get( NULL, "lan_ipaddr", value_buf, sizeof( value_buf ) );
+        if ((ret == 0) && (value_buf[0] != 0))
+        {
+		//Copy the PSM Paramater name
+		sprintf( localparamArray[ localCount ].name , "%s", "dmsb.l3net.4.V4Addr" );
+		sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+		CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+				
+        	//Increment the count by 1
+		localCount++;
+        }
+
+        //Get the syscfg.db value of DefaultLocalIPv4SubnetRange PSM Param
+
+        ret = syscfg_get( NULL, "lan_netmask", value_buf, sizeof( value_buf ) );
+        if ((ret == 0) && (value_buf[0] != 0))
+        {
+		//Copy the PSM Paramater name
+		sprintf( localparamArray[ localCount ].name , "%s", "dmsb.l3net.4.V4SubnetMask" );
+		sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+		CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+				
+        	//Increment the count by 1
+		localCount++;
+        }
+
+        /* Device.X_RDK_WebConfig.URL */
+
+        ret = syscfg_get( NULL, "WEBCONFIG_INIT_URL", value_buf, sizeof( value_buf ) );
+        if ((ret == 0) && (value_buf[0] != 0))
+        {
+                //Copy the PSM Paramater name
+                sprintf( localparamArray[ localCount ].name , "%s", "Device.X_RDK_WebConfig.URL" );
+                sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+                CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+
+                //Increment the count by 1
+                localCount++;
+        }
+
+        /* Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry */
+
+        ret = syscfg_get( NULL, "TELEMETRY_INIT_URL", value_buf, sizeof( value_buf ) );
+        if ((ret == 0) && (value_buf[0] != 0))
+        {
+                //Copy the PSM Paramater name
+                sprintf( localparamArray[ localCount ].name , "%s", "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry" );
+                sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+                CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+
+                //Increment the count by 1
+                localCount++;
+        }
+
+	//Initialize count as 0 here
+	*cnt = 0;
+
+	CcspTraceInfo(("-- %s - Total Count:%d\n", __FUNCTION__, localCount ));
+
+	//Check whether any Data to be copy
+	if( 0 < localCount )
+	{
+		*cnt	= localCount;
+		*params =( PsmHalParam_t * ) malloc( sizeof( PsmHalParam_t ) * ( *cnt ) );
+		errno_t rc = -1;
+
+		if( NULL == *params )
+		{
+			*cnt	= 0;
+
+			CcspTraceInfo(("-- %s - Failed to allocate memory\n", __FUNCTION__ ));
+			return	-1;					
+		}
+		PsmHalParam_t  *pLocalparamArray = localparamArray;
+		//Copy all current data to passed param
+                rc = memcpy_s( *params, sizeof( PsmHalParam_t ) * ( *cnt ), pLocalparamArray, sizeof( PsmHalParam_t ) * ( *cnt ) );
+		if(rc != EOK)
+		{
+		       ERR_CHK(rc);
+                       AnscFreeMemory( *params );
+                      *params = NULL;
+		       return -1;
+		}
+		return	0;
+	}
+
+	return	-1;
+}
+
+#endif // #ifdef USE_PARTNER_ID
+
 //unused function
 #if 0
 static int applyPsm_custom_partners_params(int overwrite)
