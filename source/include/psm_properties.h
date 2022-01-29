@@ -86,17 +86,6 @@
 #define  PSM_SYS_FILE_PATH_SIZE                    128
 #define  PSM_SYS_FILE_NAME_SIZE                    128
 
-#if defined(_ANSC_WINDOWSNT) || defined(_ANSC_WINDOWS9X)
-
-    #define  PSM_DEF_SYS_FILE_PATH                     "c:\\temp\\psm-test\\"
-    #define  PSM_DEF_DEF_FILE_NAME                     "psm_def_cfg.xml"
-    #define  PSM_DEF_CUR_FILE_NAME                     "psm_cur_cfg.xml"
-    #define  PSM_DEF_BAK_FILE_NAME                     "psm_bak_cfg.xml"
-    #define  PSM_DEF_TMP_FILE_NAME                     "psm_tmp_cfg.xml"
-
-    #define  PSM_DEF_LOG_FILE_PATH                     "c:\\temp\\psm-test\\psm-local.log"
-
-#else
 
     #define  PSM_DEF_SYS_FILE_PATH                     "/psm/config/"
     #define  PSM_DEF_DEF_FILE_NAME                     "psm_def_cfg.xml.gz"
@@ -106,7 +95,6 @@
 
     #define  PSM_DEF_LOG_FILE_PATH                     "/var/log/psm-local.log"
 
-#endif
 
 typedef  struct
 _PSM_SYS_REGISTRY_PROPERTY
