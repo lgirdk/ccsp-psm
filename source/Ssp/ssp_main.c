@@ -40,7 +40,6 @@
 #endif
 #endif
 
-#ifdef _ANSC_LINUX
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <semaphore.h>
@@ -49,7 +48,6 @@
 #include <linux/msg.h>
 #else
 #include <sys/msg.h>
-#endif
 #endif
 
 #include "ssp_global.h"
@@ -78,9 +76,7 @@ static cap_user                     appcaps;
 PSM_CFM_INTERFACE                   cfm_ifo;
 #endif
 
-#ifdef _ANSC_LINUX
     sem_t *sem;
-#endif
 
 
 static void _print_stack_backtrace(void)
@@ -118,7 +114,6 @@ static void _print_stack_backtrace(void)
 #endif
 }
 
-#if defined(_ANSC_LINUX)
 static void daemonize(void) {
 #ifndef  _DEBUG
 	int fd;
@@ -269,7 +264,6 @@ static int is_core_dump_opened(void)
     return 0;
 }
 #endif
-#endif
 
 int main(int argc, char* argv[])
 {
@@ -292,25 +286,6 @@ int main(int argc, char* argv[])
     AnscSetTraceLevel(CCSP_TRACE_LEVEL_INFO);
 #endif
 
-#if  defined(_ANSC_WINDOWSNT)
-
-    AnscStartupSocketWrapper(NULL);
-
-    gather_info();
-
-    ret = cmd_dispatch('e');
-    if(ret != 0)
-        return 1;
-
-    while ( cmdChar != 'q' )
-    {
-        cmdChar = getchar();
-
-        ret = cmd_dispatch(cmdChar);
-        if(ret != 0)
-           return 1;
-    }
-#elif defined(_ANSC_LINUX)
 
     for (idx = 1; idx < argc; idx++)
     {
@@ -434,7 +409,6 @@ int main(int argc, char* argv[])
             }
         }
     }
-#endif
 
     if ( bEngaged )
     {
