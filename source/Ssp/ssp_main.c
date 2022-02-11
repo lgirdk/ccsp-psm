@@ -271,26 +271,6 @@ static int is_core_dump_opened(void)
 #endif
 #endif
 
-void drop_root()
-{
-    appcaps.caps = NULL;
-    appcaps.user_name = NULL;
-    bool ret = false;
-    ret = isBlocklisted();
-    if(ret)
-    {
-          AnscTrace("NonRoot feature is disabled\n");
-    }
-    else
-    {
-          AnscTrace("NonRoot feature is enabled, dropping root privileges for CcspPsm process\n");
-          init_capability();
-          drop_root_caps(&appcaps);
-          update_process_caps(&appcaps);
-          read_capability(&appcaps);
-    }
-}
-
 int main(int argc, char* argv[])
 {
     int                             cmdChar            = 0;
@@ -301,6 +281,7 @@ int main(int argc, char* argv[])
     errno_t                         rc                 = -1;
     int                             ind                = -1;
     int                             ret                = 0;
+    bool                            blocklist_ret     = false;
 
     pComponentName = CCSP_DBUS_PSM;
 #ifdef FEATURE_SUPPORT_RDKLOG
@@ -362,7 +343,14 @@ int main(int argc, char* argv[])
 	}
      }
   
-    drop_root();
+    appcaps.caps = NULL;
+    appcaps.user_name = NULL;
+    blocklist_ret = isBlocklisted();
+    if(!blocklist_ret){
+         init_capability();
+         drop_root_caps(&appcaps);
+         CcspTraceInfo(("Dropping root privileges\n"));
+    }
 
     if ( bRunAsDaemon )
     	daemonize();
@@ -420,7 +408,11 @@ int main(int argc, char* argv[])
 	}
         creat("/tmp/psm_initialized", S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);        
 	syscfg_init();
-
+    if(!blocklist_ret){
+        update_process_caps(&appcaps);
+        read_capability(&appcaps);
+        CcspTraceInfo(("CAP_DAC_OVERRIDE removed\n"));
+    }
     if ( bRunAsDaemon ) {
 		sem_post (sem);
 		sem_close(sem);
