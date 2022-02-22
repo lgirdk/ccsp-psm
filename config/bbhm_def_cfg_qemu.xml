@@ -1086,6 +1086,7 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.2.ChanUtilSelfHealEnable" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.1.SetChanUtilThreshold" type="astr">90</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.2.SetChanUtilThreshold" type="astr">90</Record>
+
   <!--RFC Feature for Container -->
   <Record name="Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Container" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDKCENTRAL-COM_GoodRssiThreshold" type="astr">-65</Record>
