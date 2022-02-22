@@ -99,16 +99,7 @@
 #endif
 
 #include <sys/time.h>
-//unused function
-#if 0
-static void print_time(const char *msg)
-{
-    struct timeval tv;
 
-    gettimeofday(&tv, NULL);
-    fprintf(stderr, "[PSM-CFM] %-20s: %6d.%06d\n", msg ? msg : "", tv.tv_sec, tv.tv_usec);
-}
-#endif
 int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt1 );
 int Psm_ApplyCustomPartnersParams( PsmHalParam_t **params, int *cnt2 );
 
@@ -133,17 +124,23 @@ struct psm_record {
 static struct psm_record *rec_hash[PSM_REC_HASH_SIZE] = {0};
 static pthread_mutex_t  rec_hash_lock = PTHREAD_MUTEX_INITIALIZER;
 
-static inline char *remove_quote(char *buf)
+static char *remove_quotes (char *buf)
 {
-    if (buf[0] == '"' && strlen(buf) >= 2 && buf[strlen(buf) - 1] == '"') {
-        buf[strlen(buf) - 1] = '\0';
-        return ++buf;
+    size_t len = strlen(buf);
+
+    if ((len > 0) && (buf[0] == '"')) {
+        buf++;
+        len--;
+    }
+
+    if ((len > 0) && (buf[len - 1] == '"')) {
+        buf[len - 1] = 0;
     }
 
     return buf;
 }
 
-static inline unsigned int hash(const char *str)
+static unsigned int hash (const char *str)
 {
     unsigned int hash = 5381;
     int c;
@@ -155,48 +152,51 @@ static inline unsigned int hash(const char *str)
     return hash;
 }
 
-static inline unsigned int record_hash(const char *str)
+static unsigned int record_hash (const char *str)
 {
     return hash(str) % PSM_REC_HASH_SIZE;
 }
 
-static void record_free(struct psm_record *rec)
+static void record_free (struct psm_record *rec)
 {
-    if (!rec)
-        return;
-
-    if (rec->name)
-        free(rec->name);
-    if (rec->type)
-        free(rec->type);
-    if (rec->ctype)
-        free(rec->ctype);
-    if (rec->value)
-        free(rec->value);
     free(rec);
 }
 
-static struct psm_record *record_create(const char *name, 
-        const char *type, const char *ctype, const char *value)
+static struct psm_record *record_create (const char *name, const char *type, const char *ctype, const char *value)
 {
+    size_t name_size;
+    size_t type_size;
+    size_t ctype_size;
+    size_t value_size;
     struct psm_record *rec;
-    
-    if (!name || !strlen(name) || !type || !strlen(type))
+
+    if ((name == NULL) || (type == NULL))
         return NULL;
 
-    if ((rec = malloc(sizeof(struct psm_record))) == NULL)
+    name_size = strlen(name) + 1;
+    type_size = strlen(type) + 1;
+
+    if ((name_size == 1) || (type_size == 1))
         return NULL;
-    rec->name = strdup(name);
-    rec->type = strdup(type);
-    rec->ctype = ctype ? strdup(ctype) : NULL;
-    rec->value = value ? strdup(value) : NULL;
+
+    ctype_size = ctype ? (strlen(ctype) + 1) : 0;
+    value_size = value ? (strlen(value) + 1) : 0;
+
+    if ((rec = malloc(sizeof(struct psm_record) + name_size + type_size + ctype_size + value_size)) == NULL)
+        return NULL;
+
     rec->next = NULL;
+    rec->name = ((char *) rec) + sizeof(struct psm_record);
+    rec->type = rec->name + name_size;
+    rec->ctype = ctype ? (rec->type + type_size) : NULL;
+    rec->value = value ? (rec->type + type_size + ctype_size) : NULL;
 
-    if (!rec->name || !rec->type || (ctype && !rec->ctype) 
-            || (value && !rec->value)) {
-        record_free(rec);
-        return NULL; /* no memory */
-    }
+    memcpy(rec->name, name, name_size);
+    memcpy(rec->type, type, type_size);
+    if (ctype)
+        memcpy (rec->ctype, ctype, ctype_size);
+    if (value)
+        memcpy (rec->value, value, value_size);
 
     return rec;
 }
@@ -242,13 +242,13 @@ static struct psm_record *record_parse(char *buf)
     for (; (tok = strtok_r(t_start, delim, &sp)) != NULL; t_start = NULL) {
         if (strncmp(tok, "name=", strlen("name=")) == 0) {
             name = tok + strlen("name=");
-            name = remove_quote(name);
+            name = remove_quotes(name);
         } else if (strncmp(tok, "type=", strlen("type=")) == 0) {
             type = tok + strlen("type=");
-            type = remove_quote(type);
+            type = remove_quotes(type);
         } else if (strncmp(tok, "contentType=", strlen("contentType=")) == 0) {
             ctype = tok + strlen("contentType=");
-            ctype = remove_quote(ctype);
+            ctype = remove_quotes(ctype);
         }
     }
 
@@ -440,7 +440,7 @@ typedef struct Param_Present
     "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange",false}
 };
 
-void insert(char *Name, char*value)
+static void insert (char *Name, char *value)
 {
     //CcspTraceInfo(("%s: insert missed param %s with value %s\n", __FUNCTION__, Name, value));
      struct psm_record   *rec;
@@ -456,11 +456,13 @@ void insert(char *Name, char*value)
             //goto out;
         }
 }
-BOOL IsParameterMissed()
+
+static BOOL IsParameterMissed (void)
 {
     BOOL bMissed = false;
     unsigned int k =0;
-    for( k= 0; k <PSM_PARAM_TOTAL; k++)
+
+    for (k = 0; k < PSM_PARAM_TOTAL; k++)
     {
         int h_idx = record_hash(parm_present_table[k].name);
         pthread_mutex_lock(&rec_hash_lock);
@@ -672,8 +674,6 @@ out:
     *size = off;
     return err;
 }
-
-
 
 static int import_custom_params(int overwrite)
 {
@@ -993,6 +993,7 @@ out:
     return err;
 }
 #endif
+
 static int import_custom_partners_params(int overwrite)
 {
     struct psm_record   *rec;
@@ -1289,8 +1290,7 @@ typedef struct PsmRecord_s {
     PsmOverwrite_t  overwrite;
 } PsmRecord_t;
 
-static PANSC_XML_DOM_NODE_OBJECT
-CfgBufferToXml(const void *buf, ULONG size)
+static PANSC_XML_DOM_NODE_OBJECT CfgBufferToXml (const void *buf, ULONG size)
 {
     char                        *tmpBuf;
     ULONG                       tmpSize;
@@ -1318,8 +1318,7 @@ CfgBufferToXml(const void *buf, ULONG size)
     return rootNode;
 }
 
-static ANSC_STATUS
-FileReadToBuffer(const char *file, char **buf, ULONG *size)
+static ANSC_STATUS FileReadToBuffer (const char *file, char **buf, ULONG *size)
 {
     ANSC_HANDLE pFile;
 //    CcspTraceInfo(("FileReadToBuffer begins\n"));    
@@ -1356,8 +1355,7 @@ FileReadToBuffer(const char *file, char **buf, ULONG *size)
     return ANSC_STATUS_SUCCESS;
 }
 
-static void
-DumpRecord(const PsmRecord_t *rec)
+static void DumpRecord (const PsmRecord_t *rec)
 {
     PsmHalDbg(("  Rec.name   %s\n", rec->name));
     PsmHalDbg(("  Rec.value  %s\n", rec->value));
@@ -1406,8 +1404,7 @@ DumpRecord(const PsmRecord_t *rec)
     return;
 }
 
-static ANSC_STATUS
-RecordSetNode(const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT node)
+static ANSC_STATUS RecordSetNode (const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT node)
 {
     if (AnscSizeOfString(rec->name) == 0 || AnscSizeOfString(rec->value) == 0)
     {
@@ -1464,8 +1461,7 @@ RecordSetNode(const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT node)
     return ANSC_STATUS_SUCCESS;
 }
 
-static ANSC_STATUS
-NodeGetRecord(PANSC_XML_DOM_NODE_OBJECT node, PsmRecord_t *rec)
+static ANSC_STATUS NodeGetRecord (PANSC_XML_DOM_NODE_OBJECT node, PsmRecord_t *rec)
 {
     ULONG size;
     char buf[MAX_NAME_SZ];
@@ -1570,8 +1566,7 @@ NodeGetRecord(PANSC_XML_DOM_NODE_OBJECT node, PsmRecord_t *rec)
     return ANSC_STATUS_SUCCESS;
 }
 
-static ANSC_STATUS
-AddRecToXml(const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT xml)
+static ANSC_STATUS AddRecToXml (const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT xml)
 {
     PANSC_XML_DOM_NODE_OBJECT node;
 
@@ -1589,8 +1584,7 @@ AddRecToXml(const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT xml)
     return ANSC_STATUS_SUCCESS;
 }
 
-static ANSC_STATUS
-XmlToBuffer(PANSC_XML_DOM_NODE_OBJECT xml, char **buf, ULONG *size)
+static ANSC_STATUS XmlToBuffer (PANSC_XML_DOM_NODE_OBJECT xml, char **buf, ULONG *size)
 {
     char *newBuf = NULL;
     ULONG newSize;
@@ -1611,8 +1605,7 @@ XmlToBuffer(PANSC_XML_DOM_NODE_OBJECT xml, char **buf, ULONG *size)
     return ANSC_STATUS_SUCCESS;
 }
 
-static ANSC_STATUS
-XmlToFile(PANSC_XML_DOM_NODE_OBJECT xml, const char *file)
+static ANSC_STATUS XmlToFile (PANSC_XML_DOM_NODE_OBJECT xml, const char *file)
 {
     char *buf = NULL;
     ULONG size;
@@ -1648,8 +1641,7 @@ XmlToFile(PANSC_XML_DOM_NODE_OBJECT xml, const char *file)
     return ANSC_STATUS_SUCCESS;
 }
 
-static BOOL
-IsRecChangedFromXml(const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT xml)
+static BOOL IsRecChangedFromXml (const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT xml)
 {
     PANSC_XML_DOM_NODE_OBJECT node;
     PsmRecord_t cur;
@@ -1683,8 +1675,7 @@ IsRecChangedFromXml(const PsmRecord_t *rec, PANSC_XML_DOM_NODE_OBJECT xml)
  * here @overwrite means whether to use the custom to 
  * overwrite the XML file's config if exist 
  */
-static PANSC_XML_DOM_NODE_OBJECT
-ReadCfgXmlWithCustom(const char *path, int overwrite)
+static PANSC_XML_DOM_NODE_OBJECT ReadCfgXmlWithCustom (const char *path, int overwrite)
 {
     PANSC_XML_DOM_NODE_OBJECT   root = NULL;
     PANSC_XML_DOM_NODE_OBJECT   node = NULL;
@@ -1835,6 +1826,7 @@ int backup_file (const char *bkupFile, const char *localFile)
   /* Success! */
   return 0;
 }
+
 /**********************************************************************
 
     caller:     owner of this object
