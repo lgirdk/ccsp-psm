@@ -406,8 +406,6 @@ decodeMacAddress
 
     pBinaryData = (PUCHAR)AnscAllocateMemory(ulDataSize);
 
-    AnscZeroMemory(pBinaryData, ulDataSize);
-
     for ( i = 0; i < ulDataSize * 3 - 1; i++ )
     {
         tempChar = ((PCHAR)pCharData)[i];

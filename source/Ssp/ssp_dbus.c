@@ -478,8 +478,6 @@ ANSC_STATUS getCommParam(
         CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
         return ANSC_STATUS_FAILURE;
     }
-    rc = memset_s(pParameterValue, sizeof(PARAMETER_VALUE), 0, sizeof(PARAMETER_VALUE));
-    ERR_CHK(rc);
 
     pParameterValue->val = AnscAllocateMemory(sizeof(parameterValStruct_t));
     if(pParameterValue->val == NULL)
@@ -488,8 +486,6 @@ ANSC_STATUS getCommParam(
         free_commParam_pointers(pParameterValue);
         return ANSC_STATUS_FAILURE;
     }
-    rc = memset_s(pParameterValue->val, sizeof(parameterValStruct_t), 0, sizeof(parameterValStruct_t));
-    ERR_CHK(rc);
 
     pParameterValue->val->parameterName = AnscAllocateMemory(strlen(paramName)+1);
     if(pParameterValue->val->parameterName == NULL)
@@ -1008,8 +1004,6 @@ int  getParameterValues(
             {
                 if((pParameterValue->val = AnscAllocateMemory(sizeof(parameterValStruct_t))))
                 {
-                    rc = memset_s(pParameterValue->val, sizeof(parameterValStruct_t), 0, sizeof(parameterValStruct_t));
-		    ERR_CHK(rc);
                     if((pParameterValue->val->parameterName = AnscAllocateMemory(strlen(parameterNames[i])+1)))
                     {
                         rc = strcpy_s(pParameterValue->val->parameterName, strlen(parameterNames[i])+1, parameterNames[i]);
@@ -1586,8 +1580,6 @@ int getParameterNames(
                       free(pParameterInfo);
                       return CCSP_FAILURE;
                 }
-                rc = memset_s(pParameterInfo->val, sizeof(parameterInfoStruct_t), 0, sizeof(parameterInfoStruct_t));
-		ERR_CHK(rc);
 
                 pParameterInfo->val->parameterName = AnscAllocateMemory(ulNameSize+1);
                 if(pParameterInfo->val->parameterName == NULL)
