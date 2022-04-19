@@ -271,7 +271,7 @@
   <Record name="dmsb.l2net.1.Port.1.Upstream" type="astr">FALSE</Record>
 
   <Record name="dmsb.l2net.1.Port.2.AllowDelete" type="astr">FALSE</Record>
-  <Record name="dmsb.l2net.1.Port.2.Pvid" type="astr">100</Record>
+  <Record name="dmsb.l2net.1.Port.2.Pvid" type="astr">200</Record>
   <Record name="dmsb.l2net.1.Port.2.PriorityTag" type="astr">FALSE</Record>
   <Record name="dmsb.l2net.1.Port.2.Enable" type="astr">TRUE</Record>
   <Record name="dmsb.l2net.1.Port.2.Alias" type="astr">Port2</Record>
@@ -284,7 +284,7 @@
   <Record name="dmsb.l2net.1.Port.2.Upstream" type="astr">FALSE</Record>
 
   <Record name="dmsb.l2net.1.Port.3.AllowDelete" type="astr">FALSE</Record>
-  <Record name="dmsb.l2net.1.Port.3.Pvid" type="astr">100</Record>
+  <Record name="dmsb.l2net.1.Port.3.Pvid" type="astr">200</Record>
   <Record name="dmsb.l2net.1.Port.3.PriorityTag" type="astr">FALSE</Record>
   <Record name="dmsb.l2net.1.Port.3.Enable" type="astr">TRUE</Record>
   <Record name="dmsb.l2net.1.Port.3.Alias" type="astr">Port3</Record>
@@ -297,7 +297,7 @@
   <Record name="dmsb.l2net.1.Port.3.Upstream" type="astr">FALSE</Record>
 
   <Record name="dmsb.l2net.1.Port.4.AllowDelete" type="astr">FALSE</Record>
-  <Record name="dmsb.l2net.1.Port.4.Pvid" type="astr">100</Record>
+  <Record name="dmsb.l2net.1.Port.4.Pvid" type="astr">200</Record>
   <Record name="dmsb.l2net.1.Port.4.PriorityTag" type="astr">FALSE</Record>
   <Record name="dmsb.l2net.1.Port.4.Enable" type="astr">TRUE</Record>
   <Record name="dmsb.l2net.1.Port.4.Alias" type="astr">Port4</Record>
@@ -349,7 +349,7 @@
   <Record name="dmsb.l2net.1.Port.7.Upstream" type="astr">FALSE</Record>
 
   <Record name="dmsb.l2net.1.Port.8.AllowDelete" type="astr">FALSE</Record>
-  <Record name="dmsb.l2net.1.Port.8.Pvid" type="astr">100</Record>
+  <Record name="dmsb.l2net.1.Port.8.Pvid" type="astr">200</Record>
   <Record name="dmsb.l2net.1.Port.8.PriorityTag" type="astr">FALSE</Record>
   <Record name="dmsb.l2net.1.Port.8.Enable" type="astr">TRUE</Record>
   <Record name="dmsb.l2net.1.Port.8.Alias" type="astr">Port8</Record>
