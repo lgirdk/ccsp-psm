@@ -913,6 +913,72 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
                                 //Increment the count by 1
                                 localCount++;
             }
+
+            /* Device.X_RDKCENTRAL-COM_Webpa.Server.URL */
+
+            //Get the syscfg.db value of PSM Param
+            memset( value_buf, 0 , sizeof( value_buf ) );
+            ret = syscfg_get( NULL, "WEBPA_SERVER_URL", value_buf, sizeof( value_buf ) );
+
+            if( ( ret == 0 ) && \
+                ( '\0' != value_buf[ 0 ] )
+               )
+            {
+                                //Copy the PSM Paramater name
+                                sprintf( localparamArray[ localCount ].name , "%s", "Device.X_RDKCENTRAL-COM_Webpa.Server.URL" );
+                                sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+                                CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+
+                                // Remove DB variable. It won't be used
+                                syscfg_unset( NULL, "WEBPA_SERVER_URL" );
+
+                                //Increment the count by 1
+                                localCount++;
+            }	   
+
+            /* Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL */
+
+            //Get the syscfg.db value of PSM Param
+            memset( value_buf, 0 , sizeof( value_buf ) );
+            ret = syscfg_get( NULL, "TOKEN_SERVER_URL", value_buf, sizeof( value_buf ) );
+
+            if( ( ret == 0 ) && \
+                ( '\0' != value_buf[ 0 ] )
+               )
+            {
+                                //Copy the PSM Paramater name
+                                sprintf( localparamArray[ localCount ].name , "%s", "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL" );
+                                sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+                                CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+
+                                // Remove DB variable. It won't be used
+                                syscfg_unset( NULL, "TOKEN_SERVER_URL" );
+
+                                //Increment the count by 1
+                                localCount++;
+            }
+
+            /* Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL */
+
+            //Get the syscfg.db value of PSM Param
+            memset( value_buf, 0 , sizeof( value_buf ) );
+            ret = syscfg_get( NULL, "DNS_TEXT_URL", value_buf, sizeof( value_buf ) );
+
+            if( ( ret == 0 ) && \
+                ( '\0' != value_buf[ 0 ] )
+               )
+            {
+                                //Copy the PSM Paramater name
+                                sprintf( localparamArray[ localCount ].name , "%s", "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL" );
+                                sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+                                CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+
+                                // Remove DB variable. It won't be used
+                                syscfg_unset( NULL, "DNS_TEXT_URL" );
+
+                                //Increment the count by 1
+                                localCount++;
+            }
 			syscfg_commit();
 
 			//Initialize count as 0 here
