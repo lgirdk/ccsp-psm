@@ -1081,6 +1081,7 @@
   <Record name="eRT.com.cisco.spvtg.ccsp.webpa.X_COMCAST-COM_SyncProtocolVersion" type="astr">0</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.webpa.X_RDKCENTRAL-COM_LastReconnectReason" type="astr">webpa_process_starts</Record>
   <Record name="eRT.com.cisco.spvtg.ccsp.webpa.X_COMCAST-COM_CMC" type="astr">0</Record>
+  <Record name="eRT.com.cisco.spvtg.ccsp.webpa.WebConfigRfcEnable" type="astr">false</Record>
 
   <!-- MoCA Home Isolation -->
   <Record name="dmsb.l2net.HomeNetworkIsolation" type="astr">0</Record>
