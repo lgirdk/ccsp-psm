@@ -537,7 +537,6 @@ int merge_missing_Partner_params()
                 CcspTraceInfo(("data is not NULL %d\n",len));
                 memset( data, 0, ( sizeof(char) * (len + 1) ));
                 fread( data, 1, len, fp );
-                fclose(fp);
             }
             else
             {
@@ -547,6 +546,14 @@ int merge_missing_Partner_params()
             }
             
         }
+
+	/* CID 190396 fix*/
+	if(fp != NULL)
+	{
+		fclose(fp);
+		fp = NULL;
+	}
+
         buf=cJSON_Parse(data);
         char PartnerID[ 64 ] = { 0 };
         syscfg_get( NULL, "PartnerID", PartnerID, sizeof( PartnerID ));

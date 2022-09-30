@@ -991,7 +991,10 @@ int  getParameterValues(
                 //CcspTraceInfo(("Release Thread Lock %d\n"));
                 pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
                 /*Coverity Fix CID:57874 RESOURCE_LEAK */
-                AnscFreeMemory(pParameterValue);
+                if(pParameterValue != NULL)
+		{
+			AnscFreeMemory(pParameterValue);
+		}
                 return CCSP_FAILURE;
             }
         }
