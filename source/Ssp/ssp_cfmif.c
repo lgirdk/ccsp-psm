@@ -437,7 +437,13 @@ typedef struct Param_Present
   { "dmsb.l3net.4.V4Addr",
     "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP",false},
   { "dmsb.l3net.4.V4SubnetMask",
-    "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange",false}
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultLocalIPv4SubnetRange",false},
+  { "Device.X_RDKCENTRAL-COM_Webpa.Server.URL",
+    "Device.X_RDKCENTRAL-COM_Webpa.Server.URL",false},
+  { "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL",
+    "Device.X_RDKCENTRAL-COM_Webpa.TokenServer.URL",false},
+  { "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL",
+     "Device.X_RDKCENTRAL-COM_Webpa.DNSText.URL",false}
 };
 
 static void insert (char *Name, char *value)
