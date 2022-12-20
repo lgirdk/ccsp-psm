@@ -750,15 +750,6 @@
   <Record name="dmsb.l3net.5.ArpCacheTimeout" type="astr" contentType="uint">30</Record>
 
   <Record name="dmsb.dhcpv4.server.Enable" type="astr">TRUE</Record>
-  <Record name="dmsb.dhcpv4.server.pool.2.AllowDelete" type="astr">FALSE</Record>
-  <Record name="dmsb.dhcpv4.server.pool.2.Enable" type="astr">TRUE</Record>
-  <Record name="dmsb.dhcpv4.server.pool.2.MinAddress" type="astr">172.16.12.100</Record>
-  <Record name="dmsb.dhcpv4.server.pool.2.MaxAddress" type="astr">172.16.12.150</Record>
-  <Record name="dmsb.dhcpv4.server.pool.2.SubnetMask" type="astr">255.255.255.0</Record>
-  <Record name="dmsb.dhcpv4.server.pool.2.DNSServers" type="astr">172.22.156.1,172.22.156.3,172.22.156.3,172.22.156.4</Record>
-  <Record name="dmsb.dhcpv4.server.pool.2.IPRouters" type="astr">172.16.12.1</Record>
-  <Record name="dmsb.dhcpv4.server.pool.2.LeaseTime" type="astr">86400</Record>
-  <Record name="dmsb.dhcpv4.server.pool.2.IPInterface" type="astr">5</Record>
 
   <!-- guest network start -->
   <Record name="dmsb.l2net.5.AllowDelete" type="astr">FALSE</Record>
