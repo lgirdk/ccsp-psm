@@ -254,7 +254,7 @@ static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
     ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
     ANSC_HANDLE                     hSysRoot            = NULL;
     ULONG ulRecordType, ulRecordSize;
-    int rc = RBUS_ERROR_BUS_ERROR;
+    int rc = RBUS_ERROR_SUCCESS;
     char *parameterName, *parameterValue, *str_value;
     rbusValue_t value;
     rbusProperty_t prop,out_prop;
@@ -263,7 +263,7 @@ static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
     if ( pPsmSysRegistry == NULL )
     {
         CcspTraceError(("%s - pPsmSysRegistry is NULL\n",__func__));
-        return rc;
+        return RBUS_ERROR_BUS_ERROR;
     }
 
     pSysInfoRepository = pPsmSysRegistry->hSysInfoRepository;
@@ -271,7 +271,7 @@ static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
     if ( pSysInfoRepository == NULL )
     {
         CcspTraceError(("%s - pSysInfoRepository is NULL\n",__func__));
-        return rc;
+        return RBUS_ERROR_BUS_ERROR;
     }
 
     pSysIraIf = (PSYS_IRA_INTERFACE)pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
@@ -290,7 +290,7 @@ static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
     {
         CcspTraceError(("%s - hSysRoot is NULL\n",__func__));
         pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
-        return rc;
+        return RBUS_ERROR_BUS_ERROR;
     }
 
     prop = rbusObject_GetProperties(inParams);
@@ -315,9 +315,9 @@ static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
         {
             CcspTraceError(("%s failed to get record for the parameter %s . \
                         ReturnStatus %lu\n",__func__,parameterName, returnStatus));
-            pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
             /*Coverity Fix CID:57874 RESOURCE_LEAK */
-            return rc;
+            rc = RBUS_ERROR_BUS_ERROR;
+            goto EXIT;
         }
 
         if(ANSC_STATUS_CANT_FIND == returnStatus)
@@ -329,8 +329,8 @@ static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
         if(!parameterValue)
         {
             CcspTraceError(("%s - calloc failed\n",__func__));
-            pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
-            return rc;
+            rc = RBUS_ERROR_BUS_ERROR;
+            goto EXIT;
         }
         returnStatus =
             pSysIraIf->GetRecord
@@ -346,9 +346,9 @@ static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
         if(returnStatus != ANSC_STATUS_SUCCESS)
         {
             CcspTraceError(("%s failed to get record for %s . ReturnStatus %lu\n",__func__, parameterName, returnStatus));
-            pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
             free(parameterValue);
-            return rc;
+            rc = RBUS_ERROR_BUS_ERROR;
+            goto EXIT;
         }
         rbusValue_Init(&value);
         if(true == rbusValue_SetParamVal(value, pRroRenderAttr->ContentType, parameterValue))
@@ -362,8 +362,6 @@ static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
                 rbusObject_SetProperty(outParams,out_prop);
                 free(str_value);
             }
-
-            rc = RBUS_ERROR_SUCCESS;
         }
         else
         {
@@ -371,6 +369,8 @@ static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams
         }
         rbusValue_Release(value);
     }
+
+EXIT:
 
     if ( hSysRoot )
     {
