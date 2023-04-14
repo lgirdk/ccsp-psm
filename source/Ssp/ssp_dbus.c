@@ -898,6 +898,7 @@ int  getParameterValues(
     int                             i;
     errno_t                         rc                  = -1;
     int                             ind                 = -1;
+    int                             ret                 = CCSP_SUCCESS;
  //  CcspTraceInfo((" inside getParameterValues\n"));
     if ( g_psmHealth != CCSP_COMMON_COMPONENT_HEALTH_Green )
     {
@@ -995,7 +996,8 @@ int  getParameterValues(
 		{
 			AnscFreeMemory(pParameterValue);
 		}
-                return CCSP_FAILURE;
+                ret = CCSP_FAILURE;
+                goto EXIT;
             }
         }
         else
@@ -1014,7 +1016,8 @@ int  getParameterValues(
 			{
 		            ERR_CHK(rc);
                             free_commParam_pointers(pParameterValue);
-			    return CCSP_FAILURE;
+			    ret = CCSP_FAILURE;
+			    goto EXIT;
 			}
                         if((pParameterValue->val->parameterValue = AnscAllocateMemory(ulRecordSize+1)))
                         {
@@ -1043,7 +1046,8 @@ int  getParameterValues(
                                 AnscFreeMemory(pParameterValue->val->parameterName);
                                 AnscFreeMemory(pParameterValue->val);
                                 AnscFreeMemory(pParameterValue);
-                                return CCSP_FAILURE;
+                                ret = CCSP_FAILURE;
+                                goto EXIT;
                             }
                             pParameterValue->val->type = pRroRenderAttr->ContentType;
                             AnscSListPushEntry(&ParameterValueList, &pParameterValue->Linkage);
@@ -1078,7 +1082,8 @@ int  getParameterValues(
         if(val == NULL)
         {
              CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
-             return CCSP_FAILURE;
+             ret = CCSP_FAILURE;
+             goto EXIT;
         }
         rc = memset_s(val, *val_size*sizeof(parameterValStruct_t *), 0, *val_size*sizeof(parameterValStruct_t *));
 	ERR_CHK(rc);
@@ -1104,6 +1109,8 @@ int  getParameterValues(
 
     *param_val = val;
 
+EXIT:
+
     if ( hSysRoot )
     {
           // CcspTraceInfo((" getParameterValues -hSysRoot\n"));
@@ -1112,7 +1119,7 @@ int  getParameterValues(
 
     pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
      //  CcspTraceInfo((" getParameterValues exit\n"));
-    return CCSP_SUCCESS;
+    return ret;
 }
 
 
@@ -1457,6 +1464,7 @@ int getParameterNames(
     parameterInfoStruct_t         **val                 = NULL;
     errno_t                         rc                  = -1;
     int                             ind                 = -1;
+    int                             ret                 = CCSP_SUCCESS;
     //CcspTraceInfo(("getParameterNames begins\n"));
     if ( g_psmHealth != CCSP_COMMON_COMPONENT_HEALTH_Green )
     {
@@ -1574,14 +1582,16 @@ int getParameterNames(
                 if(pParameterInfo == NULL)
                 {
                       CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
-                      return CCSP_FAILURE;
+                      ret = CCSP_FAILURE;
+                      goto EXIT;
                 }
                 pParameterInfo->val = AnscAllocateMemory(sizeof(parameterInfoStruct_t));
                 if(pParameterInfo->val == NULL)
                 {
                       CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
                       free(pParameterInfo);
-                      return CCSP_FAILURE;
+                      ret = CCSP_FAILURE;
+                      goto EXIT;
                 }
 
                 pParameterInfo->val->parameterName = AnscAllocateMemory(ulNameSize+1);
@@ -1590,7 +1600,8 @@ int getParameterNames(
                       CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
                       free(pParameterInfo->val);
                       free(pParameterInfo);
-                      return CCSP_FAILURE;
+                      ret = CCSP_FAILURE;
+                      goto EXIT;
                 }
                 char *pRecordName = recordName;
                 rc = strcpy_s(pParameterInfo->val->parameterName,  ulNameSize+1, pRecordName);
@@ -1600,7 +1611,8 @@ int getParameterNames(
                     free(pParameterInfo->val->parameterName);
                     free(pParameterInfo->val);
                     free(pParameterInfo);
-		    return CCSP_FAILURE;
+                    ret = CCSP_FAILURE;
+                    goto EXIT;
 		}
 
                 AnscSListPushEntry(&ParameterInfoList, &pParameterInfo->Linkage);
@@ -1617,7 +1629,8 @@ int getParameterNames(
         if(val == NULL)
         {
              CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
-             return CCSP_FAILURE;
+             ret = CCSP_FAILURE;
+             goto EXIT;
         }
         rc = memset_s(val, *val_size*sizeof(parameterInfoStruct_t *), 0, *val_size*sizeof(parameterInfoStruct_t *));
 	ERR_CHK(rc);
@@ -1635,6 +1648,8 @@ int getParameterNames(
 
     *param_val = val;
 
+EXIT:
+
     if ( hSysRoot )
     {
         pSysIraIf->CloseFolder(pSysIraIf->hOwnerContext, hSysRoot);
@@ -1642,7 +1657,7 @@ int getParameterNames(
 
     pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
         //CcspTraceInfo(("getParameterNames ends\n"));
-    return CCSP_SUCCESS;
+    return ret;
 }
 
 int  AddTblRow(
