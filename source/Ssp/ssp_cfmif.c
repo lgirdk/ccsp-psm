@@ -434,6 +434,12 @@ typedef struct Param_Present
     "Device.X_RDK_WebConfig.URL",false},
   { "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry",
     "Device.X_RDK_WebConfig.SupplementaryServiceUrls.Telemetry",false},
+  { "Device.X_RDK_MQTT.BrokerURL",
+    "Device.X_RDK_MQTT.BrokerURL",false},
+  { "Device.X_RDK_MQTT.LocationID",
+    "Device.X_RDK_MQTT.LocationID",false},
+  { "Device.X_RDK_MQTT.Port",
+    "Device.X_RDK_MQTT.Port",false},
   { "dmsb.l3net.4.V4Addr",
     "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.RDKB_UIBranding.DefaultAdminIP",false},
   { "dmsb.l3net.4.V4SubnetMask",
@@ -922,6 +928,72 @@ int Psm_GetCustomPartnersParams( PsmHalParam_t **params, int *cnt )
 
                                 // Remove DB variable. It won't be used
                                 syscfg_unset( NULL, "TELEMETRY_INIT_URL" );
+
+                                //Increment the count by 1
+                                localCount++;
+            }
+
+            /* Device.X_RDK_MQTT.BrokerURL */
+
+            //Get the syscfg.db value of PSM Param
+            memset( value_buf, 0 , sizeof( value_buf ) );
+            ret = syscfg_get( NULL, "MQTT_INIT_URL", value_buf, sizeof( value_buf ) );
+
+            if( ( ret == 0 ) && \
+                ( '\0' != value_buf[ 0 ] )
+               )
+            {
+                                //Copy the PSM Paramater name
+                                sprintf( localparamArray[ localCount ].name , "%s", "Device.X_RDK_MQTT.BrokerURL" );
+                                sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+                                CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+
+                                // Remove DB variable. It won't be used
+                                syscfg_unset( NULL, "MQTT_INIT_URL" );
+
+                                //Increment the count by 1
+                                localCount++;
+            }
+
+            /* Device.X_RDK_MQTT.LocationID */
+
+            //Get the syscfg.db value of PSM Param
+            memset( value_buf, 0 , sizeof( value_buf ) );
+            ret = syscfg_get( NULL, "MQTT_INIT_LOCATIONID", value_buf, sizeof( value_buf ) );
+
+            if( ( ret == 0 ) && \
+                ( '\0' != value_buf[ 0 ] )
+               )
+            {
+                                //Copy the PSM Paramater name
+                                sprintf( localparamArray[ localCount ].name , "%s", "Device.X_RDK_MQTT.LocationID" );
+                                sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+                                CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+
+                                // Remove DB variable. It won't be used
+                                syscfg_unset( NULL, "MQTT_INIT_LOCATIONID" );
+
+                                //Increment the count by 1
+                                localCount++;
+            }
+
+            /* Device.X_RDK_MQTT.Port */
+
+            //Get the syscfg.db value of PSM Param
+            memset( value_buf, 0 , sizeof( value_buf ) );
+            ret = syscfg_get( NULL, "MQTT_INIT_PORT", value_buf, sizeof( value_buf ) );
+
+            if( ( ret == 0 ) && \
+                ( '\0' != value_buf[ 0 ] )
+               )
+            {
+                                //Copy the PSM Paramater name
+                                sprintf( localparamArray[ localCount ].name , "%s", "Device.X_RDK_MQTT.Port" );
+                                sprintf( localparamArray[ localCount ].value, "%s", value_buf );
+                                CcspTraceInfo(("-- %s - Name :%s Value:%s\n", __FUNCTION__, localparamArray[ localCount ].name, localparamArray[ localCount ].value ));
+
+                                // Remove DB variable. It won't be used
+                                syscfg_unset( NULL, "MQTT_INIT_PORT" );
 
                                 //Increment the count by 1
                                 localCount++;
