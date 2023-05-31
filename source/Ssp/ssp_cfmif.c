@@ -93,6 +93,7 @@
 #include <unistd.h>
 #include "pthread.h"
 #include "psm_ifo_cfm.h"
+#include <sys/file.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #ifdef _COSA_SIM_
@@ -2113,25 +2114,36 @@ int backup_file (const char *bkupFile, const char *localFile)
 {
    int fd_from = open(localFile, O_RDONLY);
    int rc=0;
+   int ret = 0;
+
+   static int fd_lock = -1;
+
   if(fd_from < 0)
   {
     CcspTraceError(("%s : opening localfile %s failed during db backup\n",__FUNCTION__,localFile));
     return -1;
   }
+  if (fd_lock < 0)
+  {
+    fd_lock = open("/var/lock/psm.lock", O_RDONLY|O_CREAT,0666);
+  }
+  if (flock(fd_lock, LOCK_EX) == -1)
+  {
+    CcspTraceError(("%s: Failed to acquire lock\n", __FUNCTION__));
+  }
   struct stat Stat;
   if(fstat(fd_from, &Stat)<0)
   {
     CcspTraceError(("fstat call failed during db backup\n"));
-
-    close(fd_from);
-    return -1;
+    ret = -1;
+    goto EXIT;
   }
   void *mem = mmap(NULL, Stat.st_size, PROT_READ, MAP_SHARED, fd_from, 0);
   if(mem == MAP_FAILED)
   {
         CcspTraceError(("%s : mmap failed during db backup , line %d",__FUNCTION__,__LINE__));
-        close(fd_from);
-        return -1;
+        ret = -1;
+        goto EXIT;
   }
 
   int fd_to = creat(bkupFile, 0666);
@@ -2143,8 +2155,8 @@ int backup_file (const char *bkupFile, const char *localFile)
         
             CcspTraceError(("%s : munmap failed\n",__FUNCTION__));
     }
-        close(fd_from);
-        return -1;
+        ret = -1;
+        goto EXIT;
   }
   ssize_t nwritten = write(fd_to, mem, Stat.st_size);
   if(nwritten < Stat.st_size)
@@ -2158,9 +2170,9 @@ int backup_file (const char *bkupFile, const char *localFile)
 
         }
 
-    close(fd_from);
         close(fd_to);
-        return -1;
+        ret = -1;
+        goto EXIT;
   }
 
   rc = munmap(mem,Stat.st_size);
@@ -2169,16 +2181,26 @@ int backup_file (const char *bkupFile, const char *localFile)
   }
 
   if(close(fd_to) < 0) {
-        fd_to = -1;
-                CcspTraceError(("%s : closing file descriptor failed during db backup %d \n",__FUNCTION__,__LINE__));
-
-    close(fd_from);
-        return -1;
+       CcspTraceError(("%s : closing file descriptor failed during db backup %d \n",__FUNCTION__,__LINE__));
+       ret = -1;
   }
-  close(fd_from);
 
-  /* Success! */
-  return 0;
+EXIT:
+
+  if ( fd_lock >= 0 )
+  {
+       if ( flock(fd_lock, LOCK_UN) == -1 )
+       {
+            CcspTraceError(("Failed to release psm.lock \n"));
+       }
+  }
+
+  if ( fd_from >= 0 )
+  {
+       close(fd_from);
+  }
+
+  return ret;
 }
 
 /**********************************************************************
