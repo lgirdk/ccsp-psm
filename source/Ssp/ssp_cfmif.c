@@ -93,6 +93,7 @@
 #include <unistd.h>
 #include "pthread.h"
 #include "psm_ifo_cfm.h"
+#include <sys/file.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #ifdef _COSA_SIM_
@@ -2118,11 +2119,16 @@ int backup_file (const char *bkupFile, const char *localFile)
     CcspTraceError(("%s : opening localfile %s failed during db backup\n",__FUNCTION__,localFile));
     return -1;
   }
+  int fd_lock = open("/var/lock/psm.lock", O_RDONLY|O_CREAT,0666);
+  if (flock(fd_lock, LOCK_EX) == -1) {
+    CcspTraceError(("%s:  testing file locked failed\n", __FUNCTION__));
+  }
   struct stat Stat;
   if(fstat(fd_from, &Stat)<0)
   {
     CcspTraceError(("fstat call failed during db backup\n"));
 
+    flock(fd_lock, LOCK_UN);
     close(fd_from);
     return -1;
   }
@@ -2130,6 +2136,7 @@ int backup_file (const char *bkupFile, const char *localFile)
   if(mem == MAP_FAILED)
   {
         CcspTraceError(("%s : mmap failed during db backup , line %d",__FUNCTION__,__LINE__));
+        flock(fd_lock, LOCK_UN);
         close(fd_from);
         return -1;
   }
@@ -2143,6 +2150,7 @@ int backup_file (const char *bkupFile, const char *localFile)
         
             CcspTraceError(("%s : munmap failed\n",__FUNCTION__));
     }
+        flock(fd_lock, LOCK_UN);
         close(fd_from);
         return -1;
   }
@@ -2157,6 +2165,7 @@ int backup_file (const char *bkupFile, const char *localFile)
         CcspTraceError(("%s : munmap failed %d \n",__FUNCTION__,__LINE__));
 
         }
+    flock(fd_lock, LOCK_UN);
 
     close(fd_from);
         close(fd_to);
@@ -2172,9 +2181,11 @@ int backup_file (const char *bkupFile, const char *localFile)
         fd_to = -1;
                 CcspTraceError(("%s : closing file descriptor failed during db backup %d \n",__FUNCTION__,__LINE__));
 
+    flock(fd_lock, LOCK_UN);
     close(fd_from);
         return -1;
   }
+  flock(fd_lock, LOCK_UN);
   close(fd_from);
 
   /* Success! */
