@@ -84,7 +84,7 @@
 #define MAX_VAP_INDEX 11
 #endif
 
-#if defined (_XB6_PRODUCT_REQ_) && !defined (CS_XB7) && !defined (_XB7_PRODUCT_REQ_)
+#if defined (_XB6_PRODUCT_REQ_) && !defined (CS_XB7) && !defined (_XB7_PRODUCT_REQ_) && !defined(_LG_OFW_)
 #include "qtn_debug.h"
 #include "wifi_oem_api.h"
 extern int qtn_gen_ssid_default(char *ssid_buff);
@@ -544,7 +544,7 @@ int PsmHal_GetCustomParams( PsmHalParam_t **params, int *cnt)
         printf("[psm_hal dbg] : func[%s] line[%d] param3->name[%s] param3->value[%s]\n", __FUNCTION__, __LINE__, (*params)[3].name, (*params)[3].value);
 
         return  0;
-#elif defined (_XB6_PRODUCT_REQ_) && !defined (CS_XB7) && !defined (_XB7_PRODUCT_REQ_)
+#elif defined (_XB6_PRODUCT_REQ_) && !defined (CS_XB7) && !defined (_XB7_PRODUCT_REQ_) && !defined(_LG_OFW_)
     int c = 16;
     char buff[128] = {0};
     const char *Bss1Ssid = "eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.SSID.1.SSID";
