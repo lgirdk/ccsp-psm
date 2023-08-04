@@ -2042,14 +2042,18 @@ int backup_file (const char *bkupFile, const char *localFile)
 {
    int fd_from = open(localFile, O_RDONLY);
    int rc=0;
+   static int fd_lock = -1;
   if(fd_from < 0)
   {
     CcspTraceError(("%s : opening localfile %s failed during db backup\n",__FUNCTION__,localFile));
     return -1;
   }
-  int fd_lock = open("/var/lock/psm.lock", O_RDONLY|O_CREAT,0666);
+  if (fd_lock < 0)
+  {
+     fd_lock = open("/var/lock/psm.lock", O_RDONLY|O_CREAT,0666);
+  }
   if (flock(fd_lock, LOCK_EX) == -1) {
-    CcspTraceError(("%s:  testing file locked failed\n", __FUNCTION__));
+    CcspTraceError(("%s: Failed to acquire lock\n", __FUNCTION__));
   }
   struct stat Stat;
   if(fstat(fd_from, &Stat)<0)
