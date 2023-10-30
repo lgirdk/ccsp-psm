@@ -510,7 +510,7 @@ int  cmd_dispatch(int  command)
                         bEngaged = TRUE;
 
                         CcspTraceWarning(("RDKB_SYSTEM_BOOT_UP_LOG : PSM started ...\n"));
-#if !defined(INTEL_PUMA7) && !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_)
+#if !defined(INTEL_PUMA7) && !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_) && !defined(_COSA_QCA_ARM_)
                         v_secure_system("sysevent set bring-lan up");
 #endif                      
                     }
