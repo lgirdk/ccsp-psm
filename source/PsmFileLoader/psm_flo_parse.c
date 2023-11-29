@@ -1267,20 +1267,20 @@ loadRecordFromXML
 {
     PSYS_IRA_INTERFACE              pSysIraIf          = (PSYS_IRA_INTERFACE       )hSysIraIf;
     PANSC_XML_DOM_NODE_OBJECT       pChildNode         = (PANSC_XML_DOM_NODE_OBJECT)hXMLRecord;
-    CHAR                            pName[SYS_MAX_RECORD_NAME_SIZE] = { 0 };
-    CHAR                            pValue[160]        = { 0 };
-    ULONG                           length             = SYS_MAX_RECORD_NAME_SIZE;
+    CHAR                            pName[SYS_MAX_RECORD_NAME_SIZE + 1];
+    CHAR                            pValue[SYS_MAX_RECORD_NAME_SIZE + 1];
+    ULONG                           length;
     ULONG                           recordType         = 0;
     ULONG                           permission         = DEFAULT_RRO_PERMISSION;
     ULONG                           contentType        = 0;
     SYS_RRO_RENDER_ATTR             renderAttr         = { 0 };
-    PUCHAR                          pRecordValue       = NULL;
     ULONG                           longValue          = 0;
     BOOL                            boolValue          = FALSE;
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
 
     /* get the name of the record; */
-    if( AnscXmlDomNodeGetAttrString(pChildNode,STR_NAME, pName, &length) != ANSC_STATUS_SUCCESS)
+    length = sizeof(pName);
+    if ((AnscXmlDomNodeGetAttrString(pChildNode,STR_NAME, pName, &length) != ANSC_STATUS_SUCCESS) || (length >= sizeof(pName)))
     {
         CcspTraceWarning(("Failed to get the 'name' attribute of this node.\n"));
 
@@ -1288,9 +1288,8 @@ loadRecordFromXML
     }
 
     /* get the record type */
-    length = 160;
-    AnscZeroMemory(pValue, 160);
-    if( AnscXmlDomNodeGetAttrString(pChildNode,STR_TYPE, pValue, &length) != ANSC_STATUS_SUCCESS)
+    length = sizeof(pValue);
+    if ((AnscXmlDomNodeGetAttrString(pChildNode,STR_TYPE, pValue, &length) != ANSC_STATUS_SUCCESS) || (length >= sizeof(pValue)))
     {
         recordType = SYS_REP_RECORD_TYPE_SINT;
     }
@@ -1307,10 +1306,8 @@ loadRecordFromXML
     }
 
     /* get the contentType */
-    length = 160;
-    AnscZeroMemory(pValue, 160);
-
-    if( AnscXmlDomNodeGetAttrString(pChildNode,STR_CONTENT_TYPE, pValue, &length) == ANSC_STATUS_SUCCESS)
+    length = sizeof(pValue);
+    if ((AnscXmlDomNodeGetAttrString(pChildNode,STR_CONTENT_TYPE, pValue, &length) == ANSC_STATUS_SUCCESS) && (length < sizeof(pValue)))
     {
         contentType = getRecordContentTypeFromString(pValue);
         renderAttr.ContentType = contentType;
@@ -1326,14 +1323,12 @@ loadRecordFromXML
     if( recordType == SYS_REP_RECORD_TYPE_SINT || recordType == SYS_REP_RECORD_TYPE_UINT ||
         recordType == SYS_REP_RECORD_TYPE_HCXT || recordType == SYS_REP_RECORD_TYPE_ENUM)
     {
-        length = 160;
-        AnscZeroMemory(pValue, length);
-
         if( contentType == SYS_RECORD_CONTENT_IP4_ADDR)
         {
+            length = sizeof(pValue);
             returnStatus = AnscXmlDomNodeGetDataString(pChildNode, NULL, pValue, &length);
 
-            if( returnStatus != ANSC_STATUS_SUCCESS || length == 0)
+            if ((returnStatus != ANSC_STATUS_SUCCESS) || (length == 0) || (length >= sizeof(pValue)))
             {
                 CcspTraceWarning(("Failed to read string value '%p'\n", pChildNode->StringData));
 
@@ -1420,23 +1415,34 @@ loadRecordFromXML
     }
     else if( recordType == SYS_REP_RECORD_TYPE_ASTR)
     {
+        char *pRecordValue;
+
+        /* AnscXmlDomNodeGetDataString() will return an error here (since
+           target buffer pointer is NULL) but we rely on it still returning
+           the length of the string.
+        */
+        length = 0;
         AnscXmlDomNodeGetDataString(pChildNode, NULL, NULL, &length);
 
         if( length > 0)
         {
-            pRecordValue = (PUCHAR)AnscAllocateMemory(length + 1);
+            ULONG length2 = length + 1;
+
+            pRecordValue = AnscAllocateMemory(length2);
 
             if( pRecordValue == NULL)
             {
                 return ANSC_STATUS_RESOURCES;
             }
 
-            returnStatus = AnscXmlDomNodeGetDataString(pChildNode, NULL,(PCHAR) pRecordValue, &length);
+            length = length2;
+            returnStatus = AnscXmlDomNodeGetDataString(pChildNode, NULL, pRecordValue, &length);
 
-            if( returnStatus != ANSC_STATUS_SUCCESS)
+            if ((returnStatus != ANSC_STATUS_SUCCESS) || (length >= length2))
             {
                 CcspTraceWarning(("Failed to read string text value '%p'\n", pChildNode->StringData));
 
+                AnscFreeMemory(pRecordValue);
                 return returnStatus;
             }
         }
@@ -1469,15 +1475,12 @@ loadRecordFromXML
     }
     else  /*  recordType == SYS_REP_RECORD_TYPE_BSTR */
     {
-        length = 160;
-        AnscZeroMemory(pValue, 160);
-
         if( contentType == SYS_RECORD_CONTENT_IP4_ADDR)
         {
-
+            length = sizeof(pValue);
             returnStatus = AnscXmlDomNodeGetDataString(pChildNode, NULL, pValue, &length);
 
-            if( returnStatus != ANSC_STATUS_SUCCESS || length == 0)
+            if ((returnStatus != ANSC_STATUS_SUCCESS) || (length == 0) || (length >= sizeof(pValue)))
             {
                 CcspTraceWarning(("Failed to read string value '%p'\n", pChildNode->StringData));
 
@@ -1512,9 +1515,10 @@ loadRecordFromXML
         }
         else if( contentType == SYS_RECORD_CONTENT_CALENDAR_TIME)
         {
+            length = sizeof(pValue);
             returnStatus = AnscXmlDomNodeGetDataString(pChildNode, NULL, pValue, &length);
 
-            if( returnStatus != ANSC_STATUS_SUCCESS || length == 0)
+            if ((returnStatus != ANSC_STATUS_SUCCESS) || (length == 0) || (length >= sizeof(pValue)))
             {
                 CcspTraceWarning(("Failed to read calendar value '%p'\n", pChildNode->StringData));
 
@@ -1546,7 +1550,17 @@ loadRecordFromXML
         }
         else if( contentType == SYS_RECORD_CONTENT_SINT_LIST || contentType == SYS_RECORD_CONTENT_UINT_LIST)
         {
+            length = sizeof(pValue);
             returnStatus = AnscXmlDomNodeGetDataString(pChildNode, NULL, pValue, &length);
+
+#if 0
+            /* Fixme: return status from AnscXmlDomNodeGetDataString() is not checked... it's not clear why */
+
+            if ((returnStatus != ANSC_STATUS_SUCCESS) || (length == 0) || (length >= sizeof(pValue)))
+            {
+                return returnStatus;
+            }
+#endif
 
             if( TRUE)
             {
@@ -1600,9 +1614,10 @@ loadRecordFromXML
         }
         else if( contentType == SYS_RECORD_CONTENT_IP4_ADDR_LIST)
         {
+            length = sizeof(pValue);
             returnStatus = AnscXmlDomNodeGetDataString(pChildNode, NULL, pValue, &length);
 
-            if( returnStatus != ANSC_STATUS_SUCCESS || length == 0)
+            if ((returnStatus != ANSC_STATUS_SUCCESS) || (length == 0) || (length >= sizeof(pValue)))
             {
                 return returnStatus;
             }
@@ -1658,9 +1673,10 @@ loadRecordFromXML
         }
         else if( contentType == SYS_RECORD_CONTENT_MAC_ADDR)
         {
+            length = sizeof(pValue);
             returnStatus = AnscXmlDomNodeGetDataString(pChildNode, NULL, pValue, &length);
 
-            if( returnStatus != ANSC_STATUS_SUCCESS || length == 0)
+            if ((returnStatus != ANSC_STATUS_SUCCESS) || (length == 0) || (length >= sizeof(pValue)))
             {
                 return returnStatus;
             }
@@ -1695,11 +1711,13 @@ loadRecordFromXML
         }
         else
         {
+            unsigned char *pRecordValue;
+
             AnscXmlDomNodeGetDataBinary(pChildNode, NULL, NULL, &length);
 
             if( length != 0)
             {
-                pRecordValue = (PUCHAR)AnscAllocateMemory(length + 1);
+                pRecordValue = AnscAllocateMemory(length + 1);
 
                 if( pRecordValue == NULL)
                 {
@@ -1762,8 +1780,8 @@ loadFolderFromXML
     PANSC_XML_DOM_NODE_OBJECT       pChildNode         = (PANSC_XML_DOM_NODE_OBJECT)hXMLFolder;
     PSYS_IRA_INTERFACE              pSysIraIf          = (PSYS_IRA_INTERFACE       )hSysIraIf;
     ANSC_HANDLE                     hChildFolder       = NULL;
-    CHAR                            pName[128]         = { 0 };
-    ULONG                           length             = 128;
+    CHAR                            pName[128 + 1];
+    ULONG                           length;
     ANSC_STATUS                     returnStatus       = ANSC_STATUS_SUCCESS;
     ULONG                           folderType         = SYS_REP_FOLDER_TYPE_STORAGE;
     ULONG                           permission         = DEFAULT_RFO_PERMISSION;
@@ -1771,7 +1789,8 @@ loadFolderFromXML
     SYS_RFO_RENDER_ATTR             renderAttr         = { 0 };
 
     /* get the name of the folder */
-    if( AnscXmlDomNodeGetAttrString(pChildNode,STR_NAME, pName, &length) != ANSC_STATUS_SUCCESS)
+    length = sizeof(pName);
+    if ((AnscXmlDomNodeGetAttrString(pChildNode,STR_NAME, pName, &length) != ANSC_STATUS_SUCCESS) || (length >= sizeof(pName)))
     {
         CcspTraceWarning(("Failed to get the 'name' attribute of this node.\n"));
 
@@ -1789,9 +1808,8 @@ loadFolderFromXML
     }
 
     /* get the folder type */
-    length = 128;
-    AnscZeroMemory(pName, 128);
-    if( AnscXmlDomNodeGetAttrString(pChildNode,STR_TYPE, pName, &length) == ANSC_STATUS_SUCCESS)
+    length = sizeof(pName);
+    if ((AnscXmlDomNodeGetAttrString(pChildNode,STR_TYPE, pName, &length) == ANSC_STATUS_SUCCESS) && (length < sizeof(pName)))
     {
         folderType = getFolderTypeFromString(pName);
 
@@ -1802,10 +1820,8 @@ loadFolderFromXML
     }
 
     /* get the contentType */
-    length = 128;
-    AnscZeroMemory(pName, 128);
-
-    if( AnscXmlDomNodeGetAttrString(pChildNode,STR_CONTENT_TYPE, pName, &length) == ANSC_STATUS_SUCCESS)
+    length = sizeof(pName);
+    if ((AnscXmlDomNodeGetAttrString(pChildNode,STR_CONTENT_TYPE, pName, &length) == ANSC_STATUS_SUCCESS) && (length < sizeof(pName)))
     {
         contentType = getFolderContentTypeFromString(pName);
 
