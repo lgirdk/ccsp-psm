@@ -1713,6 +1713,7 @@ loadRecordFromXML
         {
             unsigned char *pRecordValue;
 
+            length = 0;
             AnscXmlDomNodeGetDataBinary(pChildNode, NULL, NULL, &length);
 
             if( length != 0)
@@ -1728,8 +1729,6 @@ loadRecordFromXML
 
                 if( returnStatus != ANSC_STATUS_SUCCESS)
                 {
-                    AnscXmlDomNodeGetDataBinary(pChildNode, NULL, NULL, &length);
-
                     CcspTraceWarning(("Failed to read binary text value '%p'\n", pChildNode->StringData));
                     AnscFreeMemory(pRecordValue); /*10-May-2016 RDKB-5568 CID-33233, free pRecordValue before returning*/					
 
