@@ -1,14 +1,3 @@
 
-CcspPsm:
-- remove arch directory
-- move Makefile to Makefile.orig
-- add autogen.sh
-- add configure.ac
-- add Makefile.am
-- touch AUTHORS
-- touch ChangeLog
-- touch NEWS
-- touch README
-- add source/Makefile.am
-
-Need to update source/Makefile.am to include path to CcspCommonLibrary headers.
+CcspPsmLite:
+- Init commit from Vantiva(yan.li)
