@@ -505,8 +505,8 @@ int  cmd_dispatch(int  command)
                         ret = PsmDbusInit();
                         if(ret != 0)
                            return -1;
-                        if(CCSP_Msg_IsRbus_enabled())
-                            PsmRbusInit();
+
+                        PsmRbusInit();
 
                         bEngaged = TRUE;
 
