@@ -1726,51 +1726,6 @@ int getHealth()
     return g_psmHealth;
 }
 
-DBusHandlerResult
-path_message_func (DBusConnection  *conn,
-                   DBusMessage     *message,
-                   void            *user_data)
-{
-    CCSP_MESSAGE_BUS_INFO *bus_info =(CCSP_MESSAGE_BUS_INFO *) user_data;
-    const char *interface = dbus_message_get_interface(message);
-    const char *method   = dbus_message_get_member(message);
-    errno_t  rc = -1;
-    int ind  = -1;
-    DBusMessage *reply;
-    reply = dbus_message_new_method_return (message);
-    if (reply == NULL)
-    {
-        return DBUS_HANDLER_RESULT_HANDLED;
-    }
-
-	rc = strcmp_s("org.freedesktop.DBus.Introspectable", strlen("org.freedesktop.DBus.Introspectable"), interface, &ind);
-	ERR_CHK(rc);
-	if((rc == EOK) && (!ind))
-        {
-	    rc = strcmp_s("Introspect", strlen("Introspect"), method, &ind);
-	    ERR_CHK(rc);
-	    if((rc == EOK) && (!ind))
-	    {
-	        if ( !dbus_message_append_args (reply, DBUS_TYPE_STRING, &PSM_Introspect_msg, DBUS_TYPE_INVALID))
-                  printf ("No memory\n");
-        
-                if (!dbus_connection_send (conn, reply, NULL))
-                   printf ("No memory\n");
-
-                dbus_message_unref (reply);
-                return DBUS_HANDLER_RESULT_HANDLED;
-            }
-	}
-
-    return CcspBaseIf_base_path_message_func (conn,
-            message,
-            reply,
-            interface,
-            method,
-            bus_info);
-
-}
-
 int PsmDbusInit()
 {
     int         ret ;
@@ -1829,9 +1784,6 @@ int PsmDbusInit()
     );
   
     /*Coverity Fix CID:61898  CHECKED_RETURN */
-    if(CCSP_Message_Bus_Register_Path(bus_handle, CCSP_DBUS_PATH_PSM, path_message_func, bus_handle)!= CCSP_Message_Bus_OK) {
-       CcspTraceError((" !!! CCSP_Message_Bus_Register_Path ERROR!!!\n"));
-    }
 
     do
     {
