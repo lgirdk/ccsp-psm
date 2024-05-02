@@ -108,3 +108,37 @@ ssp_CfmSaveCurConfig
 
 ANSC_STATUS
 ssp_CfmUpdateConfigs(ANSC_HANDLE hThisObject, const char *newConfPath);
+
+int  setParameterValues(
+    int sessionId,
+    unsigned int writeID,
+    parameterValStruct_t *val,
+    int size,
+    dbus_bool commit,
+    char **str,
+    void            *user_data
+);
+
+int  getParameterValues(
+    unsigned int writeID,
+    char * parameterNames[],
+    int size,
+    int *val_size,
+    parameterValStruct_t ***param_val,
+    void * user_data
+);
+
+int  setParameterAttributes(
+    int sessionId,
+    parameterAttributeStruct_t *val,
+    int size,
+    void            *user_data
+);
+
+int getParameterNames(
+    char * parameterName,
+    dbus_bool nextLevel,
+    int *val_size ,
+    parameterInfoStruct_t ***param_val,
+    void *user_data
+);

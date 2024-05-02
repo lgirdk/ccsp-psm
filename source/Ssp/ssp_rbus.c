@@ -83,24 +83,6 @@ static bool rbusValue_SetParamVal(rbusValue_t value, ULONG contentType, char con
     return rc;
 }
 
-static rbusLegacyDataType_t getLegacyType(rbusValueType_t type)
-{
-    switch(type)
-    {
-        case RBUS_STRING:   return RBUS_LEGACY_STRING;
-        case RBUS_INT32:    return RBUS_LEGACY_INT;
-        case RBUS_UINT32:   return RBUS_LEGACY_UNSIGNEDINT;
-        case RBUS_BOOLEAN:  return RBUS_LEGACY_BOOLEAN;
-        case RBUS_INT64:    return RBUS_LEGACY_LONG;
-        case RBUS_UINT64:   return RBUS_LEGACY_UNSIGNEDLONG;
-        case RBUS_SINGLE:   return RBUS_LEGACY_FLOAT;
-        case RBUS_DOUBLE:   return RBUS_LEGACY_DOUBLE;
-        case RBUS_DATETIME: return RBUS_LEGACY_DATETIME;
-        default:            break;
-    }
-    return RBUS_LEGACY_NONE;
-}
-
 static void setOutparams(rbusObject_t outParams,char *parameterName, bool val)
 {
     rbusValue_t value;
@@ -111,345 +93,306 @@ static void setOutparams(rbusObject_t outParams,char *parameterName, bool val)
     rbusValue_Release(value);
 }
 
+void rbus_type_to_ccsp_type (rbusValueType_t typeVal, enum dataType_e *pType)
+{
+    switch(typeVal)
+    {
+        case RBUS_INT16:
+        case RBUS_INT32:
+            *pType = ccsp_int;
+            break;
+        case RBUS_UINT16:
+        case RBUS_UINT32:
+            *pType = ccsp_unsignedInt;
+            break;
+        case RBUS_INT64:
+            *pType = ccsp_long;
+            break;
+        case RBUS_UINT64:
+            *pType = ccsp_unsignedLong;
+            break;
+        case RBUS_SINGLE:
+            *pType = ccsp_float;
+            break;
+        case RBUS_DOUBLE:
+            *pType = ccsp_double;
+            break;
+        case RBUS_DATETIME:
+            *pType = ccsp_dateTime;
+            break;
+        case RBUS_BOOLEAN:
+            *pType = ccsp_boolean;
+            break;
+        case RBUS_CHAR:
+        case RBUS_INT8:
+            *pType = ccsp_int;
+            break;
+        case RBUS_UINT8:
+        case RBUS_BYTE:
+            *pType = ccsp_byte;
+            break;
+        case RBUS_STRING:
+            *pType = ccsp_string;
+            break;
+        case RBUS_BYTES:
+            *pType = ccsp_base64;
+            break;
+        case RBUS_PROPERTY:
+        case RBUS_OBJECT:
+        case RBUS_NONE:
+        default:
+            *pType = ccsp_none;
+            break;
+    }
+    return;
+}
+
 static int setParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams)
 {
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository  = (PSYS_INFO_REPOSITORY_OBJECT)NULL;
-    PSYS_IRA_INTERFACE              pSysIraIf           = (PSYS_IRA_INTERFACE         )NULL;
-    ANSC_HANDLE                     hSysRoot            = NULL;
-    ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
-    PSYS_RRO_RENDER_ATTR            pRroRenderAttr      = (PSYS_RRO_RENDER_ATTR)NULL;
-    SYS_RRO_RENDER_ATTR             rroRenderAttr;
-    char    oldValBuf[512] = {0};
-    ULONG   ulRecordType, ulRecordSize;
-    errno_t rc = -1;
-    int ind = -1, ret = RBUS_ERROR_BUS_ERROR;
+    int ret = RBUS_ERROR_SUCCESS, returnStatus = -1;
     rbusValue_t value;
     rbusProperty_t prop;
     rbusValueType_t type;
-    rbusLegacyDataType_t legacyType;
-    char *parameterName, *parameterValue;
-
+    int param_size = 0;
+    char *parameterName, *parameterValue = NULL;
     if ( pPsmSysRegistry == NULL )
     {
         CcspTraceError(("%s - pPsmSysRegistry is NULL\n",__func__));
-        return ret;
-    }
-    pSysInfoRepository = pPsmSysRegistry->hSysInfoRepository;
-    if ( pSysInfoRepository == NULL )
-    {
-        CcspTraceError(("%s - pSysInfoRepository is NULL\n",__func__));
-        return ret;
-    }
-    pSysIraIf = (PSYS_IRA_INTERFACE)pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
-    pSysIraIf->AcqThreadLock(pSysIraIf->hOwnerContext);
-    hSysRoot =
-        pSysIraIf->OpenFolder
-        (
-         pSysIraIf->hOwnerContext,
-         (ANSC_HANDLE)NULL,
-         "/Configuration/Provision"
-        );
-    if ( hSysRoot == NULL )
-    {
-        CcspTraceError(("%s - hSysRoot is NULL\n",__func__));
-        pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
-        return ret;
+        return RBUS_ERROR_BUS_ERROR;
     }
 
-    SysInitRroRenderAttr((&rroRenderAttr));
     prop = rbusObject_GetProperties(inParams);
-    for( ; (NULL != prop) ; prop = rbusProperty_GetNext(prop))
+    while(prop)
     {
-        parameterName = (char *)rbusProperty_GetName(prop);
-        setOutparams(outParams,parameterName,false);
-        value = rbusProperty_GetValue(prop);
-        type = rbusValue_GetType(value);
-        legacyType = getLegacyType(type);
+        param_size++;
+        prop = rbusProperty_GetNext(prop);
+    }
+    prop = rbusObject_GetProperties(inParams);
+    parameterName = (char *)rbusProperty_GetName(prop);
+    setOutparams(outParams, parameterName, false);
 
-        if(RBUS_LEGACY_NONE == legacyType)
+    value = rbusProperty_GetValue(prop);
+    type = rbusValue_GetType(value);
+    parameterValue = rbusValue_ToString(value, NULL, 0);
+    parameterValStruct_t *val = NULL;
+    val = AnscAllocateMemory(sizeof(parameterValStruct_t));
+    if(val == NULL)
+    {
+        CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+        ret = RBUS_ERROR_BUS_ERROR;
+    }
+    else
+    {
+        memset(val, 0, sizeof(parameterValStruct_t));
+        unsigned int paramNameLen = strlen(parameterName) + 1;
+        unsigned int paramValLen = strlen(parameterValue) + 1;
+
+        /* Copy the Name */
+        val->parameterName = AnscAllocateMemory(paramNameLen);
+        if(val->parameterName == NULL)
         {
-            CcspTraceWarning(("%s Invalid datatype \n",__func__));
-            continue;
+            CcspTraceInfo(("Memory Allocation failed - %s : %d\n", __FUNCTION__, __LINE__));
+            ret = RBUS_ERROR_BUS_ERROR;
         }
+        strcpy_s(val->parameterName, paramNameLen,  parameterName);
 
-        if(RBUS_LEGACY_BOOLEAN == legacyType)
+       /* Copy the Value */
+        val->parameterValue = AnscAllocateMemory(paramValLen);
+        memset(val->parameterValue, 0, paramValLen);
+        strcpy_s(val->parameterValue, paramValLen,  parameterValue);
+
+        /* Find the matching ccsp_type */
+        rbus_type_to_ccsp_type(type, &val->type);
+
+        if (ret == RBUS_ERROR_SUCCESS)
         {
-            if(true == rbusValue_GetBoolean(value))
-                parameterValue = strdup("true");
-            else
-                parameterValue = strdup("false");
+            returnStatus = setParameterValues(0, 0, val, 1, 0, NULL, NULL);
+            CcspTraceWarning(("%s Add entry:  param : %s , val : %s %s , return %d +++\n", __func__,((returnStatus != CCSP_SUCCESS)? "failed" : "success"), val->parameterName, val->parameterValue, returnStatus));
         }
-        else
-        {
-            parameterValue = rbusValue_ToString(value,NULL,0);
-        }
-
-        /*RDKB-24884 : PSM set operation with same value should not update bbhm xml*/
-        rc =  memset_s(oldValBuf, sizeof(oldValBuf), 0, sizeof(oldValBuf));
-        ERR_CHK(rc);
-        returnStatus =
-            pSysIraIf->GetRecord
-            (
-             pSysIraIf->hOwnerContext,
-             hSysRoot,
-             parameterName,
-             &ulRecordType,
-             (PANSC_HANDLE)&pRroRenderAttr,
-             oldValBuf,
-             &ulRecordSize
-            );
-
-        if (ANSC_STATUS_SUCCESS == returnStatus)
-        {
-            if( pRroRenderAttr->ContentType != legacyType)
-            {
-                CcspTraceWarning(("%s %s is already set with type %lu. Invalid type %u is set.\n",
-                            __func__, parameterName, pRroRenderAttr->ContentType, legacyType ));
-                free(parameterValue);
-                continue;
-            }
-
-            rc = strcmp_s(oldValBuf, sizeof(oldValBuf), parameterValue, &ind);
-            ERR_CHK(rc);
-            if((rc == EOK) && (ind == 0))
-            {
-                CcspTraceWarning(("%s %s is already present with value %s. oldValBuf %s\n",
-                            __func__, parameterName, parameterValue,oldValBuf));
-                free(parameterValue);
-                continue;
-            }
-        }
-        rroRenderAttr.ContentType = legacyType;
-
-        returnStatus =
-            pSysIraIf->AddRecord2
-            (
-             pSysIraIf->hOwnerContext,
-             hSysRoot,
-             parameterName,
-             SYS_RRO_PERMISSION_ALL,
-             SYS_REP_RECORD_TYPE_ASTR,
-             (ANSC_HANDLE)&rroRenderAttr,
-             (PVOID)parameterValue,
-             strlen(parameterValue)
-            );
-        CcspTraceInfo(("%s Add entry:  param : %s , val : %s %s , return %lu +++\n",
-                    __func__,((returnStatus != ANSC_STATUS_SUCCESS)? "failed" : "success"),
-                    parameterName, parameterValue, returnStatus));
-        if(ANSC_STATUS_SUCCESS == returnStatus)
-            setOutparams(outParams,parameterName,true);
+        AnscFreeMemory(val);
         free(parameterValue);
     }
-    ret = RBUS_ERROR_SUCCESS;
-    pSysIraIf->CloseFolder(pSysIraIf->hOwnerContext, hSysRoot);
-    pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
+
+    if(CCSP_SUCCESS == returnStatus)
+        setOutparams(outParams,parameterName,true);
     return ret;
 }
 
 static int getParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams)
 {
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository  = (PSYS_INFO_REPOSITORY_OBJECT)NULL;
-    PSYS_IRA_INTERFACE              pSysIraIf           = (PSYS_IRA_INTERFACE         )NULL;
-    PSYS_RRO_RENDER_ATTR            pRroRenderAttr      = (PSYS_RRO_RENDER_ATTR)NULL;
-    ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
-    ANSC_HANDLE                     hSysRoot            = NULL;
-    ULONG ulRecordType, ulRecordSize;
     int rc = RBUS_ERROR_SUCCESS;
-    char *parameterName, *parameterValue, *str_value;
+    char **parameterNames = 0,*str_value;
+    int i = 0;
+    int size = 0;
+    int param_size = 0;
+    int result = -1;
     rbusValue_t value;
     rbusProperty_t prop,out_prop;
     rbusValueType_t type;
+    parameterValStruct_t **val = 0;
 
     if ( pPsmSysRegistry == NULL )
     {
         CcspTraceError(("%s - pPsmSysRegistry is NULL\n",__func__));
         return RBUS_ERROR_BUS_ERROR;
     }
-
-    pSysInfoRepository = pPsmSysRegistry->hSysInfoRepository;
-
-    if ( pSysInfoRepository == NULL )
-    {
-        CcspTraceError(("%s - pSysInfoRepository is NULL\n",__func__));
-        return RBUS_ERROR_BUS_ERROR;
-    }
-
-    pSysIraIf = (PSYS_IRA_INTERFACE)pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
-
-    pSysIraIf->AcqThreadLock(pSysIraIf->hOwnerContext);
-
-    hSysRoot =
-        pSysIraIf->OpenFolder
-        (
-         pSysIraIf->hOwnerContext,
-         (ANSC_HANDLE)NULL,
-         "/Configuration/Provision"
-        );
-
-    if ( hSysRoot == NULL )
-    {
-        CcspTraceError(("%s - hSysRoot is NULL\n",__func__));
-        pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
-        return RBUS_ERROR_BUS_ERROR;
-    }
-
+    /* Get inut parameters size*/
     prop = rbusObject_GetProperties(inParams);
-    for( ; (NULL != prop) ; prop = rbusProperty_GetNext(prop))
+    while(prop)
     {
-        parameterName = (char *)rbusProperty_GetName(prop);
-        returnStatus =
-            pSysIraIf->GetRecord
-            (
-             pSysIraIf->hOwnerContext,
-             hSysRoot,
-             parameterName,
-             &ulRecordType,
-             NULL,
-             NULL,
-             &ulRecordSize
-            );
+        param_size++;
+        prop = rbusProperty_GetNext(prop);
+    }
+    if (param_size)
+    {
+        parameterNames  = AnscAllocateMemory(param_size*sizeof(char *));
+        memset(parameterNames, 0, param_size*sizeof(char *));
+    }
+    else
+    {
+        CcspTraceError(("%s - No input parameters\n",__func__));
+        return RBUS_ERROR_BUS_ERROR;
+    }
+    prop = rbusObject_GetProperties(inParams);
+    for(i = 0; i < param_size; i++)
+    {
+        parameterNames[i] = NULL;
+        parameterNames[i] = (char *)rbusProperty_GetName(prop);
+        prop = rbusProperty_GetNext(prop);
+    }
 
-        if ((returnStatus != ANSC_STATUS_BAD_SIZE)  &&
-                (returnStatus != ANSC_STATUS_SUCCESS) &&
-                (returnStatus != ANSC_STATUS_CANT_FIND))
+    result = getParameterValues(0, parameterNames, param_size, &size, &val , NULL);
+    if (result)
+    {
+        for(i = 0; i < size; i++)
         {
-            CcspTraceError(("%s failed to get record for the parameter %s . \
-                        ReturnStatus %lu\n",__func__,parameterName, returnStatus));
-            /*Coverity Fix CID:57874 RESOURCE_LEAK */
-            rc = RBUS_ERROR_BUS_ERROR;
-            goto EXIT;
-        }
-
-        if(ANSC_STATUS_CANT_FIND == returnStatus)
-        {
-            CcspTraceWarning(("%s - Cannot find %s\n",__func__,parameterName));
-            continue;
-        }
-        parameterValue = (char *)calloc(1,(ulRecordSize+1));
-        if(!parameterValue)
-        {
-            CcspTraceError(("%s - calloc failed\n",__func__));
-            rc = RBUS_ERROR_BUS_ERROR;
-            goto EXIT;
-        }
-        returnStatus =
-            pSysIraIf->GetRecord
-            (
-             pSysIraIf->hOwnerContext,
-             hSysRoot,
-             parameterName,
-             &ulRecordType,
-             (PANSC_HANDLE)&pRroRenderAttr,
-             parameterValue,
-             &ulRecordSize
-            );
-        if(returnStatus != ANSC_STATUS_SUCCESS)
-        {
-            CcspTraceError(("%s failed to get record for %s . ReturnStatus %lu\n",__func__, parameterName, returnStatus));
-            free(parameterValue);
-            rc = RBUS_ERROR_BUS_ERROR;
-            goto EXIT;
-        }
-        rbusValue_Init(&value);
-        if(true == rbusValue_SetParamVal(value, pRroRenderAttr->ContentType, parameterValue))
-        {
-            type = rbusValue_GetType(value);
-            str_value = rbusValue_ToString(value,NULL,0);
-            if(str_value)
+            rbusValue_Init(&value);
+            if(true == rbusValue_SetParamVal(value, (ULONG)val[i]->type, val[i]->parameterValue))
             {
-                rbusValue_SetFromString(value, type, str_value);
-                rbusProperty_Init(&out_prop,rbusProperty_GetName(prop),value);
-                rbusObject_SetProperty(outParams,out_prop);
-                free(str_value);
-            }
-        }
-        else
-        {
-            CcspTraceError(("%s Unable to set the value %s of type %lu",__func__,parameterValue,pRroRenderAttr->ContentType));
-        }
-        rbusValue_Release(value);
+                type = rbusValue_GetType(value);
+                str_value = rbusValue_ToString(value,NULL,0);
+                if(str_value)
+                {
+                    rbusValue_SetFromString(value, type, str_value);
+                    rbusProperty_Init(&out_prop,val[i]->parameterName,value);
+                    rbusObject_SetProperty(outParams,out_prop);
+                    free(str_value);
+                    rbusProperty_Release(out_prop);
+                    CcspTraceWarning(("%s ParammeterName[%d]-%s, ParameeterValue:%s\n  ",__func__,i, val[i]->parameterName, val[i]->parameterValue));
+                }
+                else
+                {
+                    CcspTraceError(("%s Unable to set the value %s of type %lu",__func__,val[i]->parameterValue,(ULONG)val[i]->type));
+                }
+                rbusValue_Release(value);
+             }
+         }
+         AnscFreeMemory(val);
     }
+    else
+        rc = RBUS_ERROR_BUS_ERROR;
+    AnscFreeMemory(parameterNames);
+    return rc;
+}
 
-EXIT:
-
-    if ( hSysRoot )
+static int getParameterNames_rbus(rbusObject_t inParams, rbusObject_t outParams)
+{
+    int rc = RBUS_ERROR_SUCCESS;
+    char *parameterName = 0;
+    int i = 0;
+    int size = 0;
+    int result = 0;
+    bool nextLevel = 0;
+    parameterInfoStruct_t **val = 0;
+    rbusProperty_t prop, out_prop;
+    if ( pPsmSysRegistry == NULL )
     {
-        pSysIraIf->CloseFolder(pSysIraIf->hOwnerContext, hSysRoot);
+        CcspTraceError(("%s - pPsmSysRegistry is NULL\n",__func__));
+        return RBUS_ERROR_BUS_ERROR;
     }
-
-    pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
+    /* Get parameter name */
+    parameterName = NULL;
+    prop = rbusObject_GetProperties(inParams);
+    parameterName = (char *)rbusProperty_GetName(prop);
+    prop = rbusProperty_GetNext(prop);
+    if (prop)
+    {
+        nextLevel = rbusValue_GetBoolean(rbusProperty_GetValue(prop));
+    }
+    result = getParameterNames(parameterName, nextLevel, &size, &val, NULL);
+    if (result == CCSP_SUCCESS)
+    {
+        for(i = 0; i < size; i++)
+        {
+            rbusValue_t writableValue;
+            rbusValue_Init(&writableValue);
+            rbusValue_SetInt32(writableValue, val[i]->writable);
+            rbusProperty_Init(&out_prop, val[i]->parameterName, writableValue);
+            rbusObject_SetProperty(outParams, out_prop);
+            rbusProperty_Release(out_prop);
+            rbusValue_Release(writableValue);
+            CcspTraceWarning(("%s-ParameterName[%d]-%s\n", __func__, i, val[i]->parameterName));
+            if(val[i]->parameterName)
+                AnscFreeMemory(val[i]->parameterName);
+            AnscFreeMemory(val[i]);
+        }
+        AnscFreeMemory(val);
+    }
+    else
+        rc = RBUS_ERROR_BUS_ERROR;
     return rc;
 }
 
 static int delParameterValues_rbus(rbusObject_t inParams, rbusObject_t outParams)
 {
-    PSYS_INFO_REPOSITORY_OBJECT     pSysInfoRepository  = (PSYS_INFO_REPOSITORY_OBJECT)NULL;
-    PSYS_IRA_INTERFACE              pSysIraIf           = (PSYS_IRA_INTERFACE         )NULL;
-    ANSC_HANDLE                     hSysRoot            = NULL;
-    ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
-    int rc = RBUS_ERROR_SUCCESS;
-    char *parameterName;
+    int rc = RBUS_ERROR_SUCCESS, result = -1;
     rbusProperty_t prop;
-
+    int i = 0;
+    int param_size = 0;
     if ( pPsmSysRegistry == NULL )
     {
         CcspTraceError(("%s - pPsmSysRegistry is NULL\n",__func__));
         return RBUS_ERROR_BUS_ERROR;
     }
 
-    pSysInfoRepository = pPsmSysRegistry->hSysInfoRepository;
-
-    if ( pSysInfoRepository == NULL )
-    {
-        CcspTraceError(("%s - pSysInfoRepository is NULL\n",__func__));
-        return RBUS_ERROR_BUS_ERROR;
-    }
-
-    pSysIraIf = (PSYS_IRA_INTERFACE)pSysInfoRepository->GetIraIf((ANSC_HANDLE)pSysInfoRepository);
-
-    pSysIraIf->AcqThreadLock(pSysIraIf->hOwnerContext);
-
-    hSysRoot =
-        pSysIraIf->OpenFolder
-            (
-                pSysIraIf->hOwnerContext,
-                (ANSC_HANDLE)NULL,
-                "/Configuration/Provision"
-            );
-
-    if ( hSysRoot == NULL )
-    {
-        CcspTraceError(("%s - hSysRoot is NULL\n",__func__));
-        pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
-        return RBUS_ERROR_BUS_ERROR;
-    }
-
     prop = rbusObject_GetProperties(inParams);
-    for( ; (NULL != prop) ; prop = rbusProperty_GetNext(prop))
+    while(prop)
     {
-        parameterName = (char *)rbusProperty_GetName(prop);
-        returnStatus =
-            pSysIraIf->DelRecord
-            (
-             pSysIraIf->hOwnerContext,
-             hSysRoot,
-             parameterName
-            );
+       param_size++;
+        prop = rbusProperty_GetNext(prop);
+    }
+    prop = rbusObject_GetProperties(inParams);
+    /* Copy Parameter Name */
+    for (i = 0; i < param_size; i++)
+    {
+        parameterAttributeStruct_t *parameterAttribute = 0;
+        parameterAttribute = AnscAllocateMemory(1*sizeof(parameterAttributeStruct_t));
+        memset(parameterAttribute, 0, 1*sizeof(parameterAttributeStruct_t));
+        unsigned int ParameterNameLen = strlen(rbusProperty_GetName(prop))+1;
+        parameterAttribute->parameterName = AnscAllocateMemory(ParameterNameLen);
+        strcpy_s(parameterAttribute->parameterName, ParameterNameLen, rbusProperty_GetName(prop));
 
-        if (ANSC_STATUS_SUCCESS == returnStatus)
+        /*Set Parameter Attributes*/
+        parameterAttribute->notificationChanged = 0;
+        parameterAttribute->notification = 0;
+        parameterAttribute->access = 0;
+        parameterAttribute->accessControlChanged = 1;
+        parameterAttribute->accessControlBitmask = 0;
+
+        result = setParameterAttributes(0, parameterAttribute, 1, NULL);
+        if (result == CCSP_SUCCESS)
         {
-            setOutparams(outParams,parameterName,true);
+            setOutparams(outParams,parameterAttribute->parameterName,true);
+            CcspTraceError(("---- %s delete entry: %s success \n", __func__,parameterAttribute->parameterName));
         }
         else
         {
-            CcspTraceError(("%s Failed to delete entry: %s ret %lu\n", __func__,parameterName,returnStatus));
-            setOutparams(outParams,parameterName,false);
+            CcspTraceError(("%s Failed to delete entry: %s \n", __func__,parameterAttribute->parameterName));
+            setOutparams(outParams,parameterAttribute->parameterName,false);
         }
+        AnscFreeMemory(parameterAttribute);
+        prop = rbusProperty_GetNext(prop);
     }
-
-    pSysIraIf->CloseFolder(pSysIraIf->hOwnerContext, hSysRoot);
-
-    pSysIraIf->RelThreadLock(pSysIraIf->hOwnerContext);
     return rc;
 }
 
@@ -458,8 +401,17 @@ static rbusError_t psmDel(rbusHandle_t handle, char const* methodName, rbusObjec
     (void)handle;
     (void)asyncHandle;
 
-    CcspTraceInfo(("psmGet called: %s %s\n",__func__,methodName));
+    CcspTraceInfo(("psmDel called: %s %s\n",__func__,methodName));
     return delParameterValues_rbus(inParams,outParams);
+}
+
+static rbusError_t psmGetNames(rbusHandle_t handle, char const* methodName, rbusObject_t inParams, rbusObject_t outParams, rbusMethodAsyncHandle_t asyncHandle)
+{
+    (void)handle;
+    (void)asyncHandle;
+
+    CcspTraceInfo(("psmGetNames called: %s %s\n",__func__,methodName));
+    return getParameterNames_rbus(inParams, outParams);
 }
 
 static rbusError_t psmGet(rbusHandle_t handle, char const* methodName, rbusObject_t inParams, rbusObject_t outParams, rbusMethodAsyncHandle_t asyncHandle)
@@ -476,7 +428,7 @@ static rbusError_t psmSet(rbusHandle_t handle, char const* methodName, rbusObjec
     (void)handle;
     (void)asyncHandle;
 
-    CcspTraceInfo(("psmGet called: %s %s\n",__func__,methodName));
+    CcspTraceInfo(("psmSet called: %s %s\n",__func__,methodName));
     return setParameterValues_rbus(inParams, outParams);
 }
 
@@ -496,7 +448,8 @@ int PsmRbusInit()
     rbusDataElement_t dataElements[] = {
         {"SetPSMRecordValue()", RBUS_ELEMENT_TYPE_METHOD, {NULL, NULL, NULL, NULL, NULL, psmSet}},
         {"DeletePSMRecord()",   RBUS_ELEMENT_TYPE_METHOD, {NULL, NULL, NULL, NULL, NULL, psmDel}},
-        {"GetPSMRecordValue()", RBUS_ELEMENT_TYPE_METHOD, {NULL, NULL, NULL, NULL, NULL, psmGet}}
+        {"GetPSMRecordValue()", RBUS_ELEMENT_TYPE_METHOD, {NULL, NULL, NULL, NULL, NULL, psmGet}},
+        {"GetPSMRecordName()", RBUS_ELEMENT_TYPE_METHOD, {NULL, NULL, NULL, NULL, NULL, psmGetNames}}
     };
 
     rc = rbus_regDataElements(handle, dataElementsCount, dataElements);
