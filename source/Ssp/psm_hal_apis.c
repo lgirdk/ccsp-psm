@@ -90,7 +90,7 @@
 extern int qtn_gen_ssid_default(char *ssid_buff);
 #endif 
 
-#if (defined (_XB7_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_)) && defined (_COSA_BCM_ARM_) && !defined(XB10_ONLY_SUPPORT)
+#if (defined (_XB7_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_)) && defined (_COSA_BCM_ARM_)
 #include "factory_info_api.h"
 #endif
 /**********************************************************************
@@ -144,7 +144,6 @@ int wifi_get_oem_default_AP_ssid_string(int apIndex, char *output_ssid)
 {
    switch(apIndex)
    {
-#ifndef XB10_ONLY_SUPPORT
      case PRIMARY_SSID_24_INDEX:
        factory_info_get_default_24_SSID(output_ssid);
      break;
@@ -169,7 +168,6 @@ int wifi_get_oem_default_AP_ssid_string(int apIndex, char *output_ssid)
        // TriBand Radios 2.4GHZ, 5.0GHz, 6.0 GHz  have same SSID
 #endif
        factory_info_get_default_xhs_SSID(output_ssid);
-#endif
      break;
      case XFINITY_SSID_24_INDEX:
      case XFINITY_SSID_50_INDEX:
@@ -191,7 +189,6 @@ int wifi_get_oem_default_AP_passphrase_string(int apIndex, char *output_psk)
 #if defined (_XB8_PRODUCT_REQ_)       
      case PRIMARY_SSID_60_INDEX:
 #endif
-#ifndef XB10_ONLY_SUPPORT
         factory_info_get_wifi_passwd(output_psk);
      break;
      case XHS_SSID_24_INDEX:
@@ -202,14 +199,9 @@ int wifi_get_oem_default_AP_passphrase_string(int apIndex, char *output_psk)
        // TriBand Radios 2.4GHZ, 5.0GHz, 6.0 GHz  have same passkey
 #endif       
         factory_info_get_xhs_passkey(output_psk);
-#endif       
      break;
      default:
-#ifndef XB10_ONLY_SUPPORT
        printf("SSID passphrase not present in the OEM database for apIndex=%d\n",apIndex);
-#else
-       printf("SSID passphrase not present in the OEM database for apIndex=%d output_psk=%s\n",apIndex,output_psk);
-#endif
      break;
    }
    return 0;
