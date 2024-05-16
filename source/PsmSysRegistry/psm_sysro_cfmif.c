@@ -259,18 +259,6 @@ PsmSysroCfmReadCurConfig
                     break;
         }
 
-#ifdef  _PSM_FILE_COMPRESSION_ENABLE
-
-        hCurCfgFile =
-            AnscOpenFile
-                (
-                    curCfgFileName,
-                    ANSC_FILE_MODE_READ | ANSC_FILE_MODE_ZLIB_COMPRESSED,
-                    ANSC_FILE_TYPE_RDWR
-                );
-
-#else
-
         hCurCfgFile =
             AnscOpenFile
                 (
@@ -278,8 +266,6 @@ PsmSysroCfmReadCurConfig
                     ANSC_FILE_MODE_READ,
                     ANSC_FILE_TYPE_RDWR
                 );
-
-#endif
 
         if ( !hCurCfgFile )
         {
@@ -440,18 +426,6 @@ PsmSysroCfmReadDefConfig
          return ANSC_STATUS_FAILURE;
     }
 
-#ifdef  _PSM_FILE_COMPRESSION_ENABLE
-
-    hDefCfgFile =
-        AnscOpenFile
-            (
-                defCfgFileName,
-                ANSC_FILE_MODE_READ | ANSC_FILE_MODE_ZLIB_COMPRESSED,
-                ANSC_FILE_TYPE_RDWR
-            );
-
-#else
-
     hDefCfgFile =
         AnscOpenFile
             (
@@ -459,8 +433,6 @@ PsmSysroCfmReadDefConfig
                 ANSC_FILE_MODE_READ,
                 ANSC_FILE_TYPE_RDWR
             );
-
-#endif
 
     if ( !hDefCfgFile )
     {
@@ -630,18 +602,6 @@ PsmSysroCfmSaveCurConfig
                 CcspTraceError(("%s: fail to backup current config\n", __FUNCTION__)); 
              }
 
-#ifdef  _PSM_FILE_COMPRESSION_ENABLE
-
-    hCurCfgFile =
-        AnscOpenFile
-            (
-                curCfgFileName,
-                ANSC_FILE_MODE_WRITE | ANSC_FILE_MODE_TRUNC | ANSC_FILE_MODE_ZLIB_COMPRESSED,
-                ANSC_FILE_TYPE_RDWR
-            );
-
-#else
-
     hCurCfgFile =
         AnscOpenFile
             (
@@ -649,8 +609,6 @@ PsmSysroCfmSaveCurConfig
                 ANSC_FILE_MODE_WRITE | ANSC_FILE_MODE_TRUNC,
                 ANSC_FILE_TYPE_RDWR
             );
-
-#endif
 
     if ( !hCurCfgFile )
     {
