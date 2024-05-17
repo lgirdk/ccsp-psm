@@ -74,6 +74,7 @@
 
 **********************************************************************/
 
+#include <unistd.h>
 
 #include "psm_sysro_global.h"
 #include "safec_lib_common.h"
@@ -123,8 +124,7 @@ PsmSysroResetToFactoryDefault
     PPSM_SYS_REGISTRY_OBJECT       pMyObject          = (PPSM_SYS_REGISTRY_OBJECT    )hThisObject;
     PPSM_SYS_REGISTRY_PROPERTY     pProperty          = (PPSM_SYS_REGISTRY_PROPERTY  )&pMyObject->Property;
     PANSC_TIMER_DESCRIPTOR_OBJECT   pRegTimerObj       = (PANSC_TIMER_DESCRIPTOR_OBJECT)pMyObject->hRegTimerObj;
-    char                            curCfgFileName[128] = {0};
-    errno_t                         rc                 = -1;
+    char curCfgFileName[PSM_SYS_FILE_PATH_SIZE + PSM_SYS_FILE_NAME_SIZE + 1];
 
     /*
      * Once the configuration is reversed to the Factory Default, the device will be rebooted auto-
@@ -132,47 +132,18 @@ PsmSysroResetToFactoryDefault
      * written by the pending changes.
      */
     pMyObject->bNoSave = TRUE;
-//    CcspTraceInfo(("\n##PsmSysroResetToFactoryDefault() begins##\n"));
 
-    if ( TRUE )
-    {
-        pRegTimerObj->Stop((ANSC_HANDLE)pRegTimerObj);
-    }
+    pRegTimerObj->Stop((ANSC_HANDLE)pRegTimerObj);
 
-    if ( TRUE )
-    {
-	rc = strcpy_s(curCfgFileName, sizeof(curCfgFileName), pProperty->SysFilePath);
-	if(rc != EOK)
-	{
-	    ERR_CHK(rc);
-	    return ANSC_STATUS_FAILURE;
-	}
-	rc = strcat_s(curCfgFileName, sizeof(curCfgFileName), pProperty->CurFileName);
-	if(rc != EOK)
-	{
-	    ERR_CHK(rc);
-	    return ANSC_STATUS_FAILURE;
-	}
+    snprintf(curCfgFileName, sizeof(curCfgFileName), "%s%s", pProperty->SysFilePath, pProperty->CurFileName);
 
-        returnStatus = AnscDeleteFile(curCfgFileName);
+    returnStatus = (unlink(curCfgFileName) == 0) ? ANSC_STATUS_SUCCESS : ANSC_STATUS_FAILURE;
 
-	rc = strcpy_s(curCfgFileName, sizeof(curCfgFileName), pProperty->SysFilePath);
-	if(rc != EOK)
-	{
-	    ERR_CHK(rc);
-	    return ANSC_STATUS_FAILURE;
-	}
-	rc = strcat_s(curCfgFileName, sizeof(curCfgFileName), pProperty->BakFileName);
-        if(rc != EOK)
-	{
-	    ERR_CHK(rc);
-	    return ANSC_STATUS_FAILURE;
-	}
-        returnStatus = AnscDeleteFile(curCfgFileName);
+    snprintf(curCfgFileName, sizeof(curCfgFileName), "%s%s", pProperty->SysFilePath, pProperty->BakFileName);
 
-    }
-//    CcspTraceInfo(("\n##PsmSysroResetToFactoryDefault() ends##\n"));
-    return  returnStatus;
+    returnStatus = (unlink(curCfgFileName) == 0) ? ANSC_STATUS_SUCCESS : ANSC_STATUS_FAILURE;
+
+    return returnStatus;
 }
 
 
@@ -421,7 +392,7 @@ EXIT2:
 
     AnscCloseFile(hTmpCfgFile);
 
-    AnscDeleteFile(tmpCfgFileName);
+    unlink(tmpCfgFileName);
 
 EXIT1:
 //    CcspTraceInfo(("\n##PsmSysroImportConfig() ends##\n"));
