@@ -90,7 +90,7 @@
 extern int qtn_gen_ssid_default(char *ssid_buff);
 #endif 
 
-#if (defined (_XB7_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_)) && defined (_COSA_BCM_ARM_)
+#if (defined (_XB7_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_)) && defined (_COSA_BCM_ARM_) && !defined(_SCER11BEL_PRODUCT_REQ_)
 #include "factory_info_api.h"
 #endif
 /**********************************************************************
@@ -121,7 +121,15 @@ extern int qtn_gen_ssid_default(char *ssid_buff);
  *
  */
 #if (defined (_XB7_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_)) && defined (_COSA_BCM_ARM_)
+#if defined(_SCER11BEL_PRODUCT_REQ_)
+/* extern functions */
+int platform_hal_GetWiFiSSID(char *pValue);
+int platform_hal_GetWiFiPassword(char *pValue);
+int platform_hal_GetWANMacAddress(char *pValue);
+int platform_hal_getFactoryPartnerId(char *pValue);
+#else
 int factory_info_get_default_50_SSID(char *outputData);
+#endif
 
 typedef enum {
     PRIMARY_SSID_24_INDEX = 0,
@@ -133,17 +141,50 @@ typedef enum {
 #if defined (_CBR_PRODUCT_REQ_)
      ADDITIONAL_XFINITY_5 = 15,
 #endif
-#if defined (_XB8_PRODUCT_REQ_)
+#if defined (_XB8_PRODUCT_REQ_) || defined(_SCER11BEL_PRODUCT_REQ_)
     PRIMARY_SSID_60_INDEX = 16,
     XHS_SSID_60_INDEX = 17, 
     SSID_Idx_MAX
 #endif
 } SSID_Idx_enum;
 
+
+#if defined(_SCER11BEL_PRODUCT_REQ_)
+static int factory_default_xhs_ssid(char *xhs_ssid)
+{
+    char partner[32] = {0};
+    char mac_str[32] = {0};
+    int mac[6] = {0};
+
+    platform_hal_GetWANMacAddress(&mac_str[0]);
+    sscanf(mac_str, "%02X:%02X:%02X:%02X:%02X:%02X", &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]);
+    platform_hal_getFactoryPartnerId(&partner[0]);
+    if (!strncmp("cox", partner, strlen(partner))) {
+        snprintf(xhs_ssid, MAX_VALUE_SZ-1, "CHL-%02X%02X%02X%02X", mac[2], mac[3], mac[4], mac[5]);
+    } else if (!strncmp("shaw", partner, strlen(partner))) {
+        snprintf(xhs_ssid, MAX_VALUE_SZ-1, "SHS-%02X%02X%02X%02X", mac[2], mac[3], mac[4], mac[5]);
+    } else if (!strncmp("rogers", partner, strlen(partner))) {
+        snprintf(xhs_ssid, MAX_VALUE_SZ-1, "RSHM-%02X%02X%02X%02X", mac[2], mac[3], mac[4], mac[5]);
+    } else if (!strncmp("videotron", partner, strlen(partner))) {
+        snprintf(xhs_ssid, MAX_VALUE_SZ-1, "VLHS-%02X%02X%02X%02X", mac[2], mac[3], mac[4], mac[5]);
+    } else {  /* comcast as default */
+        snprintf(xhs_ssid, MAX_VALUE_SZ-1, "XHS-%02X%02X%02X%02X", mac[2], mac[3], mac[4], mac[5]);
+    }
+    return 0;
+}
+#endif
+
 int wifi_get_oem_default_AP_ssid_string(int apIndex, char *output_ssid)
 {
    switch(apIndex)
    {
+#if defined(_SCER11BEL_PRODUCT_REQ_)
+     case PRIMARY_SSID_24_INDEX:
+     case PRIMARY_SSID_50_INDEX:
+     case PRIMARY_SSID_60_INDEX:
+       platform_hal_GetWiFiSSID(output_ssid);
+       break;
+#else
      case PRIMARY_SSID_24_INDEX:
        factory_info_get_default_24_SSID(output_ssid);
      break;
@@ -155,6 +196,7 @@ int wifi_get_oem_default_AP_ssid_string(int apIndex, char *output_ssid)
        factory_info_get_default_60_SSID(output_ssid);
      break;
 #endif
+#endif
 #if defined (_CBR_PRODUCT_REQ_)
      case ADDITIONAL_XFINITY_5:
        sprintf(output_ssid,"xfinity public");
@@ -162,12 +204,16 @@ int wifi_get_oem_default_AP_ssid_string(int apIndex, char *output_ssid)
 #endif
      case XHS_SSID_24_INDEX:
      case XHS_SSID_50_INDEX:
-#if defined (_XB8_PRODUCT_REQ_)
+#if defined (_XB8_PRODUCT_REQ_) || defined(_SCER11BEL_PRODUCT_REQ_)
      case XHS_SSID_60_INDEX:
        // XHS SSID based on CM mac address
        // TriBand Radios 2.4GHZ, 5.0GHz, 6.0 GHz  have same SSID
 #endif
+#if defined(_SCER11BEL_PRODUCT_REQ_)
+       factory_default_xhs_ssid(output_ssid);
+#else
        factory_info_get_default_xhs_SSID(output_ssid);
+#endif
      break;
      case XFINITY_SSID_24_INDEX:
      case XFINITY_SSID_50_INDEX:
@@ -186,19 +232,28 @@ int wifi_get_oem_default_AP_passphrase_string(int apIndex, char *output_psk)
    {
      case PRIMARY_SSID_24_INDEX:
      case PRIMARY_SSID_50_INDEX:
-#if defined (_XB8_PRODUCT_REQ_)       
+#if defined (_XB8_PRODUCT_REQ_) || defined(_SCER11BEL_PRODUCT_REQ_)
      case PRIMARY_SSID_60_INDEX:
 #endif
+#if defined(_SCER11BEL_PRODUCT_REQ_)
+        platform_hal_GetWiFiPassword(output_psk);
+#else
         factory_info_get_wifi_passwd(output_psk);
+#endif
      break;
      case XHS_SSID_24_INDEX:
      case XHS_SSID_50_INDEX:
-#if defined (_XB8_PRODUCT_REQ_)
+#if defined (_XB8_PRODUCT_REQ_) || defined(_SCER11BEL_PRODUCT_REQ_)
      case XHS_SSID_60_INDEX:
        //Return the XHS passkey generated using XHS algorithm
        // TriBand Radios 2.4GHZ, 5.0GHz, 6.0 GHz  have same passkey
-#endif       
+#endif
+#if defined(_SCER11BEL_PRODUCT_REQ_)
+        /* set XHS passphrase is same as private default passphrase */
+        platform_hal_GetWiFiPassword(output_psk);
+#else
         factory_info_get_xhs_passkey(output_psk);
+#endif
      break;
      default:
        printf("SSID passphrase not present in the OEM database for apIndex=%d\n",apIndex);
