@@ -90,7 +90,7 @@
 extern int qtn_gen_ssid_default(char *ssid_buff);
 #endif 
 
-#if (defined (_XB7_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_)) && defined (_COSA_BCM_ARM_) && !defined(_SCER11BEL_PRODUCT_REQ_)
+#if (defined (_XB7_PRODUCT_REQ_) || defined (_CBR_PRODUCT_REQ_)) && defined (_COSA_BCM_ARM_) && !defined(_SCER11BEL_PRODUCT_REQ_) || defined(_XER5_PRODUCT_REQ_)
 #include "factory_info_api.h"
 #endif
 /**********************************************************************
